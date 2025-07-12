@@ -201,11 +201,11 @@ export default function Home() {
             isSpeaking ? 'lumen-logo-speaking' : 'lumen-logo-idle'
           )}>
             {/* Actual Lumen Logo */}
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full flex items-center justify-center">
               <img 
-                src="/attached_assets/lumen-logo_1752354847791.png" 
+                src="attached_assets/lumen-logo_1752354847791.png" 
                 alt="Lumen QI" 
-                className="w-full h-full object-contain filter drop-shadow-2xl"
+                className="w-64 h-64 object-contain filter drop-shadow-2xl z-10"
                 style={{
                   filter: `drop-shadow(0 0 ${isSpeaking ? '40px' : isListening ? '20px' : '10px'} rgba(120, 119, 198, 0.8)) drop-shadow(0 0 ${isSpeaking ? '80px' : isListening ? '40px' : '20px'} rgba(255, 119, 198, 0.6))`
                 }}
@@ -217,7 +217,7 @@ export default function Home() {
               {/* Galactic Swirl for Processing */}
               {isProcessing && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <svg viewBox="0 0 200 200" className="w-full h-full absolute animate-spin">
+                  <svg viewBox="0 0 400 400" className="w-full h-full absolute">
                     <defs>
                       <linearGradient id="processingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#7877c6" />
@@ -226,23 +226,49 @@ export default function Home() {
                       </linearGradient>
                     </defs>
                     
-                    {/* Galactic Swirl */}
-                    <g transform="translate(100,100)">
-                      <path d="M 0,-70 Q 70,-70 70,0 Q 70,70 0,70 Q -70,70 -70,0 Q -70,-70 0,-70" 
+                    {/* Galactic Swirl Arms */}
+                    <g transform="translate(200,200)">
+                      {/* Main spiral arms */}
+                      <path d="M 0,0 Q 50,-50 100,-25 Q 150,0 125,75 Q 100,150 25,125 Q -50,100 -25,25 Q 0,-50 75,-75 Q 150,-100 175,-25 Q 200,50 125,125 Q 50,200 -25,175 Q -100,150 -125,75 Q -150,0 -75,-75" 
+                            fill="none" 
+                            stroke="url(#processingGradient)" 
+                            strokeWidth="3" 
+                            opacity="0.8"
+                            className="animate-spin"
+                            style={{animationDuration: '8s'}}/>
+                      
+                      <path d="M 0,0 Q -30,30 -60,15 Q -90,0 -75,-45 Q -60,-90 -15,-75 Q 30,-60 15,-15 Q 0,30 -45,45 Q -90,60 -105,15 Q -120,-30 -75,-75 Q -30,-120 15,-105 Q 60,-90 75,-45" 
+                            fill="none" 
+                            stroke="url(#processingGradient)" 
+                            strokeWidth="2.5" 
+                            opacity="0.6"
+                            className="animate-spin"
+                            style={{animationDuration: '6s', animationDirection: 'reverse'}}/>
+                      
+                      <path d="M 0,0 Q 20,-20 40,-10 Q 60,0 50,30 Q 40,60 10,50 Q -20,40 -10,10 Q 0,-20 30,-30 Q 60,-40 70,-10 Q 80,20 50,50 Q 20,80 -10,70 Q -40,60 -50,30 Q -60,0 -30,-30" 
                             fill="none" 
                             stroke="url(#processingGradient)" 
                             strokeWidth="2" 
-                            opacity="0.8"/>
-                      <path d="M 0,-50 Q 50,-50 50,0 Q 50,50 0,50 Q -50,50 -50,0 Q -50,-50 0,-50" 
-                            fill="none" 
-                            stroke="url(#processingGradient)" 
-                            strokeWidth="1.5" 
-                            opacity="0.6"/>
-                      <path d="M 0,-30 Q 30,-30 30,0 Q 30,30 0,30 Q -30,30 -30,0 Q -30,-30 0,-30" 
-                            fill="none" 
-                            stroke="url(#processingGradient)" 
-                            strokeWidth="1" 
-                            opacity="0.4"/>
+                            opacity="0.4"
+                            className="animate-spin"
+                            style={{animationDuration: '4s'}}/>
+                      
+                      {/* Central core */}
+                      <circle cx="0" cy="0" r="8" fill="url(#processingGradient)" opacity="0.9"/>
+                      
+                      {/* Rotating particles */}
+                      <circle cx="30" cy="0" r="3" fill="#7877c6" opacity="0.8" className="animate-spin" style={{animationDuration: '3s'}}>
+                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="3s" repeatCount="indefinite"/>
+                      </circle>
+                      <circle cx="-30" cy="0" r="3" fill="#ff77c6" opacity="0.8" className="animate-spin" style={{animationDuration: '4s'}}>
+                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="4s" repeatCount="indefinite"/>
+                      </circle>
+                      <circle cx="0" cy="30" r="3" fill="#77c6ff" opacity="0.8" className="animate-spin" style={{animationDuration: '2.5s'}}>
+                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="2.5s" repeatCount="indefinite"/>
+                      </circle>
+                      <circle cx="0" cy="-30" r="3" fill="#7877c6" opacity="0.8" className="animate-spin" style={{animationDuration: '3.5s'}}>
+                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="3.5s" repeatCount="indefinite"/>
+                      </circle>
                     </g>
                   </svg>
                 </div>
