@@ -5,6 +5,7 @@ import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
 import { useQuantumInterface } from '@/hooks/use-quantum-interface';
+import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { Sidebar } from '@/components/sidebar';
 import { ChatArea } from '@/components/chat-area';
 import { VoiceControls } from '@/components/voice-controls';
@@ -27,6 +28,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'chat' | 'quantum'>('chat');
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
+  const { currentEmotion, getEmotionBasedPrompt } = useEmotionDetection();
   const { 
     isListening: speechIsListening, 
     transcript, 
@@ -125,10 +127,12 @@ export default function Home() {
       
       // Send message after conversation is created
       setTimeout(() => {
+        const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
         sendMessage({
           type: 'chat_message',
           content,
-          conversationId: newConversation.id
+          conversationId: newConversation.id,
+          emotionContext
         });
         setIsTyping(true);
         setIsProcessing(true);
@@ -136,11 +140,13 @@ export default function Home() {
       return;
     }
 
-    // Send message via WebSocket
+    // Send message via WebSocket with emotion context
+    const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
     sendMessage({
       type: 'chat_message',
       content,
-      conversationId: currentConversationId
+      conversationId: currentConversationId,
+      emotionContext
     });
 
     setIsTyping(true);
