@@ -11,6 +11,8 @@ import type { Conversation, Message } from '@shared/schema';
 export default function Home() {
   const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
 
@@ -49,19 +51,33 @@ export default function Home() {
     }
   });
 
-  // Handle WebSocket messages
+  // Handle WebSocket messages and speech synthesis
   useEffect(() => {
     if (lastMessage) {
       if (lastMessage.type === 'ai_response') {
         setIsTyping(false);
+        setIsSpeaking(true);
+        
         // Refresh messages for current conversation
         if (currentConversationId) {
           queryClient.invalidateQueries({ 
             queryKey: ['/api/conversations', currentConversationId] 
           });
         }
+        
+        // Speak the AI response with enhanced speech synthesis
+        if (lastMessage.content) {
+          import('@/lib/speech-synthesis').then(({ speechSynthesis }) => {
+            speechSynthesis.speak(lastMessage.content, {
+              onStart: () => setIsSpeaking(true),
+              onEnd: () => setIsSpeaking(false),
+              onError: () => setIsSpeaking(false)
+            });
+          });
+        }
       } else if (lastMessage.type === 'error') {
         setIsTyping(false);
+        setIsSpeaking(false);
         toast({
           title: "Error",
           description: lastMessage.message || "Something went wrong",
@@ -105,7 +121,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-dark-bg text-white">
+    <div className="flex h-screen bg-white dark:bg-gray-900">
       <Sidebar
         currentConversationId={currentConversationId || undefined}
         onConversationSelect={handleConversationSelect}
@@ -117,12 +133,16 @@ export default function Home() {
           messages={messages}
           isTyping={isTyping}
           currentConversationId={currentConversationId || undefined}
+          isSpeaking={isSpeaking}
+          isListening={isListening}
         />
         
         <VoiceControls
           onSendMessage={handleSendMessage}
           isLoading={createConversationMutation.isPending}
           connectionStatus={connectionStatus}
+          onSpeakingChange={setIsSpeaking}
+          onListeningChange={setIsListening}
         />
       </div>
     </div>

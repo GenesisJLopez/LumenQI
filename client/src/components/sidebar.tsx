@@ -35,87 +35,77 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
   };
 
   return (
-    <div className="w-80 bg-dark-surface border-r border-dark-border flex flex-col h-full">
+    <div className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
       {/* Header */}
-      <div className="p-6 border-b border-dark-border">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-semibold text-white">Lumen</h1>
-          <Button variant="ghost" size="sm" className="p-2 hover:bg-dark-elevated">
-            <Settings className="h-4 w-4 text-gray-400" />
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Lumen</h1>
+          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <Settings className="h-4 w-4 text-gray-500" />
           </Button>
         </div>
         
         <Button 
           onClick={onNewConversation}
-          className="w-full bg-glow-blue hover:bg-blue-600 text-white font-medium"
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg"
         >
           <Plus className="h-4 w-4 mr-2" />
-          New Conversation
+          New chat
         </Button>
       </div>
 
       {/* Chat History */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-400 mb-3">Recent Conversations</div>
-          
+      <ScrollArea className="flex-1 p-2">
+        <div className="space-y-1">
           {conversations.map((conversation) => (
-            <Card
+            <div
               key={conversation.id}
               className={cn(
-                "p-3 cursor-pointer transition-colors hover:bg-dark-elevated/50",
-                currentConversationId === conversation.id ? "bg-dark-elevated" : "bg-transparent"
+                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800",
+                currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800" : ""
               )}
               onClick={() => onConversationSelect(conversation.id)}
             >
-              <div className="text-sm font-medium text-white truncate">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                 {conversation.title}
               </div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-gray-500 mt-1">
                 {formatTimeAgo(conversation.updatedAt)}
               </div>
-            </Card>
+            </div>
           ))}
           
           {conversations.length === 0 && (
             <div className="text-sm text-gray-500 text-center py-8">
-              No conversations yet. Start a new one!
+              No conversations yet
             </div>
           )}
         </div>
       </ScrollArea>
 
       {/* Footer */}
-      <div className="p-4 border-t border-dark-border">
-        <div className="space-y-3">
-          <Card className="p-3 bg-dark-elevated">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="space-y-2">
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-glow-blue rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <Brain className="h-4 w-4 text-white" />
               </div>
               <div>
-                <div className="text-sm font-medium text-white">Memory Status</div>
-                <div className="text-xs text-gray-400">
-                  Active • {memories.length} memories
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Memory</div>
+                <div className="text-xs text-gray-500">
+                  {memories.length} memories stored
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
           
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-gray-400 hover:text-white hover:bg-dark-elevated"
+            className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <UserCog className="h-4 w-4 mr-3" />
-            Personality Settings
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-gray-400 hover:text-white hover:bg-dark-elevated"
-          >
-            <Database className="h-4 w-4 mr-3" />
-            Memory Management
+            Settings
           </Button>
         </div>
       </div>

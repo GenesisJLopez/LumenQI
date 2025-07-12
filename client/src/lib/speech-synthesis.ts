@@ -62,6 +62,7 @@ export class SpeechSynthesisService {
     rate?: number;
     pitch?: number;
     volume?: number;
+    onStart?: () => void;
     onEnd?: () => void;
     onError?: (error: SpeechSynthesisErrorEvent) => void;
   } = {}): void {
@@ -84,13 +85,23 @@ export class SpeechSynthesisService {
     utterance.volume = options.volume || 0.8;
 
     // Set event handlers
-    if (options.onEnd) {
-      utterance.onend = options.onEnd;
-    }
+    utterance.onstart = () => {
+      if (options.onStart) {
+        options.onStart();
+      }
+    };
+
+    utterance.onend = () => {
+      if (options.onEnd) {
+        options.onEnd();
+      }
+    };
     
-    if (options.onError) {
-      utterance.onerror = options.onError;
-    }
+    utterance.onerror = (error) => {
+      if (options.onError) {
+        options.onError(error);
+      }
+    };
 
     // Speak the text
     this.synthesis.speak(utterance);

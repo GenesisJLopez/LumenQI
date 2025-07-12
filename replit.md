@@ -102,3 +102,15 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Modern component-based development
 - Accessible, well-designed UI components
 - Consistent design system with theming support
+
+## Recent Changes
+
+**January 12, 2025**: Complete ChatGPT-style UI transformation
+- Redesigned interface to match ChatGPT's clean, modern aesthetic
+- Added spectacular glowing Lumen logo with dynamic visual effects
+- Implemented rhythm-based glow animations for speaking/listening states
+- Added ChatGPT-style message bubbles with hover actions (copy, speak, thumbs up/down)
+- Created dynamic logo animations: idle breathe, listening pulse, speaking glow
+- Enhanced speech synthesis with visual feedback integration
+- Added radial gradient backgrounds and smooth transitions
+- Converted to light/dark theme support matching ChatGPT's design language
