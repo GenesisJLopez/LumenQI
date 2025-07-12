@@ -1,0 +1,180 @@
+// Ultra-natural speech synthesis with human-like delivery
+export class NaturalSpeech {
+  private synthesis: SpeechSynthesis;
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private preferredVoice: SpeechSynthesisVoice | null = null;
+
+  constructor() {
+    this.synthesis = window.speechSynthesis;
+    this.initializeBestVoice();
+  }
+
+  private initializeBestVoice() {
+    const setVoice = () => {
+      const voices = this.synthesis.getVoices();
+      
+      // Priority list for the most natural female voices
+      const preferredVoices = [
+        'Samantha',           // macOS - very natural
+        'Karen',              // macOS - natural
+        'Moira',              // macOS - Irish accent
+        'Microsoft Zira',     // Windows - good quality
+        'Google UK English Female', // Chrome - natural
+        'Google US English Female', // Chrome - natural
+        'Microsoft Hazel',    // Windows - UK accent
+        'Alex',               // macOS - male but very natural
+        'Microsoft David'     // Windows - male but clear
+      ];
+
+      // Find the best available voice
+      for (const preferred of preferredVoices) {
+        const voice = voices.find(v => v.name.includes(preferred));
+        if (voice) {
+          this.preferredVoice = voice;
+          console.log(`Selected voice: ${voice.name} (${voice.lang})`);
+          break;
+        }
+      }
+
+      // Fallback to any English female voice
+      if (!this.preferredVoice) {
+        this.preferredVoice = voices.find(v => 
+          v.lang.startsWith('en') && 
+          (v.name.toLowerCase().includes('female') || 
+           v.name.toLowerCase().includes('woman'))
+        ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+      }
+    };
+
+    if (this.synthesis.getVoices().length > 0) {
+      setVoice();
+    } else {
+      this.synthesis.onvoiceschanged = setVoice;
+    }
+  }
+
+  private cleanTextForNaturalSpeech(text: string): string {
+    return text
+      // Remove markdown
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/#{1,6}\s+/g, '')
+      
+      // Remove emojis and special characters
+      .replace(/[🎯🌟💫⭐✨🔥💎🚀⚡🌈🎪🎨🎭🎪🎯🎲🎰]/g, '')
+      .replace(/:\w+:/g, '')
+      
+      // Make speech flow naturally by removing ALL pauses
+      .replace(/\s*,\s*/g, ' ')  // Remove ALL commas
+      .replace(/\s*;\s*/g, ' ')  // Remove semicolons
+      .replace(/\s*:\s*/g, ' ')  // Remove colons
+      .replace(/\s*-\s*/g, ' ')  // Remove dashes
+      .replace(/\s*—\s*/g, ' ')  // Remove em dashes
+      .replace(/\s*\(\s*/g, ' ') // Remove parentheses
+      .replace(/\s*\)\s*/g, ' ')
+      .replace(/\s*\[\s*/g, ' ') // Remove brackets
+      .replace(/\s*\]\s*/g, ' ')
+      
+      // Handle specific terms that cause robotic speech
+      .replace(/,\s*(Genesis|love|hey love|hey Genesis|there Genesis|there love)/gi, ' $1')
+      .replace(/hey,\s*(love|Genesis)/gi, 'hey $1')
+      .replace(/there,\s*(love|Genesis)/gi, 'there $1')
+      
+      // Clean up multiple spaces and punctuation
+      .replace(/\s+/g, ' ')
+      .replace(/\s+([.!?])/g, '$1')
+      .replace(/([.!?])\s*([.!?])/g, '$1')
+      .replace(/\.\s*\.\s*\./g, '.')
+      .trim();
+  }
+
+  speak(text: string, options: {
+    onStart?: () => void;
+    onEnd?: () => void;
+    onError?: (error: any) => void;
+  } = {}) {
+    // Stop any current speech
+    this.stop();
+
+    if (!this.preferredVoice) {
+      console.warn('No suitable voice found');
+      options.onError?.('No voice available');
+      return;
+    }
+
+    const cleanText = this.cleanTextForNaturalSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    // Configure for ultra-natural speech
+    utterance.voice = this.preferredVoice;
+    utterance.rate = 0.75;  // Much slower for natural human pace
+    utterance.pitch = 0.9;  // Slightly lower for warmth
+    utterance.volume = 1.0;
+    
+    // Fine-tune based on voice characteristics
+    if (this.preferredVoice.name.includes('Samantha')) {
+      utterance.rate = 0.8;   // Samantha sounds best at this rate
+      utterance.pitch = 0.95;
+    } else if (this.preferredVoice.name.includes('Karen')) {
+      utterance.rate = 0.77;  // Karen is naturally fast
+      utterance.pitch = 0.92;
+    } else if (this.preferredVoice.name.includes('Zira')) {
+      utterance.rate = 0.85;  // Zira handles faster speech well
+      utterance.pitch = 1.0;
+    }
+
+    // Add event listeners
+    utterance.onstart = () => {
+      console.log('Natural speech started');
+      options.onStart?.();
+    };
+
+    utterance.onend = () => {
+      console.log('Natural speech ended');
+      this.currentUtterance = null;
+      options.onEnd?.();
+    };
+
+    utterance.onerror = (error) => {
+      console.error('Natural speech error:', error);
+      this.currentUtterance = null;
+      options.onError?.(error);
+    };
+
+    this.currentUtterance = utterance;
+    this.synthesis.speak(utterance);
+  }
+
+  stop() {
+    if (this.currentUtterance) {
+      this.synthesis.cancel();
+      this.currentUtterance = null;
+    }
+  }
+
+  pause() {
+    if (this.synthesis.speaking) {
+      this.synthesis.pause();
+    }
+  }
+
+  resume() {
+    if (this.synthesis.paused) {
+      this.synthesis.resume();
+    }
+  }
+
+  isSpeaking(): boolean {
+    return this.synthesis.speaking;
+  }
+
+  getCurrentVoice(): SpeechSynthesisVoice | null {
+    return this.preferredVoice;
+  }
+}
+
+// Export singleton instance
+export const naturalSpeech = new NaturalSpeech();

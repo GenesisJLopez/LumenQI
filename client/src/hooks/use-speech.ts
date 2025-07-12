@@ -21,8 +21,8 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
       recognitionRef.current = new SpeechRecognition();
       
       const recognition = recognitionRef.current;
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
@@ -37,8 +37,10 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
             finalTranscript += result[0].transcript;
           }
         }
-        if (finalTranscript) {
-          setTranscript(finalTranscript);
+        if (finalTranscript.trim()) {
+          setTranscript(finalTranscript.trim());
+          // Stop listening after getting a complete phrase
+          recognition.stop();
         }
       };
 
