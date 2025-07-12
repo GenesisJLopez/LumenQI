@@ -97,11 +97,11 @@ export default function Home() {
         
         // Only speak if this is a new response for the current conversation
         if (lastMessage.content && lastMessage.conversationId === currentConversationId) {
-          import('@/lib/enhanced-speech').then(({ enhancedSpeech }) => {
+          import('@/lib/natural-speech').then(({ naturalSpeech }) => {
             // Stop any existing speech first
-            enhancedSpeech.stop();
+            naturalSpeech.stop();
             
-            enhancedSpeech.speak(lastMessage.content, {
+            naturalSpeech.speak(lastMessage.content, {
               onStart: () => setIsSpeaking(true),
               onEnd: () => {
                 setIsSpeaking(false);
@@ -176,8 +176,8 @@ export default function Home() {
 
   const handleConversationSelect = (id: number) => {
     // Stop any current speech when switching conversations
-    import('@/lib/enhanced-speech').then(({ enhancedSpeech }) => {
-      enhancedSpeech.stop();
+    import('@/lib/natural-speech').then(({ naturalSpeech }) => {
+      naturalSpeech.stop();
     });
     
     setCurrentConversationId(id);

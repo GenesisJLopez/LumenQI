@@ -118,11 +118,18 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
             <Button
               variant="ghost"
               size="sm"
-              className="w-10 h-10 rounded-full transition-all duration-200 cosmic-button"
+              className={cn(
+                "w-10 h-10 rounded-full transition-all duration-200 cosmic-button",
+                isListening && "bg-red-500/20 border-red-500/30 animate-pulse"
+              )}
               onClick={onVoiceModeToggle}
-              title="Enter Voice Mode"
+              title={isListening ? "Stop Voice Mode" : "Enter Voice Mode"}
             >
-              <Volume2 className="h-5 w-5" />
+              {isListening ? (
+                <MicOff className="h-5 w-5 text-red-400" />
+              ) : (
+                <Volume2 className="h-5 w-5" />
+              )}
             </Button>
             
             {/* Voice Button */}
