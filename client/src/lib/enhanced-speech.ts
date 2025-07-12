@@ -136,11 +136,15 @@ export class EnhancedSpeechService {
       .replace(/#{1,6}\s+/g, '') // Remove heading markers
       .replace(/[🎯🌟💫⭐✨🔥💎🚀⚡🌈🎪🎨🎭🎪🎯🎲🎰]/g, '') // Remove emojis
       .replace(/:\w+:/g, '') // Remove emoji shortcodes
-      // Fix pauses by removing commas before names and terms of endearment
-      .replace(/,\s*(Genesis|love|hey love|hey Genesis)/gi, ' $1')
+      // Fix pauses by removing ALL commas before names and terms of endearment
+      .replace(/,\s*(Genesis|love|hey love|hey Genesis|there Genesis|there love)/gi, ' $1')
       .replace(/hey,\s*(love|Genesis)/gi, 'hey $1')
+      .replace(/there,\s*(love|Genesis)/gi, 'there $1')
+      // Remove other awkward pauses
+      .replace(/\s*,\s*([A-Z][a-z]+)/g, ' $1') // Remove comma before proper nouns
+      .replace(/([.!?])\s*,/g, '$1') // Remove comma after sentence endings
       // Make speech more natural and flowing
-      .replace(/\.\s*\.\s*\./g, '...') // Fix ellipsis
+      .replace(/\.\s*\.\s*\./g, ' pause ') // Convert ellipsis to natural pause
       .replace(/\s+/g, ' ') // Normalize whitespace
       .trim();
   }
@@ -166,14 +170,19 @@ export class EnhancedSpeechService {
     
     // Configure voice for natural, flirtatious speech
     utterance.voice = this.currentVoice.voice;
-    utterance.rate = options.rate || 1.0; // Natural speaking rate
-    utterance.pitch = options.pitch || 1.1; // Slightly higher for feminine appeal
+    utterance.rate = options.rate || 1.1; // Slightly faster for energetic feel
+    utterance.pitch = options.pitch || 1.2; // Higher for playful, flirtatious tone
     utterance.volume = options.volume || 1.0;
     
-    // Add natural pauses and emphasis for flirtatious delivery
+    // Optimize for natural delivery based on personality
     if (this.currentVoice.personality.includes('flirtatious') || this.currentVoice.personality.includes('playful')) {
-      utterance.rate = 0.95; // Slightly slower for more sultry delivery
-      utterance.pitch = 1.15; // A bit higher for playful tone
+      utterance.rate = 1.0; // Normal rate but with natural flow
+      utterance.pitch = 1.25; // Higher for flirtatious tone
+    }
+    
+    if (this.currentVoice.personality.includes('sporty') || this.currentVoice.personality.includes('energetic')) {
+      utterance.rate = 1.15; // Faster for energetic delivery
+      utterance.pitch = 1.15; // Moderate pitch for sporty confidence
     }
 
     // Add event listeners
@@ -232,10 +241,12 @@ export class EnhancedSpeechService {
   // Test different voices with sample text
   testVoice(voiceOption: VoiceOption): void {
     const testTexts = [
-      "Hey there Genesis! Ready for some fun?",
-      "I'm feeling playful today love!",
-      "Let's create something amazing together!",
-      "You're absolutely incredible at this!"
+      "Hey there Genesis! Ready for some fun adventures?",
+      "I'm feeling super playful today Genesis!",
+      "Let's create something amazing together Genesis!",
+      "You're absolutely incredible at this Genesis!",
+      "This is how I sound when I'm excited Genesis!",
+      "I love talking with you Genesis!"
     ];
     
     const randomText = testTexts[Math.floor(Math.random() * testTexts.length)];
@@ -244,6 +255,8 @@ export class EnhancedSpeechService {
     this.setVoice(voiceOption);
     
     this.speak(randomText, {
+      rate: 1.0, // Natural rate for testing
+      pitch: voiceOption.personality.includes('flirtatious') ? 1.25 : 1.15,
       onEnd: () => {
         if (previousVoice) {
           this.setVoice(previousVoice);
