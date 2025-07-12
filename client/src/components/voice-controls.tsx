@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Mic, MicOff, Send, Keyboard } from 'lucide-react';
+import { Mic, MicOff, Send, Keyboard, Volume2 } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/use-speech';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -12,9 +12,10 @@ interface VoiceControlsProps {
   connectionStatus: 'connecting' | 'connected' | 'disconnected';
   onSpeakingChange?: (speaking: boolean) => void;
   onListeningChange?: (listening: boolean) => void;
+  onVoiceModeToggle?: () => void;
 }
 
-export function VoiceControls({ onSendMessage, isLoading = false, connectionStatus, onSpeakingChange, onListeningChange }: VoiceControlsProps) {
+export function VoiceControls({ onSendMessage, isLoading = false, connectionStatus, onSpeakingChange, onListeningChange, onVoiceModeToggle }: VoiceControlsProps) {
   const [inputValue, setInputValue] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const { toast } = useToast();
@@ -103,6 +104,17 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
         {/* Cosmic Input */}
         <div className="relative">
           <div className="flex items-center gap-3 p-4 cosmic-input rounded-3xl shadow-lg">
+            {/* Voice Mode Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-10 h-10 rounded-full transition-all duration-200 cosmic-button"
+              onClick={onVoiceModeToggle}
+              title="Enter Voice Mode"
+            >
+              <Volume2 className="h-5 w-5" />
+            </Button>
+            
             {/* Voice Button */}
             <Button
               variant="ghost"
