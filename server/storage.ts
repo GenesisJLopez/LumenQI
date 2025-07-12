@@ -81,7 +81,7 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const conversation: Conversation = {
       title: insertConversation.title,
-      userId: insertConversation.userId,
+      userId: insertConversation.userId || null,
       id,
       createdAt: now,
       updatedAt: now,
@@ -133,9 +133,9 @@ export class MemStorage implements IStorage {
     const id = this.currentMemoryId++;
     const memory: Memory = {
       content: insertMemory.content,
-      userId: insertMemory.userId,
-      context: insertMemory.context,
-      importance: insertMemory.importance,
+      userId: insertMemory.userId || null,
+      context: insertMemory.context || null,
+      importance: insertMemory.importance || null,
       metadata: insertMemory.metadata || null,
       id,
       createdAt: new Date(),
