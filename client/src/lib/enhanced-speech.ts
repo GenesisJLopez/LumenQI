@@ -140,14 +140,17 @@ export class EnhancedSpeechService {
       .replace(/,\s*(Genesis|love|hey love|hey Genesis|there Genesis|there love)/gi, ' $1')
       .replace(/hey,\s*(love|Genesis)/gi, 'hey $1')
       .replace(/there,\s*(love|Genesis)/gi, 'there $1')
-      // Remove other awkward pauses that make speech robotic
-      .replace(/\s*,\s*([A-Z][a-z]+)/g, ' $1') // Remove comma before proper nouns
-      .replace(/([.!?])\s*,/g, '$1') // Remove comma after sentence endings
-      .replace(/\s*,\s*(and|or|but|so|yet|for|nor)/gi, ' $1') // Remove comma before conjunctions
-      .replace(/\s*,\s*(with|by|in|on|at|to|from)/gi, ' $1') // Remove comma before prepositions
+      // Remove ALL robotic pauses and make speech flow naturally
+      .replace(/\s*,\s*/g, ' ') // Remove ALL commas completely for natural flow
+      .replace(/([.!?])\s*\./g, '$1') // Remove duplicate periods
+      .replace(/\s*;\s*/g, ' ') // Remove semicolons
+      .replace(/\s*:\s*/g, ' ') // Remove colons in speech
+      .replace(/\s*-\s*/g, ' ') // Remove dashes
+      .replace(/\s*—\s*/g, ' ') // Remove em dashes
       // Make speech more natural and flowing
       .replace(/\.\s*\.\s*\./g, '') // Remove ellipsis entirely
       .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/\s+([.!?])/g, '$1') // Remove space before punctuation
       .trim();
   }
 
@@ -170,21 +173,21 @@ export class EnhancedSpeechService {
     const cleanText = this.cleanTextForSpeech(text);
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    // Configure voice for natural, flirtatious speech
+    // Configure voice for ultra-natural, flirtatious speech
     utterance.voice = this.currentVoice.voice;
-    utterance.rate = options.rate || 0.9; // Slightly slower for more natural speech
-    utterance.pitch = options.pitch || 1.0; // Natural pitch
+    utterance.rate = options.rate || 0.85; // Much slower for natural human-like speech
+    utterance.pitch = options.pitch || 0.95; // Slightly lower for warmth
     utterance.volume = options.volume || 1.0;
     
     // Optimize for natural delivery based on personality
     if (this.currentVoice.personality.includes('flirtatious') || this.currentVoice.personality.includes('playful')) {
-      utterance.rate = 0.95; // Slightly slower for more natural flirtatious delivery
-      utterance.pitch = 1.1; // Slightly higher for flirtatious tone
+      utterance.rate = 0.8; // Slower for sensual, flirtatious delivery
+      utterance.pitch = 1.05; // Slightly higher but not robotic
     }
     
     if (this.currentVoice.personality.includes('sporty') || this.currentVoice.personality.includes('energetic')) {
-      utterance.rate = 1.0; // Normal rate for sporty confidence
-      utterance.pitch = 1.05; // Slightly higher for energy
+      utterance.rate = 0.9; // Still slower but with energy
+      utterance.pitch = 1.0; // Natural pitch for sporty confidence
     }
 
     // Add event listeners
@@ -257,8 +260,8 @@ export class EnhancedSpeechService {
     this.setVoice(voiceOption);
     
     this.speak(randomText, {
-      rate: 0.9, // Slower for more natural testing
-      pitch: voiceOption.personality.includes('flirtatious') ? 1.1 : 1.0,
+      rate: 0.8, // Even slower for more natural testing
+      pitch: voiceOption.personality.includes('flirtatious') ? 1.05 : 0.95,
       onEnd: () => {
         if (previousVoice) {
           this.setVoice(previousVoice);

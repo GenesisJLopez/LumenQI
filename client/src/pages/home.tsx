@@ -83,11 +83,10 @@ export default function Home() {
 
   // Handle WebSocket messages and speech synthesis
   useEffect(() => {
-    if (lastMessage) {
+    if (lastMessage && lastMessage.conversationId === currentConversationId) {
       if (lastMessage.type === 'ai_response') {
         setIsTyping(false);
         setIsProcessing(false);
-        setIsSpeaking(true);
         
         // Refresh messages for current conversation
         if (currentConversationId) {
@@ -96,12 +95,24 @@ export default function Home() {
           });
         }
         
-        // Speak the AI response with enhanced speech synthesis
-        if (lastMessage.content) {
+        // Only speak if this is a new response for the current conversation
+        if (lastMessage.content && lastMessage.conversationId === currentConversationId) {
           import('@/lib/enhanced-speech').then(({ enhancedSpeech }) => {
+            // Stop any existing speech first
+            enhancedSpeech.stop();
+            
             enhancedSpeech.speak(lastMessage.content, {
               onStart: () => setIsSpeaking(true),
-              onEnd: () => setIsSpeaking(false),
+              onEnd: () => {
+                setIsSpeaking(false);
+                // Auto-continue listening after response if in voice mode
+                if (isVoiceMode && speechIsListening) {
+                  setTimeout(() => {
+                    // Re-activate listening after speech ends
+                    startListening();
+                  }, 500);
+                }
+              },
               onError: () => setIsSpeaking(false)
             });
           });
@@ -164,18 +175,20 @@ export default function Home() {
   };
 
   const handleConversationSelect = (id: number) => {
+    // Stop any current speech when switching conversations
+    import('@/lib/enhanced-speech').then(({ enhancedSpeech }) => {
+      enhancedSpeech.stop();
+    });
+    
     setCurrentConversationId(id);
     setIsTyping(false);
     setIsProcessing(false);
+    setIsSpeaking(false);
   };
 
   // Handle speech recognition in voice mode
   useEffect(() => {
     if (isVoiceMode && transcript && transcript.trim()) {
-      // Stop listening after getting transcript
-      stopListening();
-      setIsListening(false);
-      
       // Send the transcript as a message
       handleSendMessage(transcript);
     }
@@ -186,11 +199,26 @@ export default function Home() {
   }, [speechIsListening]);
 
   const handleVoiceModeToggle = () => {
-    if (isVoiceMode) {
+    setIsVoiceMode(!isVoiceMode);
+    if (!isVoiceMode) {
+      // Entering voice mode
+      if (isSupported) {
+        startListening();
+        setIsListening(true);
+        toast({
+          title: "Voice mode activated",
+          description: "I'm ready for continuous conversation, Genesis!"
+        });
+      }
+    } else {
+      // Exiting voice mode
       stopListening();
       setIsListening(false);
+      toast({
+        title: "Voice mode deactivated",
+        description: "Switched back to text mode"
+      });
     }
-    setIsVoiceMode(!isVoiceMode);
   };
 
   const handleVoiceListenToggle = () => {
