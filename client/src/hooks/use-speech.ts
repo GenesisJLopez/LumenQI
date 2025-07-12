@@ -21,8 +21,8 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
       recognitionRef.current = new SpeechRecognition();
       
       const recognition = recognitionRef.current;
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.interimResults = false;
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
@@ -45,6 +45,10 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
       recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
+        // Don't restart on certain errors
+        if (event.error === 'aborted' || event.error === 'audio-capture') {
+          return;
+        }
       };
 
       recognition.onend = () => {
@@ -61,14 +65,24 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
 
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
-      setTranscript('');
-      recognitionRef.current.start();
+      try {
+        setTranscript('');
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        setIsListening(false);
+      }
     }
   };
 
   const stopListening = () => {
     if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.stop();
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+      }
+      setIsListening(false);
     }
   };
 
