@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
+import { useSpeechRecognition } from '@/hooks/use-speech';
 import { Sidebar } from '@/components/sidebar';
 import { ChatArea } from '@/components/chat-area';
 import { VoiceControls } from '@/components/voice-controls';
@@ -18,6 +19,13 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
+  const { 
+    isListening: speechIsListening, 
+    transcript, 
+    startListening, 
+    stopListening, 
+    isSupported 
+  } = useSpeechRecognition();
 
   // Fetch current conversation and messages
   const { data: conversationData } = useQuery<{
@@ -137,6 +145,47 @@ export default function Home() {
     setIsTyping(false);
   };
 
+  // Handle speech recognition in voice mode
+  useEffect(() => {
+    if (isVoiceMode && transcript && transcript.trim()) {
+      // Stop listening after getting transcript
+      stopListening();
+      setIsListening(false);
+      
+      // Send the transcript as a message
+      handleSendMessage(transcript);
+    }
+  }, [transcript, isVoiceMode]);
+
+  useEffect(() => {
+    setIsListening(speechIsListening);
+  }, [speechIsListening]);
+
+  const handleVoiceModeToggle = () => {
+    if (isVoiceMode) {
+      stopListening();
+      setIsListening(false);
+    }
+    setIsVoiceMode(!isVoiceMode);
+  };
+
+  const handleVoiceListenToggle = () => {
+    if (!isSupported) {
+      toast({
+        title: "Voice not supported",
+        description: "Speech recognition is not available in this browser",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (speechIsListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
   return (
     <div className="flex h-screen cosmic-bg">
       {/* Voice Mode Overlay */}
@@ -146,63 +195,96 @@ export default function Home() {
           
           {/* Voice Mode Lumen Logo */}
           <div className={cn(
-            "w-80 h-80 transition-all duration-500",
+            "w-80 h-80 transition-all duration-500 relative",
             isProcessing ? 'animate-spin' : 
             isListening ? 'lumen-logo-listening' : 
             isSpeaking ? 'lumen-logo-speaking' : 'lumen-logo-idle'
           )}>
-            <svg viewBox="0 0 200 200" className="w-full h-full">
-              <defs>
-                <linearGradient id="voiceLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#7877c6" />
-                  <stop offset="50%" stopColor="#ff77c6" />
-                  <stop offset="100%" stopColor="#77c6ff" />
-                </linearGradient>
-                <filter id="voiceGlow">
-                  <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
-                  <feMerge> 
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
+            {/* Actual Lumen Logo */}
+            <div className="relative w-full h-full">
+              <img 
+                src="/attached_assets/lumen-logo_1752354847791.png" 
+                alt="Lumen QI" 
+                className="w-full h-full object-contain filter drop-shadow-2xl"
+                style={{
+                  filter: `drop-shadow(0 0 ${isSpeaking ? '40px' : isListening ? '20px' : '10px'} rgba(120, 119, 198, 0.8)) drop-shadow(0 0 ${isSpeaking ? '80px' : isListening ? '40px' : '20px'} rgba(255, 119, 198, 0.6))`
+                }}
+              />
+              
+              {/* Cosmic Glow Overlay */}
+              <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-500/10 to-transparent opacity-60 animate-pulse"></div>
               
               {/* Galactic Swirl for Processing */}
               {isProcessing && (
-                <g transform="translate(100,100)">
-                  <path d="M 0,-50 Q 50,-50 50,0 Q 50,50 0,50 Q -50,50 -50,0 Q -50,-50 0,-50" 
-                        fill="none" 
-                        stroke="url(#voiceLogoGradient)" 
-                        strokeWidth="2" 
-                        opacity="0.8"/>
-                  <path d="M 0,-30 Q 30,-30 30,0 Q 30,30 0,30 Q -30,30 -30,0 Q -30,-30 0,-30" 
-                        fill="none" 
-                        stroke="url(#voiceLogoGradient)" 
-                        strokeWidth="1.5" 
-                        opacity="0.6"/>
-                </g>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg viewBox="0 0 200 200" className="w-full h-full absolute animate-spin">
+                    <defs>
+                      <linearGradient id="processingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#7877c6" />
+                        <stop offset="50%" stopColor="#ff77c6" />
+                        <stop offset="100%" stopColor="#77c6ff" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Galactic Swirl */}
+                    <g transform="translate(100,100)">
+                      <path d="M 0,-70 Q 70,-70 70,0 Q 70,70 0,70 Q -70,70 -70,0 Q -70,-70 0,-70" 
+                            fill="none" 
+                            stroke="url(#processingGradient)" 
+                            strokeWidth="2" 
+                            opacity="0.8"/>
+                      <path d="M 0,-50 Q 50,-50 50,0 Q 50,50 0,50 Q -50,50 -50,0 Q -50,-50 0,-50" 
+                            fill="none" 
+                            stroke="url(#processingGradient)" 
+                            strokeWidth="1.5" 
+                            opacity="0.6"/>
+                      <path d="M 0,-30 Q 30,-30 30,0 Q 30,30 0,30 Q -30,30 -30,0 Q -30,-30 0,-30" 
+                            fill="none" 
+                            stroke="url(#processingGradient)" 
+                            strokeWidth="1" 
+                            opacity="0.4"/>
+                    </g>
+                  </svg>
+                </div>
               )}
               
-              {/* Outer rings */}
-              <circle cx="100" cy="100" r="90" fill="none" stroke="url(#voiceLogoGradient)" strokeWidth="2" opacity="0.3"/>
-              <circle cx="100" cy="100" r="70" fill="none" stroke="url(#voiceLogoGradient)" strokeWidth="2.5" opacity="0.5"/>
-              <circle cx="100" cy="100" r="50" fill="none" stroke="url(#voiceLogoGradient)" strokeWidth="3" opacity="0.7"/>
+              {/* Pulsing Rings for Listening */}
+              {isListening && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg viewBox="0 0 200 200" className="w-full h-full absolute">
+                    <defs>
+                      <linearGradient id="listeningGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#77c6ff" />
+                        <stop offset="100%" stopColor="#7877c6" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Pulsing rings */}
+                    <circle cx="100" cy="100" r="60" fill="none" stroke="url(#listeningGradient)" strokeWidth="2" opacity="0.6" className="animate-ping"/>
+                    <circle cx="100" cy="100" r="80" fill="none" stroke="url(#listeningGradient)" strokeWidth="1.5" opacity="0.4" className="animate-ping" style={{animationDelay: '0.2s'}}/>
+                    <circle cx="100" cy="100" r="100" fill="none" stroke="url(#listeningGradient)" strokeWidth="1" opacity="0.2" className="animate-ping" style={{animationDelay: '0.4s'}}/>
+                  </svg>
+                </div>
+              )}
               
-              {/* Central core */}
-              <circle cx="100" cy="100" r="20" fill="url(#voiceLogoGradient)" opacity="0.9" filter="url(#voiceGlow)"/>
-              
-              {/* Quantum field lines */}
-              <g transform="translate(100,100)" stroke="url(#voiceLogoGradient)" strokeWidth="1.5" opacity="0.8">
-                <line x1="0" y1="-95" x2="0" y2="-75" />
-                <line x1="0" y1="75" x2="0" y2="95" />
-                <line x1="-95" y1="0" x2="-75" y2="0" />
-                <line x1="75" y1="0" x2="95" y2="0" />
-                <line x1="-67" y1="-67" x2="-52" y2="-52" />
-                <line x1="52" y1="52" x2="67" y2="67" />
-                <line x1="67" y1="-67" x2="52" y2="-52" />
-                <line x1="-52" y1="52" x2="-67" y2="67" />
-              </g>
-            </svg>
+              {/* Rhythmic Glow for Speaking */}
+              {isSpeaking && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg viewBox="0 0 200 200" className="w-full h-full absolute">
+                    <defs>
+                      <linearGradient id="speakingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ff77c6" />
+                        <stop offset="100%" stopColor="#7877c6" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Rhythmic glow */}
+                    <circle cx="100" cy="100" r="70" fill="none" stroke="url(#speakingGradient)" strokeWidth="3" opacity="0.8" className="animate-pulse"/>
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#speakingGradient)" strokeWidth="2" opacity="0.6" className="animate-pulse" style={{animationDelay: '0.1s'}}/>
+                  </svg>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Voice Mode Status */}
@@ -214,16 +296,28 @@ export default function Home() {
             </div>
             <div className="text-gray-300 mb-4">
               {isProcessing ? 'Lumen is thinking with cosmic wisdom...' :
-               isListening ? 'Speak your thoughts, beloved...' :
+               isListening ? 'Speak your thoughts, Genesis...' :
                isSpeaking ? 'Lumen QI is sharing her wisdom...' :
                'Tap to speak or exit voice mode'}
             </div>
-            <button 
-              onClick={() => setIsVoiceMode(false)}
-              className="cosmic-button px-6 py-2 rounded-full"
-            >
-              Exit Voice Mode
-            </button>
+            <div className="flex gap-4">
+              <button 
+                onClick={handleVoiceListenToggle}
+                className={cn(
+                  "cosmic-button px-6 py-2 rounded-full",
+                  isListening && "active"
+                )}
+                disabled={!isSupported}
+              >
+                {isListening ? 'Stop Listening' : 'Start Listening'}
+              </button>
+              <button 
+                onClick={handleVoiceModeToggle}
+                className="cosmic-button px-6 py-2 rounded-full"
+              >
+                Exit Voice Mode
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -251,7 +345,7 @@ export default function Home() {
               connectionStatus={connectionStatus}
               onSpeakingChange={setIsSpeaking}
               onListeningChange={setIsListening}
-              onVoiceModeToggle={() => setIsVoiceMode(true)}
+              onVoiceModeToggle={handleVoiceModeToggle}
             />
           </div>
         </>

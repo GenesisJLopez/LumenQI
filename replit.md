@@ -7,6 +7,7 @@ Lumen is a modern AI chat application built with React and Express that provides
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Lumen QI conversation style: Casual and warm, using "Genesis", "hey there", "love", "hey love" - not overly affectionate.
 Target platform: Eventually convert to iOS app using Apple Developer account.
 
 ## System Architecture

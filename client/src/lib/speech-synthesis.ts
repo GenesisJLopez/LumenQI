@@ -106,10 +106,10 @@ export class SpeechSynthesisService {
       utterance.voice = bestVoice;
     }
 
-    // Set options for a fun, playful, and intelligent female voice
-    utterance.rate = options.rate || 1.0; // Slightly faster for energy
-    utterance.pitch = options.pitch || 1.1; // Slightly higher pitch for femininity
-    utterance.volume = options.volume || 0.9; // Clear and confident
+    // Set options for a natural, warm, and intelligent female voice
+    utterance.rate = options.rate || 0.9; // Natural pace for warmth
+    utterance.pitch = options.pitch || 1.05; // Slightly higher pitch for femininity
+    utterance.volume = options.volume || 0.95; // Clear and confident
 
     // Set event handlers
     utterance.onstart = () => {
