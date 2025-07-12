@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { Bot, User, Copy, ThumbsUp, ThumbsDown, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { speechSynthesis } from '@/lib/speech-synthesis';
+// Using natural speech system from parent component
 import { cn } from '@/lib/utils';
 import type { Message } from '@shared/schema';
 
@@ -28,20 +28,13 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     }
   }, [messages, isTyping]);
 
+  // Remove automatic speech - this is handled by parent component now
   useEffect(() => {
-    // Speak new AI messages
+    // Just track the last message ID for reference
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && lastMessage.id !== lastMessageId) {
         setLastMessageId(lastMessage.id);
-        speechSynthesis.speak(lastMessage.content, {
-          onStart: () => {
-            // Speaking state will be handled by parent component
-          },
-          onEnd: () => {
-            // Speaking state will be handled by parent component
-          }
-        });
       }
     }
   }, [messages, lastMessageId]);
@@ -61,14 +54,18 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
 
   const toggleSpeakMessage = (text: string, messageId: number) => {
     if (isSpeakingMessage === messageId) {
-      speechSynthesis.stop();
-      setIsSpeakingMessage(null);
+      import('@/lib/natural-speech').then(({ naturalSpeech }) => {
+        naturalSpeech.stop();
+        setIsSpeakingMessage(null);
+      });
     } else {
-      speechSynthesis.stop();
-      setIsSpeakingMessage(messageId);
-      speechSynthesis.speak(text, {
-        onEnd: () => setIsSpeakingMessage(null),
-        onError: () => setIsSpeakingMessage(null)
+      import('@/lib/natural-speech').then(({ naturalSpeech }) => {
+        naturalSpeech.stop();
+        setIsSpeakingMessage(messageId);
+        naturalSpeech.speak(text, {
+          onEnd: () => setIsSpeakingMessage(null),
+          onError: () => setIsSpeakingMessage(null)
+        });
       });
     }
   };
