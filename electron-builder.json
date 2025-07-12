@@ -1,0 +1,46 @@
+{
+  "appId": "com.lumen.qi",
+  "productName": "Lumen QI - Quantum Intelligence",
+  "directories": {
+    "output": "dist-electron"
+  },
+  "files": [
+    "dist/**/*",
+    "electron-main.js",
+    "ml-backend.py",
+    "node_modules/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "attached_assets",
+      "to": "assets"
+    },
+    {
+      "from": "ml-backend.py",
+      "to": "ml-backend.py"
+    }
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "target": {
+      "target": "default",
+      "arch": ["x64", "arm64"]
+    }
+  },
+  "win": {
+    "target": {
+      "target": "nsis",
+      "arch": ["x64"]
+    }
+  },
+  "linux": {
+    "target": {
+      "target": "AppImage",
+      "arch": ["x64"]
+    }
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}

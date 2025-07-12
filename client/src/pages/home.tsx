@@ -4,10 +4,17 @@ import { queryClient } from '@/lib/queryClient';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
+import { useQuantumInterface } from '@/hooks/use-quantum-interface';
 import { Sidebar } from '@/components/sidebar';
 import { ChatArea } from '@/components/chat-area';
 import { VoiceControls } from '@/components/voice-controls';
+import { QuantumInterface } from '@/components/quantum-interface';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { Cpu, Brain, Zap, MessageSquare } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
@@ -17,6 +24,7 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'quantum'>('chat');
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
   const { 
@@ -26,6 +34,15 @@ export default function Home() {
     stopListening, 
     isSupported 
   } = useSpeechRecognition();
+  
+  // Initialize quantum interface
+  const {
+    isElectron,
+    synthesizeAdvancedTTS,
+    adaptMachineLearning,
+    connectToMLBackend,
+    mlBackendStatus
+  } = useQuantumInterface();
 
   // Fetch current conversation and messages
   const { data: conversationData } = useQuery<{
@@ -357,22 +374,95 @@ export default function Home() {
           />
           
           <div className="flex-1 flex flex-col">
-            <ChatArea
-              messages={messages}
-              isTyping={isTyping}
-              currentConversationId={currentConversationId || undefined}
-              isSpeaking={isSpeaking}
-              isListening={isListening}
-            />
-            
-            <VoiceControls
-              onSendMessage={handleSendMessage}
-              isLoading={createConversationMutation.isPending}
-              connectionStatus={connectionStatus}
-              onSpeakingChange={setIsSpeaking}
-              onListeningChange={setIsListening}
-              onVoiceModeToggle={handleVoiceModeToggle}
-            />
+            {/* Tab Navigation */}
+            <div className="border-b border-purple-500/20 bg-gray-900/50 backdrop-blur-sm">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum')}>
+                <TabsList className="grid w-full grid-cols-2 bg-transparent">
+                  <TabsTrigger value="chat" className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    Chat Interface
+                  </TabsTrigger>
+                  <TabsTrigger value="quantum" className="flex items-center gap-2">
+                    <Brain className="w-4 h-4" />
+                    Quantum Core
+                    {isElectron && <Badge variant="secondary" className="ml-2">Advanced</Badge>}
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="chat" className="mt-0">
+                  <ChatArea
+                    messages={messages}
+                    isTyping={isTyping}
+                    currentConversationId={currentConversationId || undefined}
+                    isSpeaking={isSpeaking}
+                    isListening={isListening}
+                  />
+                  
+                  <VoiceControls
+                    onSendMessage={handleSendMessage}
+                    isLoading={createConversationMutation.isPending}
+                    connectionStatus={connectionStatus}
+                    onSpeakingChange={setIsSpeaking}
+                    onListeningChange={setIsListening}
+                    onVoiceModeToggle={handleVoiceModeToggle}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="quantum" className="mt-0 h-full">
+                  <div className="h-full flex flex-col">
+                    {/* Quantum Interface Header */}
+                    <div className="p-4 border-b border-purple-500/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                            Quantum Intelligence Core
+                          </h2>
+                          <p className="text-sm text-gray-400">
+                            Advanced self-evolution and hardware optimization
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={isElectron ? "default" : "outline"}>
+                            {isElectron ? "Desktop Mode" : "Web Mode"}
+                          </Badge>
+                          {isElectron && (
+                            <Badge variant={mlBackendStatus === 'connected' ? "default" : "secondary"}>
+                              ML Backend: {mlBackendStatus}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Quantum Interface Content */}
+                    <div className="flex-1 overflow-auto">
+                      <QuantumInterface
+                        onTTSRequest={synthesizeAdvancedTTS}
+                        onMLAdapt={adaptMachineLearning}
+                        isElectron={isElectron}
+                      />
+                    </div>
+                    
+                    {/* Quantum Interface Footer */}
+                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
+                      <div className="flex items-center justify-between text-sm text-gray-400">
+                        <span>Lumen QI Advanced Intelligence System</span>
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Cpu className="w-4 h-4" />
+                            Self-Evolution Active
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Zap className="w-4 h-4" />
+                            Hardware Optimization
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </>
       )}
