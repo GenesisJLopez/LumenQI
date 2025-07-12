@@ -250,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const message = JSON.parse(data);
         
         if (message.type === 'chat_message') {
-          const { content, conversationId } = message;
+          const { content, conversationId, emotionContext } = message;
           
           // Save user message
           await storage.createMessage({
@@ -273,11 +273,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             context: memory.context || undefined
           })); // Use recent memories
 
-          // Generate AI response
+          // Generate AI response with emotion context
           const aiResponse = await lumenAI.generateResponse(
             content,
             conversationContext,
-            relevantMemories
+            relevantMemories,
+            emotionContext
           );
 
           // Save AI response

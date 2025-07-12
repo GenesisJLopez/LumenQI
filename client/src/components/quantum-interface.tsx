@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CodeGenerator } from '@/components/code-generator';
+import { EmotionDisplay } from '@/components/emotion-display';
 import { Activity, Brain, Cpu, HardDrive, Zap, Mic, Volume2, Code, Globe, Database } from 'lucide-react';
 
 interface HardwareInfo {
@@ -402,6 +403,10 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
         </TabsContent>
 
         <TabsContent value="voice" className="space-y-4">
+          <EmotionDisplay onEmotionChange={(emotion, adaptation) => {
+            console.log('Emotion detected:', emotion, adaptation);
+          }} />
+          
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
