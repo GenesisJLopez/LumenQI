@@ -309,22 +309,45 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>CPU Cores:</span>
-                      <Badge>{hardwareInfo.cpuCores}</Badge>
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-3 rounded-lg border border-blue-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium">CPU Cores</span>
+                        </div>
+                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">{hardwareInfo.cpuCores}</Badge>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Total Memory:</span>
-                      <Badge>{formatBytes(hardwareInfo.totalMemory)}</Badge>
+                    
+                    <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 p-3 rounded-lg border border-green-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium">Total Memory</span>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">{formatBytes(hardwareInfo.totalMemory)}</Badge>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Available Memory:</span>
-                      <Badge>{formatBytes(hardwareInfo.availableMemory)}</Badge>
+                    
+                    <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 p-3 rounded-lg border border-yellow-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium">Available Memory</span>
+                        </div>
+                        <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">{formatBytes(hardwareInfo.availableMemory)}</Badge>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Platform:</span>
-                      <Badge>{hardwareInfo.platform}</Badge>
+                    
+                    <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 p-3 rounded-lg border border-purple-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium">Platform</span>
+                        </div>
+                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">{hardwareInfo.platform}</Badge>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -338,20 +361,44 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Memory Usage:</span>
-                        <span>
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-r from-red-500/10 to-pink-500/10 p-3 rounded-lg border border-red-500/20">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium">Memory Usage</span>
+                        </div>
+                        <span className="text-sm text-red-400 font-bold">
                           {((hardwareInfo.totalMemory - hardwareInfo.availableMemory) / hardwareInfo.totalMemory * 100).toFixed(1)}%
                         </span>
                       </div>
-                      <Progress value={(hardwareInfo.totalMemory - hardwareInfo.availableMemory) / hardwareInfo.totalMemory * 100} />
+                      <Progress 
+                        value={(hardwareInfo.totalMemory - hardwareInfo.availableMemory) / hardwareInfo.totalMemory * 100} 
+                        className="h-2"
+                      />
                     </div>
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Uptime:</span>
-                        <span>{Math.floor(hardwareInfo.currentUsage.uptime / 3600)}h</span>
+                    
+                    <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 p-3 rounded-lg border border-cyan-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium">System Uptime</span>
+                        </div>
+                        <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                          {Math.floor(hardwareInfo.currentUsage.uptime / 3600)}h
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-3 rounded-lg border border-indigo-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium">Optimization Level</span>
+                        </div>
+                        <Badge className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30">
+                          {adaptationProgress > 80 ? 'Optimal' : adaptationProgress > 50 ? 'Good' : 'Initializing'}
+                        </Badge>
                       </div>
                     </div>
                   </div>

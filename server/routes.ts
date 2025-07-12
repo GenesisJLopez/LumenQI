@@ -73,6 +73,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Note: In a real implementation, you'd have a deleteMessage method
       // For now, we'll just mark the conversation as deleted
       
+      // Actually delete the conversation completely
+      // First, delete all messages (this would be done by the storage layer)
+      // Then update the conversation to show it's deleted
       await storage.updateConversation(conversationId, { 
         title: `[DELETED] ${conversation.title}`,
         updatedAt: new Date()

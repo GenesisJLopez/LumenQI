@@ -47,6 +47,13 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
 
   const handleDeleteConversation = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
+    
+    // If this is the current conversation, clear it
+    if (currentConversationId === id) {
+      onNewConversation();
+    }
+    
     deleteConversation.mutate(id);
   };
 
@@ -85,7 +92,9 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
       {/* Chat History */}
       <ScrollArea className="flex-1 p-2">
         <div className="space-y-1">
-          {conversations.map((conversation) => (
+          {conversations
+            .filter(conversation => !conversation.title.startsWith('[DELETED]'))
+            .map((conversation) => (
             <div
               key={conversation.id}
               className={cn(
@@ -115,7 +124,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
             </div>
           ))}
           
-          {conversations.length === 0 && (
+          {conversations.filter(c => !c.title.startsWith('[DELETED]')).length === 0 && (
             <div className="text-sm text-gray-500 text-center py-8">
               No conversations yet
             </div>

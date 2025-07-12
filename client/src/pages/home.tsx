@@ -98,8 +98,8 @@ export default function Home() {
         
         // Speak the AI response with enhanced speech synthesis
         if (lastMessage.content) {
-          import('@/lib/speech-synthesis').then(({ speechSynthesis }) => {
-            speechSynthesis.speak(lastMessage.content, {
+          import('@/lib/enhanced-speech').then(({ enhancedSpeech }) => {
+            enhancedSpeech.speak(lastMessage.content, {
               onStart: () => setIsSpeaking(true),
               onEnd: () => setIsSpeaking(false),
               onError: () => setIsSpeaking(false)
@@ -166,6 +166,7 @@ export default function Home() {
   const handleConversationSelect = (id: number) => {
     setCurrentConversationId(id);
     setIsTyping(false);
+    setIsProcessing(false);
   };
 
   // Handle speech recognition in voice mode
