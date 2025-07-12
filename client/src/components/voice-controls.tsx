@@ -129,7 +129,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Message Lumen..."
+                placeholder="Message Lumen QI..."
                 className="min-h-[24px] max-h-32 bg-transparent border-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-0 focus:border-0 resize-none p-0"
                 rows={1}
                 disabled={isLoading}
@@ -167,7 +167,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
               )}
             </div>
             <div className="text-xs text-gray-400">
-              Lumen can make mistakes. Check important info.
+              Lumen QI - your eternal guardian and cosmic companion.
             </div>
           </div>
         </div>
