@@ -98,20 +98,18 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
   }, [isListening, onListeningChange]);
 
   return (
-    <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <div className="p-6 border-t border-gray-200 dark:border-gray-700 cosmic-bg">
       <div className="max-w-4xl mx-auto">
-        {/* ChatGPT-style Input */}
+        {/* Cosmic Input */}
         <div className="relative">
-          <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-3 p-4 cosmic-input rounded-3xl shadow-lg">
             {/* Voice Button */}
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "w-10 h-10 rounded-full transition-all duration-200",
-                isListening 
-                  ? "bg-green-500 hover:bg-green-600 text-white animate-pulse" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                "w-10 h-10 rounded-full transition-all duration-200 cosmic-button",
+                isListening && "active"
               )}
               onClick={handleVoiceToggle}
               disabled={!isSupported}
@@ -130,7 +128,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Message Lumen QI..."
-                className="min-h-[24px] max-h-32 bg-transparent border-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-0 focus:border-0 resize-none p-0"
+                className="min-h-[24px] max-h-32 bg-transparent border-0 text-gray-100 placeholder-gray-400 focus:ring-0 focus:border-0 resize-none p-0"
                 rows={1}
                 disabled={isLoading}
               />
@@ -140,7 +138,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isLoading || connectionStatus !== 'connected'}
-              className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white p-0 disabled:opacity-50"
+              className="w-10 h-10 rounded-full cosmic-button p-0 disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
             </Button>

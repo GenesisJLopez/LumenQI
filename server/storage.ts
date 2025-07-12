@@ -6,7 +6,7 @@ import {
   type Memory, type InsertMemory
 } from "@shared/schema";
 import { db } from './db';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export interface IStorage {
   // User operations
@@ -184,7 +184,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(conversations)
       .where(eq(conversations.userId, userId))
-      .orderBy(conversations.createdAt);
+      .orderBy(desc(conversations.createdAt));
   }
 
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
@@ -209,7 +209,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(messages)
       .where(eq(messages.conversationId, conversationId))
-      .orderBy(messages.createdAt);
+      .orderBy(messages.timestamp);
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
@@ -225,7 +225,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(memories)
       .where(eq(memories.userId, userId))
-      .orderBy(memories.createdAt);
+      .orderBy(desc(memories.createdAt));
   }
 
   async createMemory(insertMemory: InsertMemory): Promise<Memory> {
