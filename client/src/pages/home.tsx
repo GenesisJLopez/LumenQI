@@ -28,7 +28,13 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'chat' | 'quantum'>('chat');
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
-  const { currentEmotion, getEmotionBasedPrompt } = useEmotionDetection();
+  const { 
+    currentEmotion, 
+    getEmotionBasedPrompt, 
+    startDetection, 
+    stopDetection, 
+    isAnalyzing 
+  } = useEmotionDetection();
   const { 
     isListening: speechIsListening, 
     transcript, 
@@ -191,6 +197,10 @@ export default function Home() {
   // Handle speech recognition in voice mode
   useEffect(() => {
     if (isVoiceMode && transcript && transcript.trim()) {
+      // Stop listening while processing
+      stopListening();
+      setIsListening(false);
+      
       // Send the transcript as a message
       handleSendMessage(transcript);
     }
@@ -203,19 +213,32 @@ export default function Home() {
   const handleVoiceModeToggle = () => {
     setIsVoiceMode(!isVoiceMode);
     if (!isVoiceMode) {
-      // Entering voice mode
+      // Entering voice mode - start emotion detection and listening
       if (isSupported) {
         startListening();
         setIsListening(true);
+        
+        // Start emotion detection
+        try {
+          startDetection();
+        } catch (error) {
+          console.warn('Could not start emotion detection:', error);
+        }
+        
         toast({
           title: "Voice mode activated",
           description: "I'm ready for continuous conversation, Genesis!"
         });
       }
     } else {
-      // Exiting voice mode
+      // Exiting voice mode - stop everything
       stopListening();
       setIsListening(false);
+      stopDetection();
+      import('@/lib/natural-speech').then(({ naturalSpeech }) => {
+        naturalSpeech.stop();
+      });
+      setIsSpeaking(false);
       toast({
         title: "Voice mode deactivated",
         description: "Switched back to text mode"
@@ -257,7 +280,7 @@ export default function Home() {
             {/* Actual Lumen Logo */}
             <div className="relative w-full h-full flex items-center justify-center">
               <img 
-                src="attached_assets/lumen-logo_1752354847791.png" 
+                src="/attached_assets/lumen-logo_1752354847791.png" 
                 alt="Lumen QI" 
                 className="w-64 h-64 object-contain filter drop-shadow-2xl z-10"
                 style={{
@@ -380,6 +403,19 @@ export default function Home() {
                isSpeaking ? 'Lumen QI is sharing her wisdom...' :
                'Tap to speak or exit voice mode'}
             </div>
+            
+            {/* Emotion Detection Display */}
+            {isAnalyzing && currentEmotion && (
+              <div className="mb-4 p-3 bg-black/20 backdrop-blur-sm rounded-lg border border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-white/80">Emotion Detection Active</span>
+                </div>
+                <div className="text-sm text-purple-400">
+                  {currentEmotion.emotion} ({Math.round(currentEmotion.confidence * 100)}% confidence)
+                </div>
+              </div>
+            )}
             <div className="flex gap-4">
               <button 
                 onClick={handleVoiceListenToggle}
