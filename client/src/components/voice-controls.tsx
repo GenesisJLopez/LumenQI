@@ -10,10 +10,13 @@ interface VoiceControlsProps {
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
   connectionStatus: 'connecting' | 'connected' | 'disconnected';
+  onSpeakingChange?: (speaking: boolean) => void;
+  onListeningChange?: (listening: boolean) => void;
 }
 
-export function VoiceControls({ onSendMessage, isLoading = false, connectionStatus }: VoiceControlsProps) {
+export function VoiceControls({ onSendMessage, isLoading = false, connectionStatus, onSpeakingChange, onListeningChange }: VoiceControlsProps) {
   const [inputValue, setInputValue] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const { toast } = useToast();
   const { 
     isListening, 
@@ -84,88 +87,88 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
     }
   };
 
+  // Notify parent of speaking state changes
+  useEffect(() => {
+    onSpeakingChange?.(isSpeaking);
+  }, [isSpeaking, onSpeakingChange]);
+
+  // Track listening state for parent component
+  useEffect(() => {
+    onListeningChange?.(isListening);
+  }, [isListening, onListeningChange]);
+
   return (
-    <div className="p-6 border-t border-dark-border bg-dark-surface">
+    <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="max-w-4xl mx-auto">
-        {/* Voice Controls */}
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <Button
-            size="lg"
-            variant="outline"
-            className={cn(
-              "w-16 h-16 rounded-full border-2 transition-all duration-200",
-              isListening 
-                ? "bg-green-500 hover:bg-green-600 border-green-400 animate-pulse" 
-                : "bg-dark-elevated hover:bg-dark-elevated/80 border-dark-border"
-            )}
-            onClick={handleVoiceToggle}
-            disabled={!isSupported}
-          >
-            {isListening ? (
-              <Mic className="h-6 w-6 text-white" />
-            ) : (
-              <MicOff className="h-6 w-6 text-gray-400" />
-            )}
-          </Button>
-          <div className="text-center">
-            <div className="text-sm text-gray-400">
-              {isSupported ? 'Click to speak' : 'Voice not available'}
-            </div>
-            <div className="text-xs text-gray-500">
-              {getVoiceStatus()}
-            </div>
-          </div>
-        </div>
+        {/* ChatGPT-style Input */}
+        <div className="relative">
+          <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            {/* Voice Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "w-10 h-10 rounded-full transition-all duration-200",
+                isListening 
+                  ? "bg-green-500 hover:bg-green-600 text-white animate-pulse" 
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              )}
+              onClick={handleVoiceToggle}
+              disabled={!isSupported}
+            >
+              {isListening ? (
+                <Mic className="h-5 w-5" />
+              ) : (
+                <MicOff className="h-5 w-5" />
+              )}
+            </Button>
 
-        {/* Text Input */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 relative">
-            <Textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message or use voice input..."
-              className="min-h-[48px] bg-dark-elevated border-dark-border text-white placeholder-gray-400 focus:ring-2 focus:ring-glow-blue focus:border-transparent resize-none pr-10"
-              rows={1}
-              disabled={isLoading}
-            />
-            <div className="absolute right-3 top-3 text-gray-500">
-              <Keyboard className="h-4 w-4" />
+            {/* Text Input */}
+            <div className="flex-1 relative">
+              <Textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Message Lumen..."
+                className="min-h-[24px] max-h-32 bg-transparent border-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-0 focus:border-0 resize-none p-0"
+                rows={1}
+                disabled={isLoading}
+              />
             </div>
-          </div>
-          <Button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading || connectionStatus !== 'connected'}
-            className="bg-glow-blue hover:bg-blue-600 text-white h-12 px-6"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
 
-        {/* Status Bar */}
-        <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                connectionStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'
-              )} />
-              <span>{getConnectionStatus()}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-blue-500 rounded-full" />
-              <span>Memory: Active</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                isSupported ? 'bg-green-500' : 'bg-red-500'
-              )} />
-              <span>Voice: {isSupported ? 'Ready' : 'Not Available'}</span>
-            </div>
+            {/* Send Button */}
+            <Button
+              onClick={handleSendMessage}
+              disabled={!inputValue.trim() || isLoading || connectionStatus !== 'connected'}
+              className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white p-0 disabled:opacity-50"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
-          <div className="flex items-center gap-1">
-            <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+
+          {/* Status Indicators */}
+          <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  connectionStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'
+                )} />
+                <span>{getConnectionStatus()}</span>
+              </div>
+              {isSupported && (
+                <div className="flex items-center gap-1">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    isListening ? 'bg-green-500' : 'bg-gray-400'
+                  )} />
+                  <span>{isListening ? 'Listening...' : 'Voice ready'}</span>
+                </div>
+              )}
+            </div>
+            <div className="text-xs text-gray-400">
+              Lumen can make mistakes. Check important info.
+            </div>
           </div>
         </div>
       </div>
