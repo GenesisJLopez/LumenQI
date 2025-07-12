@@ -27,28 +27,55 @@ export class SpeechSynthesisService {
   private findBestVoice(): SpeechSynthesisVoice | null {
     if (this.voices.length === 0) return null;
 
-    // Preference order for natural-sounding voices
-    const preferredVoices = [
+    // Preference order for female voices that sound fun, playful, and intelligent
+    const preferredFemaleVoices = [
+      'Samantha',
+      'Victoria',
+      'Zoe',
+      'Aria',
+      'Emma',
+      'Ava',
+      'Serena',
+      'Joanna',
+      'Salli',
+      'Kimberly',
+      'Kendra',
+      'Ivy',
+      'Amy',
+      'Olivia',
+      'Tessa',
+      'Moira',
+      'Karen',
+      'Fiona',
+      'Veena',
+      'Raveena',
+      'Microsoft Zira',
+      'Google UK English Female',
+      'Google US English',
       'Natural',
       'Premium',
-      'Enhanced',
-      'Microsoft',
-      'Google',
-      'Samantha',
-      'Alex',
-      'Daniel',
-      'Karen',
-      'Moira',
-      'Tessa'
+      'Enhanced'
     ];
 
-    // Try to find a preferred voice
-    for (const preferred of preferredVoices) {
+    // Try to find a preferred female voice
+    for (const preferred of preferredFemaleVoices) {
       const voice = this.voices.find(v => 
-        v.name.includes(preferred) && v.lang.startsWith('en')
+        v.name.includes(preferred) && 
+        v.lang.startsWith('en') &&
+        (v.name.toLowerCase().includes('female') || 
+         v.name.toLowerCase().includes('woman') ||
+         preferredFemaleVoices.includes(v.name))
       );
       if (voice) return voice;
     }
+
+    // Fallback to any English female voice
+    const femaleVoice = this.voices.find(v => 
+      v.lang.startsWith('en') && 
+      (v.name.toLowerCase().includes('female') || 
+       v.name.toLowerCase().includes('woman'))
+    );
+    if (femaleVoice) return femaleVoice;
 
     // Fallback to any English voice
     const englishVoice = this.voices.find(v => v.lang.startsWith('en'));
@@ -79,10 +106,10 @@ export class SpeechSynthesisService {
       utterance.voice = bestVoice;
     }
 
-    // Set options
-    utterance.rate = options.rate || 0.9;
-    utterance.pitch = options.pitch || 1.0;
-    utterance.volume = options.volume || 0.8;
+    // Set options for a fun, playful, and intelligent female voice
+    utterance.rate = options.rate || 1.0; // Slightly faster for energy
+    utterance.pitch = options.pitch || 1.1; // Slightly higher pitch for femininity
+    utterance.volume = options.volume || 0.9; // Clear and confident
 
     // Set event handlers
     utterance.onstart = () => {
