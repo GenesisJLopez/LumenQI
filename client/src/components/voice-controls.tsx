@@ -46,10 +46,11 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
     if (isListening) {
       stopListening();
     } else {
+      // Start continuous listening for seamless conversation
       startListening();
       toast({
-        title: "Voice recognition active",
-        description: "Listening for your voice...",
+        title: "Voice mode activated",
+        description: "I'm listening continuously now, Genesis!",
       });
     }
   };
@@ -59,6 +60,15 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
     if (message) {
       onSendMessage(message);
       setInputValue('');
+      
+      // Continue listening in voice mode for seamless conversation
+      if (isListening) {
+        setTimeout(() => {
+          if (isSupported) {
+            startListening();
+          }
+        }, 1000);
+      }
     }
   };
 
