@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Settings, Plus, Brain, UserCog, Database } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Settings, Plus, Brain, UserCog, Database, Trash2, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, Memory } from '@shared/schema';
 
@@ -14,6 +16,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentConversationId, onConversationSelect, onNewConversation }: SidebarProps) {
+  const { toast } = useToast();
+  
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ['/api/conversations'],
   });
@@ -21,6 +25,30 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
   const { data: memories = [] } = useQuery<Memory[]>({
     queryKey: ['/api/memories'],
   });
+
+  const deleteConversation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/conversations/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete conversation');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      toast({ title: "Chat deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete chat", variant: "destructive" });
+    },
+  });
+
+  const handleDeleteConversation = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteConversation.mutate(id);
+  };
 
   const formatTimeAgo = (date: string | Date) => {
     const now = new Date();
@@ -61,16 +89,28 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
             <div
               key={conversation.id}
               className={cn(
-                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800",
+                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group",
                 currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800" : ""
               )}
               onClick={() => onConversationSelect(conversation.id)}
             >
-              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                {conversation.title}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {formatTimeAgo(conversation.updatedAt)}
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    {conversation.title}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {formatTimeAgo(conversation.updatedAt)}
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
               </div>
             </div>
           ))}
