@@ -120,9 +120,9 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         
         <div className="text-center z-10 mt-96">
           <h2 className="text-3xl font-semibold text-white mb-4">How can I help you today?</h2>
-          <p className="text-gray-300 max-w-2xl mx-auto text-lg">
-            I'm Lumen, your AI assistant. I can speak, listen, and remember our conversations. 
-            Start by typing a message or clicking the microphone to speak.
+          <p className="text-gray-300 max-w-2xl mx-auto text-lg leading-relaxed">
+            I'm Lumen, your AI assistant with a fun and playful personality. I can speak with you naturally, 
+            listen to your voice, and remember our conversations. Start by typing a message or use the microphone to speak with me.
           </p>
         </div>
       </div>
@@ -162,15 +162,31 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                 message.role === 'user' ? 'text-right' : ''
               )}>
                 <div className={cn(
-                  "inline-block p-4 rounded-2xl shadow-sm",
+                  "inline-block p-4 rounded-2xl shadow-sm relative overflow-hidden",
                   message.role === 'user' 
                     ? "bg-blue-500 text-white ml-auto" 
                     : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 )}>
+                  {/* Lumen Logo Background for Assistant Messages */}
                   {message.role === 'assistant' && (
-                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2">Lumen</div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] dark:opacity-[0.12] pointer-events-none">
+                      <div className="w-16 h-16 relative">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/40 via-purple-500/30 to-pink-500/40 animate-pulse"></div>
+                        <div className="absolute inset-1 rounded-full bg-gradient-to-br from-blue-300/30 via-purple-400/25 to-pink-400/30 animate-pulse animation-delay-200"></div>
+                        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-blue-200/20 via-purple-300/20 to-pink-300/20 animate-pulse animation-delay-400"></div>
+                        <div className="absolute inset-3 rounded-full bg-white/10 dark:bg-gray-900/10 flex items-center justify-center">
+                          <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400/60 to-purple-600/60">
+                            L
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                  
+                  {message.role === 'assistant' && (
+                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2 relative z-10">Lumen</div>
+                  )}
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap relative z-10">
                     {message.content}
                   </div>
                 </div>
