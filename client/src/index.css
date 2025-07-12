@@ -265,6 +265,29 @@ body {
   font-weight: 600;
 }
 
+/* Processing Animation */
+@keyframes galactic-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Voice Mode Animations */
+.voice-mode-logo {
+  animation: galactic-spin 3s linear infinite;
+}
+
+.voice-mode-logo.processing {
+  animation: galactic-spin 1s linear infinite;
+}
+
+.voice-mode-logo.listening {
+  animation: lumen-pulse 1s ease-in-out infinite;
+}
+
+.voice-mode-logo.speaking {
+  animation: lumen-glow 0.3s ease-in-out infinite alternate;
+}
+
 /* Floating Particles */
 .cosmic-particles {
   position: absolute;
