@@ -106,11 +106,13 @@ export default function Home() {
               onEnd: () => {
                 setIsSpeaking(false);
                 // Auto-continue listening after response if in voice mode
-                if (isVoiceMode && speechIsListening) {
+                if (isVoiceMode) {
                   setTimeout(() => {
                     // Re-activate listening after speech ends
-                    startListening();
-                  }, 500);
+                    if (isSupported) {
+                      startListening();
+                    }
+                  }, 1000);
                 }
               },
               onError: () => setIsSpeaking(false)
