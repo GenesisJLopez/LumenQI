@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
+import { lumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -82,6 +83,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid memory data", details: error.errors });
       }
       res.status(500).json({ error: "Failed to create memory" });
+    }
+  });
+
+  // Code Generation API Routes
+  app.post("/api/code/generate", async (req, res) => {
+    try {
+      const request: CodeGenerationRequest = req.body;
+      
+      // Validate request
+      if (!request.type || !request.description) {
+        return res.status(400).json({ error: "Missing required fields: type and description" });
+      }
+
+      const result = await lumenCodeGenerator.generateCode(request);
+      res.json(result);
+    } catch (error) {
+      console.error('Code generation error:', error);
+      res.status(500).json({ error: "Failed to generate code" });
+    }
+  });
+
+  app.post("/api/code/website", async (req, res) => {
+    try {
+      const { description, features } = req.body;
+      
+      if (!description) {
+        return res.status(400).json({ error: "Description is required" });
+      }
+
+      const result = await lumenCodeGenerator.generateWebsite(description, features || []);
+      res.json(result);
+    } catch (error) {
+      console.error('Website generation error:', error);
+      res.status(500).json({ error: "Failed to generate website" });
+    }
+  });
+
+  app.post("/api/code/application", async (req, res) => {
+    try {
+      const { description, framework } = req.body;
+      
+      if (!description) {
+        return res.status(400).json({ error: "Description is required" });
+      }
+
+      const result = await lumenCodeGenerator.generateApplication(description, framework);
+      res.json(result);
+    } catch (error) {
+      console.error('Application generation error:', error);
+      res.status(500).json({ error: "Failed to generate application" });
+    }
+  });
+
+  app.post("/api/code/api", async (req, res) => {
+    try {
+      const { description, method } = req.body;
+      
+      if (!description) {
+        return res.status(400).json({ error: "Description is required" });
+      }
+
+      const result = await lumenCodeGenerator.generateAPIEndpoint(description, method);
+      res.json(result);
+    } catch (error) {
+      console.error('API generation error:', error);
+      res.status(500).json({ error: "Failed to generate API endpoint" });
+    }
+  });
+
+  app.post("/api/code/database", async (req, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description) {
+        return res.status(400).json({ error: "Description is required" });
+      }
+
+      const result = await lumenCodeGenerator.generateDatabaseSchema(description);
+      res.json(result);
+    } catch (error) {
+      console.error('Database schema generation error:', error);
+      res.status(500).json({ error: "Failed to generate database schema" });
+    }
+  });
+
+  app.post("/api/code/explain", async (req, res) => {
+    try {
+      const { code, context } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ error: "Code is required" });
+      }
+
+      const explanation = await lumenCodeGenerator.explainCode(code, context);
+      res.json({ explanation });
+    } catch (error) {
+      console.error('Code explanation error:', error);
+      res.status(500).json({ error: "Failed to explain code" });
+    }
+  });
+
+  app.post("/api/code/improve", async (req, res) => {
+    try {
+      const { code, type } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ error: "Code is required" });
+      }
+
+      const suggestions = await lumenCodeGenerator.suggestImprovements(code, type);
+      res.json({ suggestions });
+    } catch (error) {
+      console.error('Code improvement error:', error);
+      res.status(500).json({ error: "Failed to suggest improvements" });
+    }
+  });
+
+  app.post("/api/code/debug", async (req, res) => {
+    try {
+      const { code, error: errorMsg } = req.body;
+      
+      if (!code || !errorMsg) {
+        return res.status(400).json({ error: "Code and error message are required" });
+      }
+
+      const solution = await lumenCodeGenerator.debugCode(code, errorMsg);
+      res.json({ solution });
+    } catch (error) {
+      console.error('Code debugging error:', error);
+      res.status(500).json({ error: "Failed to debug code" });
     }
   });
 
