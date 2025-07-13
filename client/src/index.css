@@ -160,23 +160,67 @@ body {
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
+/* Enhanced scrollbar styling for all sections */
+.quantum-scroll::-webkit-scrollbar,
+.identity-scroll::-webkit-scrollbar,
+.settings-scroll::-webkit-scrollbar,
+.chat-scroll::-webkit-scrollbar {
   width: 8px;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+.quantum-scroll::-webkit-scrollbar-track,
+.identity-scroll::-webkit-scrollbar-track,
+.settings-scroll::-webkit-scrollbar-track,
+.chat-scroll::-webkit-scrollbar-track {
+  background: rgba(75, 85, 99, 0.1);
+  border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
+.quantum-scroll::-webkit-scrollbar-thumb,
+.identity-scroll::-webkit-scrollbar-thumb,
+.settings-scroll::-webkit-scrollbar-thumb,
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.4);
+  border-radius: 4px;
+  transition: background 0.2s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+.quantum-scroll::-webkit-scrollbar-thumb:hover,
+.identity-scroll::-webkit-scrollbar-thumb:hover,
+.settings-scroll::-webkit-scrollbar-thumb:hover,
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.6);
+}
+
+.quantum-scroll::-webkit-scrollbar-corner,
+.identity-scroll::-webkit-scrollbar-corner,
+.settings-scroll::-webkit-scrollbar-corner,
+.chat-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Global scrollbar styling for all overflow containers */
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(75, 85, 99, 0.1);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.4);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.6);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Cosmic Background */
