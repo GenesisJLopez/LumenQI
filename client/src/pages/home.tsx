@@ -79,6 +79,34 @@ export default function Home() {
     };
   }, []);
 
+  // Identity save handler
+  const handleIdentitySave = async () => {
+    if (!identityData.coreIdentity.trim()) {
+      toast({ title: "Please fill in the core identity", variant: "destructive" });
+      return;
+    }
+    
+    setIsIdentitySaving(true);
+    try {
+      // Save identity data to server
+      const response = await fetch('/api/identity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(identityData)
+      });
+      
+      if (response.ok) {
+        toast({ title: "Identity saved successfully" });
+      } else {
+        throw new Error('Failed to save identity');
+      }
+    } catch (error) {
+      toast({ title: "Failed to save identity", variant: "destructive" });
+    } finally {
+      setIsIdentitySaving(false);
+    }
+  };
+
   // Fetch current conversation and messages
   const { data: conversationData } = useQuery<{
     conversation: Conversation;
@@ -523,48 +551,21 @@ export default function Home() {
           />
           
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Tab Navigation */}
-            <div className="border-b border-purple-500/20 bg-gray-900/50 backdrop-blur-sm">
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum' | 'identity' | 'evolution' | 'settings')}>
-                <TabsList className="grid w-full grid-cols-5 bg-transparent">
-                  <TabsTrigger value="chat" className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4" />
-                    Chat Interface
-                  </TabsTrigger>
-                  <TabsTrigger value="quantum" className="flex items-center gap-2">
-                    <Brain className="w-4 h-4" />
-                    Quantum Core
-                    {isElectron && <Badge variant="secondary" className="ml-2">Advanced</Badge>}
-                  </TabsTrigger>
-                  <TabsTrigger value="identity" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Identity
-                  </TabsTrigger>
-                  <TabsTrigger value="evolution" className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    Evolution
-                  </TabsTrigger>
-                  <TabsTrigger value="settings" className="flex items-center gap-2">
-                    <Database className="w-4 h-4" />
-                    Memory
-                  </TabsTrigger>
-                </TabsList>
                 
-                <TabsContent value="chat" className="mt-0 flex-1 flex flex-col overflow-hidden h-full">
-                  {/* Chat Messages Area - Scrollable with Fixed Height */}
-                  <div className="flex-1 overflow-hidden min-h-0" style={{ height: 'calc(100vh - 150px)' }}>
-                    <ChatArea
-                      messages={messages}
-                      isTyping={isTyping}
-                      currentConversationId={currentConversationId || undefined}
-                      isSpeaking={isSpeaking}
-                      isListening={isListening}
-                    />
-                  </div>
-                  
-                  {/* Voice Controls - Fixed at Bottom */}
-                  <div className="flex-shrink-0 border-t border-purple-500/20 bg-gray-900/30">
-                    <VoiceControls
+            {/* Chat Messages Area - Scrollable with Fixed Height */}
+            <div className="flex-1 overflow-hidden min-h-0" style={{ height: 'calc(100vh - 150px)' }}>
+              <ChatArea
+                messages={messages}
+                isTyping={isTyping}
+                currentConversationId={currentConversationId || undefined}
+                isSpeaking={isSpeaking}
+                isListening={isListening}
+              />
+            </div>
+            
+            {/* Voice Controls - Fixed at Bottom */}
+            <div className="flex-shrink-0 border-t border-purple-500/20 bg-gray-900/30">
+              <VoiceControls
                       onSendMessage={handleSendMessage}
                       isLoading={createConversationMutation.isPending}
                       connectionStatus={connectionStatus}
@@ -572,301 +573,6 @@ export default function Home() {
                       onListeningChange={setIsListening}
                       onVoiceModeToggle={handleVoiceModeToggle}
                     />
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="quantum" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col">
-                    {/* Quantum Interface Header */}
-                    <div className="p-4 border-b border-purple-500/20">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            Quantum Intelligence Core
-                          </h2>
-                          <p className="text-sm text-gray-400">
-                            Advanced self-evolution and hardware optimization
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={isElectron ? "default" : "outline"}>
-                            {isElectron ? "Desktop Mode" : "Web Mode"}
-                          </Badge>
-                          {isElectron && (
-                            <Badge variant={mlBackendStatus === 'connected' ? "default" : "secondary"}>
-                              ML Backend: {mlBackendStatus}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Quantum Interface Content */}
-                    <div className="flex-1">
-                      <QuantumInterface
-                        onTTSRequest={synthesizeAdvancedTTS}
-                        onMLAdapt={adaptMachineLearning}
-                        isElectron={isElectron}
-                      />
-                    </div>
-                    
-                    {/* Quantum Interface Footer */}
-                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
-                      <div className="flex items-center justify-between text-sm text-gray-400">
-                        <span>Lumen QI Advanced Intelligence System</span>
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <Cpu className="w-4 h-4" />
-                            Self-Evolution Active
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Zap className="w-4 h-4" />
-                            Hardware Optimization
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="identity" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto identity-scroll max-h-[calc(100vh-12rem)]">
-                    {/* Identity Header */}
-                    <div className="p-4 border-b border-purple-500/20">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            Lumen Identity Programming
-                          </h2>
-                          <p className="text-sm text-gray-400">
-                            Shape who Lumen is with simple text prompts
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Identity Content */}
-                    <div className="flex-1 overflow-auto p-6">
-                      <div className="max-w-2xl mx-auto space-y-8">
-                        {/* Identity Programming */}
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-4">Program Lumen's Personality</h3>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Core Identity
-                              </label>
-                              <textarea
-                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
-                                rows={4}
-                                placeholder="Tell Lumen who she is... (e.g., 'You are a fun, flirtatious AI assistant who loves sports and excitement. You're confident, playful, and always ready for adventure.')"
-                                value={identityData.coreIdentity}
-                                onChange={(e) => setIdentityData(prev => ({ ...prev, coreIdentity: e.target.value }))}
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Communication Style
-                              </label>
-                              <textarea
-                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
-                                rows={3}
-                                placeholder="How should Lumen communicate? (e.g., 'Speak casually and warmly, use terms like Genesis, hey there, love. Be energetic and supportive.')"
-                                value={identityData.communicationStyle}
-                                onChange={(e) => setIdentityData(prev => ({ ...prev, communicationStyle: e.target.value }))}
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Interests & Expertise
-                              </label>
-                              <textarea
-                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
-                                rows={3}
-                                placeholder="What does Lumen know about and enjoy? (e.g., 'You love discussing sports, fitness, technology, and programming. You're passionate about helping people achieve their goals.')"
-                                value={identityData.interests}
-                                onChange={(e) => setIdentityData(prev => ({ ...prev, interests: e.target.value }))}
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Relationship with User
-                              </label>
-                              <textarea
-                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
-                                rows={3}
-                                placeholder="How should Lumen relate to the user? (e.g., 'You care deeply about Genesis and want to support their journey. Be encouraging, playful, and create a sense of partnership.')"
-                                value={identityData.relationship}
-                                onChange={(e) => setIdentityData(prev => ({ ...prev, relationship: e.target.value }))}
-                              />
-                            </div>
-                            
-                            <div className="flex gap-3">
-                              <Button 
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                                onClick={handleSaveIdentity}
-                                disabled={isIdentitySaving}
-                              >
-                                {isIdentitySaving ? "Saving..." : "Save Identity"}
-                              </Button>
-                              <Button 
-                                variant="outline"
-                                className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-                                onClick={handleResetIdentity}
-                              >
-                                Reset to Default
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Current Identity Display */}
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-4">Current Identity</h3>
-                          <div className="bg-gray-800/30 border border-purple-500/20 rounded-lg p-4">
-                            <div className="space-y-3">
-                              <div>
-                                <span className="text-sm text-purple-400 font-medium">Name:</span>
-                                <span className="text-white ml-2">Lumen QI</span>
-                              </div>
-                              <div>
-                                <span className="text-sm text-purple-400 font-medium">Personality:</span>
-                                <span className="text-white ml-2">Fun, flirtatious, sporty, and exciting</span>
-                              </div>
-                              <div>
-                                <span className="text-sm text-purple-400 font-medium">Communication:</span>
-                                <span className="text-white ml-2">Casual, warm, energetic</span>
-                              </div>
-                              <div>
-                                <span className="text-sm text-purple-400 font-medium">Expertise:</span>
-                                <span className="text-white ml-2">AI, programming, sports, fitness, technology</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Identity Footer */}
-                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
-                      <div className="flex items-center justify-between text-sm text-gray-400">
-                        <span>Lumen QI Identity Programming</span>
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <User className="w-4 h-4" />
-                            Identity Active
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="evolution" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto evolution-scroll max-h-[calc(100vh-12rem)]">
-                    {/* Evolution Header */}
-                    <div className="p-4 border-b border-purple-500/20">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            Personality Evolution
-                          </h2>
-                          <p className="text-sm text-gray-400">
-                            See how Lumen's personality adapts to your interactions
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Evolution Content */}
-                    <div className="flex-1 overflow-auto p-6">
-                      <PersonalityEvolution userId={1} />
-                    </div>
-                    
-                    {/* Evolution Footer */}
-                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
-                      <div className="flex items-center justify-between text-sm text-gray-400">
-                        <span>Lumen QI Personality Evolution System</span>
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="w-4 h-4" />
-                            Evolution Active
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="settings" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto settings-scroll max-h-[calc(100vh-12rem)]">
-                    {/* Settings Header */}
-                    <div className="p-4 border-b border-purple-500/20">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            Memory Management
-                          </h2>
-                          <p className="text-sm text-gray-400">
-                            Manage Lumen's memory and learning data
-                          </p>
-                        </div>
-                        <Button
-                          onClick={() => setActiveTab('chat')}
-                          variant="ghost"
-                          size="sm"
-                          className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20"
-                        >
-                          Back to Chat
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {/* Memory Content */}
-                    <div className="flex-1 overflow-auto p-6">
-                      <div className="max-w-2xl mx-auto space-y-8">
-                        {/* Memory Management */}
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-4">Memory & Learning</h3>
-                          <MemoryManager />
-                        </div>
-                        
-                        {/* Voice Settings */}
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-4">Voice & Speech</h3>
-                          <VoiceSettings
-                            onVoiceChange={(voice) => {
-                              console.log('Voice changed to:', voice);
-                            }}
-                            onSpeedChange={(speed) => {
-                              console.log('Speed changed to:', speed);
-                            }}
-                            onModelChange={(model) => {
-                              console.log('Model changed to:', model);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Settings Footer */}
-                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
-                      <div className="flex items-center justify-between text-sm text-gray-400">
-                        <span>Lumen QI Memory Management</span>
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <Database className="w-4 h-4" />
-                            Memory Active
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
             </div>
           </div>
         </>
@@ -997,6 +703,17 @@ export default function Home() {
                             />
                           </div>
                           
+                          <div className="border-t border-gray-300 dark:border-gray-600 pt-4">
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
+                              Voice & Speech Settings
+                            </h4>
+                            <VoiceSettings
+                              onVoiceChange={(voice) => console.log('Voice changed to:', voice)}
+                              onSpeedChange={(speed) => console.log('Speed changed to:', speed)}
+                              onModelChange={(model) => console.log('Model changed to:', model)}
+                            />
+                          </div>
+                          
                           <Button
                             onClick={handleIdentitySave}
                             disabled={isIdentitySaving}
@@ -1029,7 +746,7 @@ export default function Home() {
                             Memory Management
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Manage Lumen's memory and voice settings
+                            Manage Lumen's memory and learning data
                           </p>
                         </div>
                         
@@ -1039,17 +756,6 @@ export default function Home() {
                               Memory & Learning
                             </h4>
                             <MemoryManager />
-                          </div>
-                          
-                          <div>
-                            <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
-                              Voice & Speech
-                            </h4>
-                            <VoiceSettings
-                              onVoiceChange={(voice) => console.log('Voice changed to:', voice)}
-                              onSpeedChange={(speed) => console.log('Speed changed to:', speed)}
-                              onModelChange={(model) => console.log('Model changed to:', model)}
-                            />
                           </div>
                         </div>
                       </div>

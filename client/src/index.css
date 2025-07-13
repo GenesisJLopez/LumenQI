@@ -68,7 +68,7 @@
 }
 
 .cosmic-pulse-speaking {
-  background: radial-gradient(circle, transparent 10%, rgba(255, 119, 198, 0.4) 60%, rgba(255, 119, 198, 0.6) 80%, rgba(255, 119, 198, 0.8) 100%);
+  background: radial-gradient(circle, transparent 45%, rgba(255, 119, 198, 0.3) 50%, rgba(255, 119, 198, 0.5) 55%, rgba(255, 119, 198, 0.7) 60%);
   animation: cosmic-speaking-rhythm 0.5s ease-in-out infinite;
 }
 
@@ -105,19 +105,19 @@
     filter: blur(0px);
   }
   25% { 
-    transform: scale(1.4); 
-    opacity: 1; 
-    filter: blur(3px);
+    transform: scale(1.05); 
+    opacity: 0.8; 
+    filter: blur(1px);
   }
   50% { 
-    transform: scale(1.2); 
-    opacity: 0.8; 
-    filter: blur(2px);
+    transform: scale(1.03); 
+    opacity: 0.6; 
+    filter: blur(0.5px);
   }
   75% { 
-    transform: scale(1.5); 
-    opacity: 1; 
-    filter: blur(4px);
+    transform: scale(1.06); 
+    opacity: 0.9; 
+    filter: blur(1.5px);
   }
   100% { 
     transform: scale(1); 
