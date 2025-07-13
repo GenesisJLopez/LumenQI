@@ -104,8 +104,8 @@ export default function Home() {
           });
         }
         
-        // Only speak if this is a new response for the current conversation
-        if (lastMessage.content && lastMessage.conversationId === currentConversationId) {
+        // Only auto-speak in voice mode
+        if (isVoiceMode && lastMessage.content && lastMessage.conversationId === currentConversationId) {
           import('@/lib/natural-speech').then(({ naturalSpeech }) => {
             // Stop any existing speech first
             naturalSpeech.stop();
