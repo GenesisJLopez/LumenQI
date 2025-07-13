@@ -221,7 +221,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
       </div>
       
       <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-6 overflow-y-auto">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-12">
           {messages.map((message, index) => (
             <div
               key={message.id}
@@ -264,12 +264,13 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                 
                 {/* Message Actions - Only show for assistant messages */}
                 {message.role === 'assistant' && (
-                  <div className="absolute -bottom-8 left-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
+                  <div className="absolute -bottom-12 left-0 opacity-100 transition-all duration-200 flex gap-1 z-50 bg-gray-900/90 backdrop-blur-sm rounded-lg px-2 py-1 border border-gray-700">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(message.content, message.id)}
-                      className="cosmic-button h-6 px-2"
+                      className="h-8 px-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                      title="Copy message"
                     >
                       <Copy className="w-3 h-3" />
                       {copiedMessageId === message.id && (
@@ -281,7 +282,8 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleSpeakMessage(message.content, message.id)}
-                      className="cosmic-button h-6 px-2"
+                      className="h-8 px-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                      title="Play audio"
                     >
                       {isSpeakingMessage === message.id ? (
                         <VolumeX className="w-3 h-3" />
@@ -293,7 +295,8 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="cosmic-button h-6 px-2"
+                      className="h-8 px-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                      title="Good response"
                     >
                       <ThumbsUp className="w-3 h-3" />
                     </Button>
@@ -301,7 +304,8 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="cosmic-button h-6 px-2"
+                      className="h-8 px-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                      title="Bad response"
                     >
                       <ThumbsDown className="w-3 h-3" />
                     </Button>
