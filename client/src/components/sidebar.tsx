@@ -116,10 +116,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                  className="opacity-60 hover:opacity-100 transition-opacity p-1 h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2 flex-shrink-0"
+                  className="opacity-70 hover:opacity-100 transition-opacity p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2 flex-shrink-0"
                   title="Delete conversation"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -153,6 +153,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
           <Button 
             variant="ghost" 
             className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={() => {
+              // TODO: Open memory management modal
+              window.open('/memory-management', '_blank');
+            }}
           >
             <Settings className="h-4 w-4 mr-3" />
             Settings
