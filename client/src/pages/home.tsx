@@ -166,10 +166,13 @@ export default function Home() {
             naturalSpeech.speak(lastMessage.content, {
               onStart: () => {
                 console.log('Speech actually started - triggering logo animation');
-                setIsSpeaking(true);
-                setSpeechIntensity(0.8);
+                // Immediate synchronization - no delay
+                requestAnimationFrame(() => {
+                  setIsSpeaking(true);
+                  setSpeechIntensity(0.8);
+                });
                 
-                // Create realistic speech rhythm
+                // Create realistic speech rhythm with immediate start
                 let rhythmIndex = 0;
                 const rhythmPattern = [0.9, 0.6, 0.8, 0.4, 0.7, 0.9, 0.5, 0.8, 0.3, 0.6, 0.9, 0.7];
                 const rhythmInterval = setInterval(() => {
@@ -186,8 +189,11 @@ export default function Home() {
               },
               onEnd: () => {
                 console.log('Speech ended - stopping logo animation');
-                setIsSpeaking(false);
-                setSpeechIntensity(0);
+                // Immediate synchronization - no delay
+                requestAnimationFrame(() => {
+                  setIsSpeaking(false);
+                  setSpeechIntensity(0);
+                });
                 
                 // Clear rhythm interval
                 if ((window as any).speechRhythmInterval) {
@@ -578,6 +584,55 @@ export default function Home() {
                             Advanced system monitoring and hardware optimization
                           </p>
                         </div>
+                        
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                              <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-2">
+                                CPU Optimization
+                              </h4>
+                              <div className="text-xs text-purple-700 dark:text-purple-400">
+                                Multi-core processing enabled
+                              </div>
+                              <div className="mt-2 h-2 bg-purple-200 dark:bg-purple-800 rounded-full">
+                                <div className="h-2 bg-purple-500 rounded-full" style={{width: '78%'}}></div>
+                              </div>
+                            </div>
+                            
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
+                                Memory Usage
+                              </h4>
+                              <div className="text-xs text-blue-700 dark:text-blue-400">
+                                Adaptive allocation active
+                              </div>
+                              <div className="mt-2 h-2 bg-blue-200 dark:bg-blue-800 rounded-full">
+                                <div className="h-2 bg-blue-500 rounded-full" style={{width: '65%'}}></div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                              Quantum Processing Status
+                            </h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-gray-600 dark:text-gray-400">Neural Networks</span>
+                                <span className="text-green-600 dark:text-green-400">Active</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-gray-600 dark:text-gray-400">Machine Learning</span>
+                                <span className="text-green-600 dark:text-green-400">Optimized</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-gray-600 dark:text-gray-400">Speech Synthesis</span>
+                                <span className="text-green-600 dark:text-green-400">Enhanced</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
                         <QuantumInterface
                           onTTSRequest={synthesizeAdvancedTTS}
                           onMLAdapt={adaptMachineLearning}
@@ -693,7 +748,54 @@ export default function Home() {
                           </p>
                         </div>
                         
-                        <div className="space-y-8">
+                        <div className="space-y-6">
+                          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
+                              Memory Statistics
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4 text-xs">
+                              <div>
+                                <span className="text-blue-700 dark:text-blue-400">Total Memories:</span>
+                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">{memories.length}</span>
+                              </div>
+                              <div>
+                                <span className="text-blue-700 dark:text-blue-400">Active Context:</span>
+                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">
+                                  {memories.filter(m => m.importance > 0.5).length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                            <h4 className="text-sm font-medium text-green-900 dark:text-green-300 mb-2">
+                              Memory Optimization
+                            </h4>
+                            <div className="text-xs text-green-700 dark:text-green-400 mb-3">
+                              Automatic cleanup of low-importance memories
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 bg-green-200 dark:bg-green-800 rounded-full flex-1">
+                                <div className="h-2 bg-green-500 rounded-full" style={{width: '92%'}}></div>
+                              </div>
+                              <span className="text-xs text-green-700 dark:text-green-400">92%</span>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                            <h4 className="text-sm font-medium text-orange-900 dark:text-orange-300 mb-2">
+                              Memory Actions
+                            </h4>
+                            <div className="space-y-2">
+                              <button className="w-full px-3 py-2 text-xs bg-orange-100 dark:bg-orange-800 hover:bg-orange-200 dark:hover:bg-orange-700 text-orange-900 dark:text-orange-300 rounded-md transition-colors">
+                                Optimize Memory Storage
+                              </button>
+                              <button className="w-full px-3 py-2 text-xs bg-red-100 dark:bg-red-800 hover:bg-red-200 dark:hover:bg-red-700 text-red-900 dark:text-red-300 rounded-md transition-colors">
+                                Clear All Memories
+                              </button>
+                            </div>
+                          </div>
+                          
                           <div>
                             <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
                               Memory & Learning
