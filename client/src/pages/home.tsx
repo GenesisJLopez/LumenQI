@@ -570,33 +570,81 @@ export default function Home() {
                       <div className="space-y-6">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Core System
+                            Quantum Core System
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Basic system information and status
+                            Advanced AI system monitoring and quantum interface controls
                           </p>
                         </div>
                         
                         <div className="space-y-4">
-                          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                              System Status
+                          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
+                            <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-3">
+                              Quantum Interface Status
                             </h4>
                             <div className="space-y-2">
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">AI System</span>
-                                <span className="text-green-600 dark:text-green-400">Active</span>
+                                <span className="text-purple-700 dark:text-purple-400">Core AI System</span>
+                                <span className="text-green-600 dark:text-green-400">⚡ Active</span>
                               </div>
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">Voice Recognition</span>
-                                <span className="text-green-600 dark:text-green-400">Ready</span>
+                                <span className="text-purple-700 dark:text-purple-400">Voice Recognition</span>
+                                <span className="text-green-600 dark:text-green-400">🎤 Ready</span>
                               </div>
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">Speech Synthesis</span>
-                                <span className="text-green-600 dark:text-green-400">Active</span>
+                                <span className="text-purple-700 dark:text-purple-400">Neural Speech</span>
+                                <span className="text-green-600 dark:text-green-400">🔊 Active</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-purple-700 dark:text-purple-400">Quantum Processing</span>
+                                <span className="text-blue-600 dark:text-blue-400">🌌 Optimized</span>
                               </div>
                             </div>
                           </div>
+                          
+                          <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
+                            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
+                              Code Generation Engine
+                            </h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-blue-700 dark:text-blue-400">Full-Stack Development</span>
+                                <span className="text-green-600 dark:text-green-400">✅ Expert</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-blue-700 dark:text-blue-400">React/TypeScript</span>
+                                <span className="text-green-600 dark:text-green-400">⚛️ Advanced</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-blue-700 dark:text-blue-400">API Development</span>
+                                <span className="text-green-600 dark:text-green-400">🔗 Ready</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
+                            <h4 className="text-sm font-medium text-green-900 dark:text-green-300 mb-3">
+                              Hardware Optimization
+                            </h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-green-700 dark:text-green-400">CPU Utilization</span>
+                                <span className="text-blue-600 dark:text-blue-400">🔧 Optimized</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-green-700 dark:text-green-400">Memory Management</span>
+                                <span className="text-purple-600 dark:text-purple-400">🧠 Efficient</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-green-700 dark:text-green-400">Network Interface</span>
+                                <span className="text-cyan-600 dark:text-cyan-400">🌐 Connected</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <CodeGenerator onCodeGenerated={(code) => {
+                            console.log('Generated code:', code);
+                          }} />
                         </div>
                       </div>
                     </TabsContent>
@@ -716,11 +764,11 @@ export default function Home() {
                             <div className="grid grid-cols-2 gap-4 text-xs">
                               <div>
                                 <span className="text-blue-700 dark:text-blue-400">Total Memories:</span>
-                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">12</span>
+                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">{memories.length}</span>
                               </div>
                               <div>
                                 <span className="text-blue-700 dark:text-blue-400">Active Context:</span>
-                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">8</span>
+                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">{memories.filter(m => m.importance > 0.5).length}</span>
                               </div>
                             </div>
                           </div>
@@ -748,7 +796,10 @@ export default function Home() {
                               <button className="w-full px-3 py-2 text-xs bg-orange-100 dark:bg-orange-800 hover:bg-orange-200 dark:hover:bg-orange-700 text-orange-900 dark:text-orange-300 rounded-md transition-colors">
                                 Optimize Memory Storage
                               </button>
-                              <button className="w-full px-3 py-2 text-xs bg-red-100 dark:bg-red-800 hover:bg-red-200 dark:hover:bg-red-700 text-red-900 dark:text-red-300 rounded-md transition-colors">
+                              <button 
+                                onClick={handleClearMemories}
+                                className="w-full px-3 py-2 text-xs bg-red-100 dark:bg-red-800 hover:bg-red-200 dark:hover:bg-red-700 text-red-900 dark:text-red-300 rounded-md transition-colors"
+                              >
                                 Clear All Memories
                               </button>
                             </div>
