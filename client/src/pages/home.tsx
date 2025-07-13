@@ -139,10 +139,12 @@ export default function Home() {
     }
   };
 
-  // Settings modal event listener
+  // Settings modal event listener and identity loading
   useEffect(() => {
     const handleOpenSettings = () => {
       setShowSettings(true);
+      // Load current identity when settings are opened
+      fetchCurrentIdentity();
     };
 
     window.addEventListener('openSettings', handleOpenSettings);
@@ -151,6 +153,23 @@ export default function Home() {
       window.removeEventListener('openSettings', handleOpenSettings);
     };
   }, []);
+
+  const fetchCurrentIdentity = async () => {
+    try {
+      const response = await fetch('/api/identity');
+      if (response.ok) {
+        const identity = await response.json();
+        setIdentityData({
+          coreIdentity: identity.coreIdentity || '',
+          communicationStyle: identity.communicationStyle || '',
+          interests: identity.interests || '',
+          relationship: identity.relationship || ''
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch current identity:', error);
+    }
+  };
 
   const clearMemories = () => {
     clearMemoriesMutation.mutate();
@@ -223,6 +242,11 @@ export default function Home() {
       }
     }
   }, [transcript, isVoiceMode]);
+
+  // Load identity on startup
+  useEffect(() => {
+    fetchCurrentIdentity();
+  }, []);
 
   // Enhanced voice mode toggle
   const handleVoiceModeToggle = () => {

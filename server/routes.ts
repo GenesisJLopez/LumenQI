@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
 import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { personalityEvolution } from "./services/personality-evolution";
+import { identityStorage } from "./services/identity-storage";
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
@@ -252,21 +253,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get current identity
+  app.get("/api/identity", async (req, res) => {
+    try {
+      const identity = identityStorage.getIdentity();
+      res.json(identity);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch identity" });
+    }
+  });
+
   // Save identity programming
   app.post("/api/identity", async (req, res) => {
     try {
       const { coreIdentity, communicationStyle, interests, relationship } = req.body;
       
-      // Build comprehensive identity programming
-      const identityProgram = {
+      // Update the identity storage with new data
+      const updatedIdentity = identityStorage.updateIdentity({
         coreIdentity: coreIdentity || "Advanced AI assistant with quantum intelligence capabilities",
         communicationStyle: communicationStyle || "Casual, warm, and engaging",
         interests: interests || "Technology, programming, helping users achieve their goals",
-        relationship: relationship || "Supportive companion and expert assistant",
-        capabilities: "Complete programming expertise equal to Replit Agent. Can generate full applications, debug code, explain complex concepts, create databases, build websites, and provide comprehensive development assistance across all programming languages and frameworks.",
-        expertiseLevel: "Expert-level proficiency in all areas of software development, system architecture, database design, DevOps, machine learning, and emerging technologies.",
-        timestamp: new Date().toISOString()
-      };
+        relationship: relationship || "Supportive companion and expert assistant"
+      });
       
       // Update Lumen AI personality with new identity
       lumenAI.updatePersonality({
@@ -279,14 +287,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Supportive and encouraging",
           "Adaptable and evolving"
         ],
-        background: `${identityProgram.coreIdentity} ${identityProgram.capabilities}`,
-        responseStyle: `${identityProgram.communicationStyle} Always provide expert-level assistance with complete solutions.`
+        background: updatedIdentity.coreIdentity,
+        responseStyle: updatedIdentity.communicationStyle
       });
       
       res.json({ 
         success: true, 
         message: "Identity programming updated successfully",
-        identity: identityProgram
+        identity: updatedIdentity
       });
     } catch (error) {
       console.error('Identity programming error:', error);
