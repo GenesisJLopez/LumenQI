@@ -171,7 +171,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
             <div
               key={conversation.id}
               className={cn(
-                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
+                "p-3 cursor-pointer transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
                 currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600" : ""
               )}
             >
@@ -188,10 +188,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   </div>
                 </div>
                 
-                <div className={cn(
-                  "flex items-center space-x-1 flex-shrink-0 transition-opacity",
-                  currentConversationId === conversation.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                )}>
+                <div className="flex items-center space-x-1 flex-shrink-0">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -200,10 +197,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                       console.log('Edit button clicked for conversation:', conversation.id);
                       handleEditConversation(conversation.id, conversation.title, e);
                     }}
-                    className="p-1.5 h-auto hover:bg-blue-100 dark:hover:bg-blue-900"
+                    className="p-1.5 h-auto hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
                     title="Edit conversation"
                   >
-                    <Edit2 className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                    <Edit2 className="h-3 w-3" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -213,10 +210,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                       console.log('Delete button clicked for conversation:', conversation.id);
                       handleDeleteConversation(conversation.id, e);
                     }}
-                    className="p-1.5 h-auto hover:bg-red-100 dark:hover:bg-red-900"
+                    className="p-1.5 h-auto hover:bg-red-100 dark:hover:bg-red-900 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
                     title="Delete conversation"
                   >
-                    <Trash2 className="h-3 w-3 text-red-600 dark:text-red-400" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
