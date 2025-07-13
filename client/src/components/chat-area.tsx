@@ -24,7 +24,10 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [messages, isTyping]);
 
@@ -221,7 +224,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
       </div>
       
       <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-6 overflow-y-auto">
-        <div className="max-w-4xl mx-auto space-y-12">
+        <div className="max-w-4xl mx-auto space-y-8 pb-16">
           {messages.map((message, index) => (
             <div
               key={message.id}
@@ -264,7 +267,8 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                 
                 {/* Message Actions - Only show for assistant messages */}
                 {message.role === 'assistant' && (
-                  <div className="absolute -bottom-12 left-0 opacity-100 transition-all duration-200 flex gap-1 z-50 bg-gray-900/90 backdrop-blur-sm rounded-lg px-2 py-1 border border-gray-700">
+                  <div className="mt-3 flex gap-1 justify-start">
+                    <div className="flex gap-1 bg-gray-900/90 backdrop-blur-sm rounded-lg px-2 py-1 border border-gray-700">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -309,6 +313,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                     >
                       <ThumbsDown className="w-3 h-3" />
                     </Button>
+                    </div>
                   </div>
                 )}
               </div>
