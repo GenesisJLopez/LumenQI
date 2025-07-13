@@ -239,6 +239,14 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Added realistic speech rhythm patterns that pulse with actual voice cadence
 - Improved cosmic pulse animations with blur effects and outer rings for dramatic impact
 
+**January 13, 2025**: Deployment Optimization & Logo Restoration
+- Fixed deployment image size limit issue by removing 19MB PNG logo file
+- Created optimized deployment scripts and .dockerignore for build size reduction
+- Restored original Lumen QI logo using properly sized version (1.1MB)
+- Implemented conversation deletion functionality with hover trash icons
+- Added confirmation dialogs and proper database cleanup for deleted conversations
+- Enhanced sidebar with edit and delete buttons for better conversation management
+
 **January 13, 2025**: Interface Redesign & Settings Modal Implementation
 - Replaced settings gear icon with database icon for better clarity
 - Created comprehensive internal settings modal with organized sections (Quantum Core, Identity, Evolution, Memory)
