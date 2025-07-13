@@ -11,13 +11,14 @@ import { ChatArea } from '@/components/chat-area';
 import { VoiceControls } from '@/components/voice-controls';
 import { QuantumInterface } from '@/components/quantum-interface';
 import { PersonalityEvolution } from '@/components/personality-evolution';
+import { VoiceSettings } from '@/components/voice-settings';
 import lumenLogo from '@assets/lumen-logo_1752354847791.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { Cpu, Brain, Zap, MessageSquare } from 'lucide-react';
+import { Cpu, Brain, Zap, MessageSquare, Settings } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
@@ -27,7 +28,7 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'quantum'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'settings'>('chat');
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
   const { 
@@ -461,8 +462,8 @@ export default function Home() {
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Tab Navigation */}
             <div className="border-b border-purple-500/20 bg-gray-900/50 backdrop-blur-sm">
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum')}>
-                <TabsList className="grid w-full grid-cols-2 bg-transparent">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum' | 'settings')}>
+                <TabsList className="grid w-full grid-cols-3 bg-transparent">
                   <TabsTrigger value="chat" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
                     Chat Interface
@@ -471,6 +472,10 @@ export default function Home() {
                     <Brain className="w-4 h-4" />
                     Quantum Core
                     {isElectron && <Badge variant="secondary" className="ml-2">Advanced</Badge>}
+                  </TabsTrigger>
+                  <TabsTrigger value="settings" className="flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    Settings
                   </TabsTrigger>
                 </TabsList>
                 
@@ -550,6 +555,60 @@ export default function Home() {
                           <span className="flex items-center gap-1">
                             <Zap className="w-4 h-4" />
                             Hardware Optimization
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="settings" className="mt-0 flex-1 flex flex-col overflow-hidden">
+                  <div className="h-full flex flex-col overflow-y-auto">
+                    {/* Settings Header */}
+                    <div className="p-4 border-b border-purple-500/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                            Lumen Settings
+                          </h2>
+                          <p className="text-sm text-gray-400">
+                            Customize your Lumen QI experience
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Settings Content */}
+                    <div className="flex-1 overflow-auto p-6">
+                      <div className="max-w-2xl mx-auto space-y-8">
+                        {/* Voice Settings */}
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-4">Voice & Speech</h3>
+                          <VoiceSettings
+                            onVoiceChange={(voice) => {
+                              console.log('Voice changed to:', voice);
+                            }}
+                            onSpeedChange={(speed) => {
+                              console.log('Speed changed to:', speed);
+                            }}
+                            onModelChange={(model) => {
+                              console.log('Model changed to:', model);
+                            }}
+                          />
+                        </div>
+                        
+                        {/* More settings can be added here */}
+                      </div>
+                    </div>
+                    
+                    {/* Settings Footer */}
+                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
+                      <div className="flex items-center justify-between text-sm text-gray-400">
+                        <span>Lumen QI Configuration Panel</span>
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Settings className="w-4 h-4" />
+                            Settings Active
                           </span>
                         </div>
                       </div>
