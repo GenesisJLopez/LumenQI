@@ -217,7 +217,7 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
           <TabsTrigger value="code">Code Gen</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent value="overview" className="space-y-4 overflow-y-auto max-h-96">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
@@ -298,7 +298,7 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
           )}
         </TabsContent>
 
-        <TabsContent value="hardware" className="space-y-4">
+        <TabsContent value="hardware" className="space-y-4 overflow-y-auto max-h-96">
           {hardwareInfo && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
@@ -408,7 +408,7 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
           )}
         </TabsContent>
 
-        <TabsContent value="evolution" className="space-y-4">
+        <TabsContent value="evolution" className="space-y-4 overflow-y-auto max-h-96">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -449,7 +449,7 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
           </Card>
         </TabsContent>
 
-        <TabsContent value="voice" className="space-y-4">
+        <TabsContent value="voice" className="space-y-4 overflow-y-auto max-h-96">
           <EmotionDisplay onEmotionChange={(emotion, adaptation) => {
             console.log('Emotion detected:', emotion, adaptation);
           }} />
@@ -507,7 +507,7 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
           </Card>
         </TabsContent>
 
-        <TabsContent value="code" className="space-y-4">
+        <TabsContent value="code" className="space-y-4 overflow-y-auto max-h-96">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

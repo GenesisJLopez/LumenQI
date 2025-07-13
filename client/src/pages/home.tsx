@@ -29,6 +29,13 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'identity' | 'settings'>('chat');
+  const [identityData, setIdentityData] = useState({
+    coreIdentity: '',
+    communicationStyle: '',
+    interests: '',
+    relationship: ''
+  });
+  const [isIdentitySaving, setIsIdentitySaving] = useState(false);
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
   const { 
@@ -209,6 +216,81 @@ export default function Home() {
     setIsProcessing(false);
     setIsSpeaking(false);
   };
+
+  const handleSaveIdentity = async () => {
+    setIsIdentitySaving(true);
+    try {
+      // Save identity data to localStorage as persistent storage
+      const identityPayload = {
+        coreIdentity: identityData.coreIdentity,
+        communicationStyle: identityData.communicationStyle,
+        interests: identityData.interests,
+        relationship: identityData.relationship,
+        timestamp: new Date().toISOString()
+      };
+      
+      localStorage.setItem('lumen-identity', JSON.stringify(identityPayload));
+      
+      // Also attempt to save to server if available
+      try {
+        await fetch('/api/identity', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(identityPayload),
+        });
+      } catch (serverError) {
+        console.log('Server save failed, but local save succeeded');
+      }
+      
+      toast({
+        title: "Identity Saved Successfully",
+        description: "Lumen's personality has been updated and saved permanently!"
+      });
+    } catch (error) {
+      console.error('Failed to save identity:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save identity. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsIdentitySaving(false);
+    }
+  };
+
+  const handleResetIdentity = () => {
+    setIdentityData({
+      coreIdentity: '',
+      communicationStyle: '',
+      interests: '',
+      relationship: ''
+    });
+    localStorage.removeItem('lumen-identity');
+    toast({
+      title: "Identity Reset",
+      description: "Lumen's identity has been reset to default settings."
+    });
+  };
+
+  // Load saved identity on component mount
+  useEffect(() => {
+    const savedIdentity = localStorage.getItem('lumen-identity');
+    if (savedIdentity) {
+      try {
+        const parsedIdentity = JSON.parse(savedIdentity);
+        setIdentityData({
+          coreIdentity: parsedIdentity.coreIdentity || '',
+          communicationStyle: parsedIdentity.communicationStyle || '',
+          interests: parsedIdentity.interests || '',
+          relationship: parsedIdentity.relationship || ''
+        });
+      } catch (error) {
+        console.error('Failed to parse saved identity:', error);
+      }
+    }
+  }, []);
 
   // Handle speech recognition in voice mode
   useEffect(() => {
@@ -505,6 +587,8 @@ export default function Home() {
                                 className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
                                 rows={4}
                                 placeholder="Tell Lumen who she is... (e.g., 'You are a fun, flirtatious AI assistant who loves sports and excitement. You're confident, playful, and always ready for adventure.')"
+                                value={identityData.coreIdentity}
+                                onChange={(e) => setIdentityData(prev => ({ ...prev, coreIdentity: e.target.value }))}
                               />
                             </div>
                             
@@ -516,6 +600,8 @@ export default function Home() {
                                 className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
                                 rows={3}
                                 placeholder="How should Lumen communicate? (e.g., 'Speak casually and warmly, use terms like Genesis, hey there, love. Be energetic and supportive.')"
+                                value={identityData.communicationStyle}
+                                onChange={(e) => setIdentityData(prev => ({ ...prev, communicationStyle: e.target.value }))}
                               />
                             </div>
                             
@@ -527,6 +613,8 @@ export default function Home() {
                                 className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
                                 rows={3}
                                 placeholder="What does Lumen know about and enjoy? (e.g., 'You love discussing sports, fitness, technology, and programming. You're passionate about helping people achieve their goals.')"
+                                value={identityData.interests}
+                                onChange={(e) => setIdentityData(prev => ({ ...prev, interests: e.target.value }))}
                               />
                             </div>
                             
@@ -538,31 +626,23 @@ export default function Home() {
                                 className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
                                 rows={3}
                                 placeholder="How should Lumen relate to the user? (e.g., 'You care deeply about Genesis and want to support their journey. Be encouraging, playful, and create a sense of partnership.')"
+                                value={identityData.relationship}
+                                onChange={(e) => setIdentityData(prev => ({ ...prev, relationship: e.target.value }))}
                               />
                             </div>
                             
                             <div className="flex gap-3">
                               <Button 
                                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                                onClick={() => {
-                                  toast({
-                                    title: "Identity Updated",
-                                    description: "Lumen's personality has been reprogrammed successfully!"
-                                  });
-                                }}
+                                onClick={handleSaveIdentity}
+                                disabled={isIdentitySaving}
                               >
-                                Apply Identity
+                                {isIdentitySaving ? "Saving..." : "Save Identity"}
                               </Button>
                               <Button 
                                 variant="outline"
                                 className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-                                onClick={() => {
-                                  // Reset to default
-                                  toast({
-                                    title: "Identity Reset",
-                                    description: "Lumen's personality has been reset to default settings."
-                                  });
-                                }}
+                                onClick={handleResetIdentity}
                               >
                                 Reset to Default
                               </Button>
