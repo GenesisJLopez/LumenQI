@@ -23,12 +23,18 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    const scrollToBottom = () => {
+      if (scrollAreaRef.current) {
+        const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollContainer) {
+          setTimeout(() => {
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          }, 100);
+        }
       }
-    }
+    };
+    
+    scrollToBottom();
   }, [messages, isTyping]);
 
   // Remove automatic speech - this is handled by parent component now
@@ -66,14 +72,20 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     setIsSpeakingMessage(messageId);
     
     try {
-      // Use OpenAI TTS API
+      // Always use OpenAI TTS API first with text cleaning
+      const cleanText = text
+        .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+        .replace(/[\u{FE00}-\u{FE0F}]|[\u{200D}]/gu, '')
+        .replace(/[^\x00-\x7F]/g, '')
+        .trim();
+      
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: text,
+          text: cleanText,
           voice: 'nova',
           model: 'tts-1-hd',
           speed: 1.0
@@ -93,25 +105,13 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         audio.onerror = () => {
           setIsSpeakingMessage(null);
           URL.revokeObjectURL(audioUrl);
+          console.error('Audio playback failed');
         };
         
         await audio.play();
       } else {
-        // Fallback to browser TTS
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.8;
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
-        
-        utterance.onend = () => {
-          setIsSpeakingMessage(null);
-        };
-        
-        utterance.onerror = () => {
-          setIsSpeakingMessage(null);
-        };
-        
-        speechSynthesis.speak(utterance);
+        console.error('OpenAI TTS failed, response:', response.status);
+        throw new Error('TTS API failed');
       }
     } catch (error) {
       console.error('Speech error:', error);
@@ -223,22 +223,23 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         </svg>
       </div>
       
-      <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-6 overflow-y-auto">
-        <div className="max-w-4xl mx-auto space-y-8 pb-16">
-          {messages.map((message, index) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex",
-                message.role === 'user' ? "justify-end" : "justify-start"
-              )}
-            >
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea ref={scrollAreaRef} className="h-full px-4 py-6">
+          <div className="max-w-4xl mx-auto space-y-8 pb-16">
+            {messages.map((message, index) => (
               <div
+                key={message.id}
                 className={cn(
-                  "max-w-[70%] p-4 rounded-2xl cosmic-message relative group",
-                  message.role === 'user' ? "bg-gradient-to-br from-gray-700 to-gray-800" : "assistant"
+                  "flex",
+                  message.role === 'user' ? "justify-end" : "justify-start"
                 )}
               >
+                <div
+                  className={cn(
+                    "max-w-[70%] p-4 rounded-2xl cosmic-message relative group",
+                    message.role === 'user' ? "bg-gradient-to-br from-gray-700 to-gray-800" : "assistant"
+                  )}
+                >
                 <div className="flex items-start gap-3">
                   {message.role === 'assistant' && (
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
@@ -316,31 +317,32 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                     </div>
                   </div>
                 )}
+                </div>
               </div>
-            </div>
-          ))}
-          
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="max-w-[70%] p-4 rounded-2xl cosmic-message assistant">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold cosmic-text mb-2">Lumen QI</div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+            ))}
+            
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="max-w-[70%] p-4 rounded-2xl cosmic-message assistant">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold cosmic-text mb-2">Lumen QI</div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }
