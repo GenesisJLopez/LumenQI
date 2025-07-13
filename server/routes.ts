@@ -72,14 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Conversation not found" });
       }
 
-      // Delete all messages in the conversation first
-      const messages = await storage.getMessagesByConversation(conversationId);
-      // Note: In a real implementation, you'd have a deleteMessage method
-      // For now, we'll just mark the conversation as deleted
-      
-      // Actually delete the conversation completely
-      // First, delete all messages (this would be done by the storage layer)
-      // Then update the conversation to show it's deleted
+      // Mark the conversation as deleted so it won't appear in the list
       await storage.updateConversation(conversationId, { 
         title: `[DELETED] ${conversation.title}`,
         updatedAt: new Date()
@@ -87,6 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ message: "Conversation deleted successfully" });
     } catch (error) {
+      console.error('Error deleting conversation:', error);
       res.status(500).json({ error: "Failed to delete conversation" });
     }
   });
