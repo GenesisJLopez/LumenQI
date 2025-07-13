@@ -19,6 +19,7 @@ export interface IStorage {
   getConversationsByUser(userId: number): Promise<Conversation[]>;
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   updateConversation(id: number, updates: Partial<Conversation>): Promise<Conversation | undefined>;
+  deleteConversation(id: number): Promise<void>;
   
   // Message operations
   getMessagesByConversation(conversationId: number): Promise<Message[]>;
@@ -101,6 +102,16 @@ export class MemStorage implements IStorage {
     const updated = { ...conversation, ...updates, updatedAt: new Date() };
     this.conversations.set(id, updated);
     return updated;
+  }
+
+  async deleteConversation(id: number): Promise<void> {
+    this.conversations.delete(id);
+    // Also delete all messages for this conversation
+    for (const [msgId, message] of this.messages.entries()) {
+      if (message.conversationId === id) {
+        this.messages.delete(msgId);
+      }
+    }
   }
 
   async getMessagesByConversation(conversationId: number): Promise<Message[]> {
@@ -217,6 +228,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(conversations.id, id))
       .returning();
     return conversation || undefined;
+  }
+
+  async deleteConversation(id: number): Promise<void> {
+    // Delete all messages for this conversation first
+    await db.delete(messages).where(eq(messages.conversationId, id));
+    // Then delete the conversation
+    await db.delete(conversations).where(eq(conversations.id, id));
   }
 
   async getMessagesByConversation(conversationId: number): Promise<Message[]> {

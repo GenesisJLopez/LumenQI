@@ -95,8 +95,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Conversation not found" });
       }
 
-      // Actually delete the conversation from database
-      await db.delete(conversations).where(eq(conversations.id, conversationId));
+      // Delete the conversation using the storage interface
+      await storage.deleteConversation(conversationId);
       
       res.json({ message: "Conversation deleted successfully" });
     } catch (error) {
