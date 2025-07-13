@@ -454,36 +454,7 @@ body {
   opacity: 0;
 }
 
-/* Cosmic particles */
-.cosmic-particles {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.cosmic-particles::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    radial-gradient(circle at 70% 90%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 200px 200px, 300px 300px, 150px 150px, 250px 250px, 180px 180px;
-  animation: cosmicFloat 20s linear infinite;
-}
-
-@keyframes cosmicFloat {
-  0% { transform: translateY(0px) rotate(0deg); }
-  100% { transform: translateY(-100px) rotate(360deg); }
-}
+/* Cosmic particles removed - cleaner interface */
 
 /* Lumen Logo Animations */
 @keyframes breathe {
