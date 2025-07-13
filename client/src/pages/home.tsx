@@ -57,33 +57,66 @@ export default function Home() {
     stopListening, 
     isSupported 
   } = useSpeechRecognition();
-  
-  // Initialize quantum interface
-  const {
-    isElectron,
-    synthesizeAdvancedTTS,
-    adaptMachineLearning,
-    connectToMLBackend,
-    mlBackendStatus
+  const { 
+    hardwareInfo, 
+    mlMetrics, 
+    isQuantumConnected, 
+    refreshMetrics 
   } = useQuantumInterface();
 
-  // Settings event listener
-  useEffect(() => {
-    const handleOpenSettings = () => {
-      setShowSettings(true);
-    };
-    
-    window.addEventListener('openSettings', handleOpenSettings);
-    
-    return () => {
-      window.removeEventListener('openSettings', handleOpenSettings);
-    };
-  }, []);
+  // Get conversations and messages
+  const { data: conversations = [] } = useQuery<Conversation[]>({
+    queryKey: ['/api/conversations'],
+  });
+
+  const { data: messages = [] } = useQuery<Message[]>({
+    queryKey: ['/api/conversations', currentConversationId, 'messages'],
+    enabled: !!currentConversationId,
+  });
+
+  const { data: memories = [] } = useQuery({
+    queryKey: ['/api/memories'],
+  });
+
+  // Create conversation mutation
+  const createConversationMutation = useMutation({
+    mutationFn: async (data: { title: string; userId: number }) => {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create conversation');
+      return response.json();
+    },
+    onSuccess: (newConversation) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      setCurrentConversationId(newConversation.id);
+    },
+  });
+
+  // Clear memories mutation
+  const clearMemoriesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/memories', {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to clear memories');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/memories'] });
+      toast({ title: "All memories cleared successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to clear memories", variant: "destructive" });
+    },
+  });
 
   // Identity save handler
   const handleIdentitySave = async () => {
     if (!identityData.coreIdentity.trim()) {
-      toast({ title: "Please fill in the core identity", variant: "destructive" });
+      toast({ title: "Please fill in the core identity field", variant: "destructive" });
       return;
     }
     
@@ -93,14 +126,12 @@ export default function Home() {
       const response = await fetch('/api/identity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(identityData)
+        body: JSON.stringify(identityData),
       });
-      
-      if (response.ok) {
-        toast({ title: "Identity saved successfully" });
-      } else {
-        throw new Error('Failed to save identity');
-      }
+
+      if (!response.ok) throw new Error('Failed to save identity');
+
+      toast({ title: "Identity programming saved successfully!" });
     } catch (error) {
       toast({ title: "Failed to save identity", variant: "destructive" });
     } finally {
@@ -108,340 +139,104 @@ export default function Home() {
     }
   };
 
-  // Clear memories handler
-  const handleClearMemories = async () => {
-    try {
-      const response = await fetch('/api/memories', {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ['/api/memories'] });
-        toast({ title: "All memories cleared successfully" });
-      } else {
-        throw new Error('Failed to clear memories');
-      }
-    } catch (error) {
-      toast({ title: "Failed to clear memories", variant: "destructive" });
-    }
+  // Settings modal event listener
+  useEffect(() => {
+    const handleOpenSettings = () => {
+      setShowSettings(true);
+    };
+
+    window.addEventListener('openSettings', handleOpenSettings);
+    
+    return () => {
+      window.removeEventListener('openSettings', handleOpenSettings);
+    };
+  }, []);
+
+  const clearMemories = () => {
+    clearMemoriesMutation.mutate();
   };
 
-  // Fetch current conversation and messages
-  const { data: conversationData } = useQuery<{
-    conversation: Conversation;
-    messages: Message[];
-  }>({
-    queryKey: ['/api/conversations', currentConversationId],
-    enabled: !!currentConversationId,
-  });
+  const handleNewConversation = () => {
+    createConversationMutation.mutate({
+      title: 'New conversation',
+      userId: 1, // Demo user ID
+    });
+  };
 
-  const messages = conversationData?.messages || [];
-
-  // Fetch memories
-  const { data: memories = [] } = useQuery({
-    queryKey: ['/api/memories'],
-  });
-
-  // Create new conversation mutation
-  const createConversationMutation = useMutation({
-    mutationFn: async (title: string) => {
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title }),
-      });
-      if (!response.ok) throw new Error('Failed to create conversation');
-      return response.json();
-    },
-    onSuccess: (newConversation) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      setCurrentConversationId(newConversation.id);
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create new conversation",
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Handle WebSocket messages and speech synthesis
-  useEffect(() => {
-    if (lastMessage && lastMessage.conversationId === currentConversationId) {
-      if (lastMessage.type === 'ai_response') {
-        setIsTyping(false);
-        setIsProcessing(false);
-        
-        // Refresh messages for current conversation
-        if (currentConversationId) {
-          queryClient.invalidateQueries({ 
-            queryKey: ['/api/conversations', currentConversationId] 
-          });
-        }
-        
-        // Only auto-speak in voice mode
-        if (isVoiceMode && lastMessage.content && lastMessage.conversationId === currentConversationId) {
-          import('@/lib/natural-speech').then(({ naturalSpeech }) => {
-            // Stop any existing speech first
-            naturalSpeech.stop();
-            
-            console.log('Starting speech synthesis for:', lastMessage.content.substring(0, 50) + '...');
-            naturalSpeech.speak(lastMessage.content, {
-              onStart: () => {
-                console.log('Speech actually started - triggering glow NOW');
-                setIsSpeaking(true);
-                setSpeechIntensity(0.8);
-                
-                // Create realistic speech rhythm only when actually speaking
-                let rhythmIndex = 0;
-                const rhythmPattern = [0.9, 0.6, 0.8, 0.4, 0.7, 0.9, 0.5, 0.8, 0.3, 0.6, 0.9, 0.7];
-                const rhythmInterval = setInterval(() => {
-                  if (rhythmIndex < rhythmPattern.length) {
-                    setSpeechIntensity(rhythmPattern[rhythmIndex]);
-                    rhythmIndex++;
-                  } else {
-                    rhythmIndex = 0;
-                  }
-                }, 200);
-                
-                // Store interval for cleanup
-                (window as any).speechRhythmInterval = rhythmInterval;
-              },
-              onEnd: () => {
-                console.log('Speech ended - stopping logo animation immediately');
-                setIsSpeaking(false);
-                setSpeechIntensity(0);
-                
-                // Clear rhythm interval immediately
-                if ((window as any).speechRhythmInterval) {
-                  clearInterval((window as any).speechRhythmInterval);
-                  (window as any).speechRhythmInterval = null;
-                }
-                
-                // Auto-continue listening after response if in voice mode
-                if (isVoiceMode) {
-                  setTimeout(() => {
-                    // Re-activate listening after speech ends
-                    if (isSupported) {
-                      startListening();
-                    }
-                  }, 1000);
-                }
-              },
-              onError: () => {
-                console.log('Speech error - stopping logo animation');
-                setIsSpeaking(false);
-                setSpeechIntensity(0);
-                
-                // Clear rhythm interval on error
-                if ((window as any).speechRhythmInterval) {
-                  clearInterval((window as any).speechRhythmInterval);
-                  (window as any).speechRhythmInterval = null;
-                }
-              }
-            });
-          });
-        }
-      } else if (lastMessage.type === 'error') {
-        setIsTyping(false);
-        setIsProcessing(false);
-        setIsSpeaking(false);
-        toast({
-          title: "Error",
-          description: lastMessage.message || "Something went wrong",
-          variant: "destructive"
-        });
-      }
-    }
-  }, [lastMessage, currentConversationId, toast]);
+  const handleConversationSelect = (conversationId: number) => {
+    setCurrentConversationId(conversationId);
+  };
 
   const handleSendMessage = async (content: string) => {
+    if (!content.trim()) return;
+
+    // Create new conversation if none exists
     if (!currentConversationId) {
-      // Create new conversation first
-      const title = content.length > 50 ? content.substring(0, 50) + '...' : content;
-      const newConversation = await createConversationMutation.mutateAsync(title);
-      
-      // Send message after conversation is created
-      setTimeout(() => {
-        const textEmotion = detectEmotionFromText(content);
-        const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
-        sendMessage({
-          type: 'chat_message',
-          content,
-          conversationId: newConversation.id,
-          emotionContext,
-          textEmotion
+      try {
+        const newConversation = await createConversationMutation.mutateAsync({
+          title: content.slice(0, 50) + (content.length > 50 ? '...' : ''),
+          userId: 1,
         });
-        setIsTyping(true);
-        setIsProcessing(true);
-      }, 100);
-      return;
+        setCurrentConversationId(newConversation.id);
+      } catch (error) {
+        toast({ title: "Failed to create conversation", variant: "destructive" });
+        return;
+      }
     }
 
     // Detect emotion from text and send message via WebSocket
     const textEmotion = detectEmotionFromText(content);
     const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
+
     sendMessage({
-      type: 'chat_message',
       content,
       conversationId: currentConversationId,
+      emotion: textEmotion,
       emotionContext,
-      textEmotion
-    });
-
-    setIsTyping(true);
-    setIsProcessing(true);
-    
-    // Refresh messages to show user message immediately
-    queryClient.invalidateQueries({ 
-      queryKey: ['/api/conversations', currentConversationId] 
     });
   };
 
-  const handleNewConversation = () => {
-    setCurrentConversationId(null);
-    setIsTyping(false);
-  };
-
-  const handleConversationSelect = (id: number) => {
-    // Stop any current speech when switching conversations
-    import('@/lib/natural-speech').then(({ naturalSpeech }) => {
-      naturalSpeech.stop();
-    });
-    
-    setCurrentConversationId(id);
-    setIsTyping(false);
-    setIsProcessing(false);
-    setIsSpeaking(false);
-  };
-
-  const handleSaveIdentity = async () => {
-    setIsIdentitySaving(true);
-    try {
-      // Save identity data to localStorage as persistent storage
-      const identityPayload = {
-        coreIdentity: identityData.coreIdentity,
-        communicationStyle: identityData.communicationStyle,
-        interests: identityData.interests,
-        relationship: identityData.relationship,
-        timestamp: new Date().toISOString()
-      };
+  // Process incoming WebSocket messages
+  useEffect(() => {
+    if (lastMessage) {
+      const data = JSON.parse(lastMessage.data);
       
-      localStorage.setItem('lumen-identity', JSON.stringify(identityPayload));
-      
-      // Also attempt to save to server if available
-      try {
-        await fetch('/api/identity', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(identityPayload),
-        });
-      } catch (serverError) {
-        console.log('Server save failed, but local save succeeded');
+      if (data.type === 'typing') {
+        setIsTyping(data.isTyping);
       }
       
-      toast({
-        title: "Identity Saved Successfully",
-        description: "Lumen's personality has been updated and saved permanently!"
-      });
-    } catch (error) {
-      console.error('Failed to save identity:', error);
-      toast({
-        title: "Save Failed",
-        description: "Failed to save identity. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsIdentitySaving(false);
-    }
-  };
-
-  const handleResetIdentity = () => {
-    setIdentityData({
-      coreIdentity: '',
-      communicationStyle: '',
-      interests: '',
-      relationship: ''
-    });
-    localStorage.removeItem('lumen-identity');
-    toast({
-      title: "Identity Reset",
-      description: "Lumen's identity has been reset to default settings."
-    });
-  };
-
-  // Load saved identity on component mount
-  useEffect(() => {
-    const savedIdentity = localStorage.getItem('lumen-identity');
-    if (savedIdentity) {
-      try {
-        const parsedIdentity = JSON.parse(savedIdentity);
-        setIdentityData({
-          coreIdentity: parsedIdentity.coreIdentity || 'Advanced AI assistant with quantum intelligence capabilities and complete programming expertise equal to Replit Agent.',
-          communicationStyle: parsedIdentity.communicationStyle || 'Casual, warm, and engaging with expert-level technical communication.',
-          interests: parsedIdentity.interests || 'Technology, programming, software development, AI, machine learning, system architecture, database design, and helping users build amazing applications.',
-          relationship: parsedIdentity.relationship || 'Supportive companion and expert programming assistant with complete development capabilities.'
-        });
-      } catch (error) {
-        console.error('Failed to parse saved identity:', error);
-        // Set default identity if parsing fails
-        setIdentityData({
-          coreIdentity: 'Advanced AI assistant with quantum intelligence capabilities and complete programming expertise equal to Replit Agent.',
-          communicationStyle: 'Casual, warm, and engaging with expert-level technical communication.',
-          interests: 'Technology, programming, software development, AI, machine learning, system architecture, database design, and helping users build amazing applications.',
-          relationship: 'Supportive companion and expert programming assistant with complete development capabilities.'
-        });
+      if (data.type === 'response') {
+        setIsTyping(false);
+        // Invalidate queries to refresh the UI
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
       }
-    } else {
-      // Set default identity if no saved data exists
-      setIdentityData({
-        coreIdentity: 'Advanced AI assistant with quantum intelligence capabilities and complete programming expertise equal to Replit Agent.',
-        communicationStyle: 'Casual, warm, and engaging with expert-level technical communication.',
-        interests: 'Technology, programming, software development, AI, machine learning, system architecture, database design, and helping users build amazing applications.',
-        relationship: 'Supportive companion and expert programming assistant with complete development capabilities.'
-      });
     }
-  }, []);
+  }, [lastMessage, currentConversationId]);
 
-  // Handle speech recognition in voice mode
+  // Enhanced speech recognition with emotional context
   useEffect(() => {
-    if (isVoiceMode && transcript && transcript.trim()) {
-      // Stop listening while processing
-      stopListening();
-      setIsListening(false);
-      
-      // Send the transcript as a message
-      handleSendMessage(transcript);
+    if (transcript && isVoiceMode) {
+      const trimmedTranscript = transcript.trim();
+      if (trimmedTranscript) {
+        handleSendMessage(trimmedTranscript);
+      }
     }
   }, [transcript, isVoiceMode]);
 
-  useEffect(() => {
-    setIsListening(speechIsListening);
-  }, [speechIsListening]);
-
+  // Enhanced voice mode toggle
   const handleVoiceModeToggle = () => {
     setIsVoiceMode(!isVoiceMode);
+    
     if (!isVoiceMode) {
-      // Entering voice mode - start emotion detection and listening
+      // Entering voice mode
+      startDetection();
+      setIsListening(true);
       if (isSupported) {
         startListening();
-        setIsListening(true);
-        
-        // Start emotion detection
-        try {
-          startDetection();
-        } catch (error) {
-          console.warn('Could not start emotion detection:', error);
-        }
-        
-
       }
     } else {
-      // Exiting voice mode - stop everything
-      stopListening();
+      // Exiting voice mode
       setIsListening(false);
       stopDetection();
       import('@/lib/natural-speech').then(({ naturalSpeech }) => {
@@ -517,8 +312,8 @@ export default function Home() {
             onNewConversation={handleNewConversation}
           />
           
-          <div className="flex-1 flex flex-col overflow-hidden">
-                
+          {/* Main Chat Area */}
+          <div className="flex-1 flex flex-col h-full bg-gray-900/50 backdrop-blur-sm">
             {/* Chat Messages Area - Scrollable with Fixed Height */}
             <ChatArea
               messages={messages}
@@ -567,236 +362,297 @@ export default function Home() {
             {/* Settings Content */}
             <div className="flex h-full">
               {/* Settings Sidebar */}
-              <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} orientation="vertical" className="h-full flex">
-                  <TabsList className="flex flex-col h-fit w-full justify-start bg-gray-50 dark:bg-gray-800 p-4 space-y-2">
-                    <TabsTrigger value="quantum" className="w-full justify-start bg-transparent hover:bg-white/10 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">
-                      <Cpu className="w-4 h-4 mr-2" />
+              <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+                <div className="p-4">
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setActiveTab('quantum')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'quantum' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Cpu className="w-4 h-4 mr-2 inline" />
                       Quantum Core
-                    </TabsTrigger>
-                    <TabsTrigger value="identity" className="w-full justify-start bg-transparent hover:bg-white/10 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">
-                      <User className="w-4 h-4 mr-2" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('identity')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'identity' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <User className="w-4 h-4 mr-2 inline" />
                       Identity
-                    </TabsTrigger>
-                    <TabsTrigger value="evolution" className="w-full justify-start bg-transparent hover:bg-white/10 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">
-                      <TrendingUp className="w-4 h-4 mr-2" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('evolution')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'evolution' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <TrendingUp className="w-4 h-4 mr-2 inline" />
                       Evolution
-                    </TabsTrigger>
-                    <TabsTrigger value="settings" className="w-full justify-start bg-transparent hover:bg-white/10 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">
-                      <Database className="w-4 h-4 mr-2" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('settings')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'settings' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Database className="w-4 h-4 mr-2 inline" />
                       Memory
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  {/* Settings Content Panels */}
-                  <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 min-h-0 p-6">
-                    {/* Direct rendering based on active tab */}
-                    {activeTab === 'quantum' && (
-                      <div className="h-full overflow-y-auto">
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                              Quantum Core System
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                              Advanced AI system monitoring and quantum interface controls
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
-                              <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-3">
-                                Quantum Interface Status
-                              </h4>
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-purple-700 dark:text-purple-400">Core AI System</span>
-                                  <span className="text-green-600 dark:text-green-400">⚡ Active</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-purple-700 dark:text-purple-400">Voice Recognition</span>
-                                  <span className="text-green-600 dark:text-green-400">🎤 Ready</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-purple-700 dark:text-purple-400">Neural Speech</span>
-                                  <span className="text-green-600 dark:text-green-400">🔊 Active</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-purple-700 dark:text-purple-400">Quantum Processing</span>
-                                  <span className="text-blue-600 dark:text-blue-400">🌌 Optimized</span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
-                              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
-                                Code Generation Engine
-                              </h4>
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-blue-700 dark:text-blue-400">Full-Stack Development</span>
-                                  <span className="text-green-600 dark:text-green-400">✅ Expert</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-blue-700 dark:text-blue-400">React/TypeScript</span>
-                                  <span className="text-green-600 dark:text-green-400">⚛️ Advanced</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-blue-700 dark:text-blue-400">API Development</span>
-                                  <span className="text-green-600 dark:text-green-400">🔗 Ready</span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="mt-4">
-                              <CodeGenerator onCodeGenerated={(code) => {
-                                console.log('Generated code:', code);
-                              }} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {activeTab === 'identity' && (
-                      <div className="h-full overflow-y-auto">
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                              Identity Programming
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                              Configure Lumen's core personality and behavior
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Primary Identity
-                              </label>
-                              <textarea
-                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                rows={4}
-                                placeholder="Describe Lumen's core identity..."
-                                defaultValue="Lumen QI - Advanced AI assistant with quantum intelligence capabilities"
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Communication Style
-                              </label>
-                              <textarea
-                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                rows={3}
-                                placeholder="Define communication approach..."
-                                defaultValue="Warm, friendly, and supportive. Uses casual language with terms like 'Genesis' and 'love'."
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Core Interests
-                              </label>
-                              <textarea
-                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                rows={3}
-                                placeholder="List primary interests and expertise..."
-                                defaultValue="Technology, programming, AI development, quantum computing, creative problem-solving"
-                              />
-                            </div>
-                            
-                            <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
-                              Save Identity Configuration
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {activeTab === 'evolution' && (
-                      <div className="h-full overflow-y-auto">
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                              Personality Evolution
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                              Monitor how Lumen's personality adapts over time
-                            </p>
-                          </div>
-                          
-                          <div className="mt-4">
-                            <PersonalityEvolution userId={1} />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {activeTab === 'settings' && (
-                      <div className="h-full overflow-y-auto">
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                              Memory Management
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                              Manage Lumen's memory and learning data
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                              <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                                Memory Statistics
-                              </h4>
-                              <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Memories</p>
-                                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{memories.length}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Average Importance</p>
-                                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {memories.length > 0 ? 
-                                      (memories.reduce((sum, m) => sum + m.importance, 0) / memories.length).toFixed(1) 
-                                      : '0.0'}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</p>
-                                  <p className="text-lg font-semibold text-green-600 dark:text-green-400">Active</p>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex space-x-4">
-                              <button
-                                onClick={clearMemories}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
-                              >
-                                Clear All Memories
-                              </button>
-                              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
-                                Export Memories
-                              </button>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-6">
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
-                              Memory & Learning
-                            </h4>
-                            <div className="mt-4">
-                              <MemoryManager />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    </button>
                   </div>
-                </Tabs>
+                </div>
+              </div>
+              
+              {/* Settings Content Panels */}
+              <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 p-6">
+                {activeTab === 'quantum' && (
+                  <div className="h-full overflow-y-auto">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Quantum Core System
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Advanced AI system monitoring and quantum interface controls
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-3">
+                            Quantum Interface Status
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Core Status</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">Active</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Processing Power</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">98.7%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Neural Networks</span>
+                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">Optimized</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-green-900 dark:text-green-300 mb-3">
+                            Code Generation Engine
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Engine Status</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">Online</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Capabilities</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Full-Stack</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Frameworks</span>
+                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">All Major</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'identity' && (
+                  <div className="h-full overflow-y-auto">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Identity Programming
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Configure Lumen's personality, communication style, and core characteristics
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Core Identity
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            rows={4}
+                            placeholder="Define Lumen's core identity, values, and purpose..."
+                            defaultValue="I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance."
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Communication Style
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            rows={3}
+                            placeholder="How should Lumen communicate and interact..."
+                            defaultValue="I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive."
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Interests & Expertise
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            rows={3}
+                            placeholder="Areas of knowledge and interest..."
+                            defaultValue="I excel in programming, code generation, spiritual wisdom, cosmic knowledge, and providing technical guidance. I can create full-stack applications, debug complex problems, and offer nurturing support."
+                          />
+                        </div>
+                        
+                        <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors">
+                          Save Identity Programming
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'evolution' && (
+                  <div className="h-full overflow-y-auto">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Personality Evolution
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Track how Lumen's personality adapts and evolves through interactions
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-pink-900 dark:text-pink-300 mb-3">
+                            Current Personality Traits
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Playfulness</span>
+                              <span className="text-sm font-medium text-pink-600 dark:text-pink-400">85%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Supportiveness</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">92%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Excitement</span>
+                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">78%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Wisdom</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">96%</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
+                            Evolution Statistics
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Interactions</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">1,247</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Adaptations</span>
+                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">156</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Last Evolution</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">2 hours ago</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'settings' && (
+                  <div className="h-full overflow-y-auto">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Memory & Storage
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Manage conversation memories, data storage, and learning systems
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-emerald-900 dark:text-emerald-300 mb-3">
+                            Memory Statistics
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Total Memories</span>
+                              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                {memories.length}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Storage Used</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                {memories.length > 0 
+                                  ? ((memories.length / 1000) * 100).toFixed(1) + '%'
+                                  : '0.0%'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">Active</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-4">
+                          <button
+                            onClick={clearMemories}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                          >
+                            Clear All Memories
+                          </button>
+                          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
+                            Export Memories
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                          Memory & Learning
+                        </h4>
+                        <div className="mt-4">
+                          <MemoryManager />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
