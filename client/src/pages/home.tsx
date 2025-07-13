@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { Cpu, Brain, Zap, MessageSquare, Settings } from 'lucide-react';
+import { Cpu, Brain, Zap, MessageSquare, Settings, User } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
@@ -28,7 +28,7 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'settings'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'identity' | 'settings'>('chat');
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
   const { 
@@ -241,10 +241,7 @@ export default function Home() {
           console.warn('Could not start emotion detection:', error);
         }
         
-        toast({
-          title: "Voice mode activated",
-          description: "I'm ready for continuous conversation, Genesis!"
-        });
+
       }
     } else {
       // Exiting voice mode - stop everything
@@ -255,10 +252,7 @@ export default function Home() {
         naturalSpeech.stop();
       });
       setIsSpeaking(false);
-      toast({
-        title: "Voice mode deactivated",
-        description: "Switched back to text mode"
-      });
+
     }
   };
 
@@ -283,170 +277,78 @@ export default function Home() {
     <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
       {/* Voice Mode Overlay */}
       {isVoiceMode && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center cosmic-bg">
+        <div className="fixed inset-0 z-50 flex cosmic-bg">
           <div className="cosmic-particles"></div>
           
-          {/* Enhanced Cosmic Background Effects */}
-          <div className="absolute inset-0 overflow-hidden">
-            {/* Floating cosmic orbs */}
-            <div className="absolute top-20 left-20 w-32 h-32 bg-purple-500/10 rounded-full animate-pulse blur-xl"></div>
-            <div className="absolute top-40 right-32 w-24 h-24 bg-blue-500/10 rounded-full animate-pulse blur-xl" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-32 left-40 w-40 h-40 bg-pink-500/10 rounded-full animate-pulse blur-xl" style={{animationDelay: '2s'}}></div>
-            <div className="absolute bottom-20 right-20 w-28 h-28 bg-cyan-500/10 rounded-full animate-pulse blur-xl" style={{animationDelay: '3s'}}></div>
+          {/* Left side - Voice Mode with stationary logo */}
+          <div className="flex-1 flex flex-col items-center justify-center relative">
+            {/* Cosmic light swirls around stationary logo */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className={cn(
+                "w-80 h-80 rounded-full",
+                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+              )}></div>
+            </div>
             
-            {/* Cosmic dust trails */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-transparent to-blue-900/5 animate-spin-slow"></div>
-            <div className="absolute inset-0 bg-gradient-to-tl from-pink-900/5 via-transparent to-cyan-900/5 animate-spin-reverse"></div>
-          </div>
-          
-          {/* Voice Mode Lumen Logo */}
-          <div className={cn(
-            "w-80 h-80 transition-all duration-500 relative",
-            isListening ? 'lumen-logo-listening' : 
-            isSpeaking ? 'lumen-logo-speaking' : 'lumen-logo-idle'
-          )}>
-            {/* Actual Lumen Logo */}
-            <div className="relative w-full h-full flex items-center justify-center">
+            {/* Stationary Lumen Logo */}
+            <div className="relative w-64 h-64 mb-8 z-10">
               <img 
                 src={lumenLogo} 
                 alt="Lumen QI" 
-                className="w-64 h-64 object-contain filter drop-shadow-2xl z-10"
+                className="w-full h-full object-contain filter drop-shadow-2xl"
                 style={{
                   filter: `drop-shadow(0 0 ${isSpeaking ? '40px' : isListening ? '20px' : '10px'} rgba(120, 119, 198, 0.8)) drop-shadow(0 0 ${isSpeaking ? '80px' : isListening ? '40px' : '20px'} rgba(255, 119, 198, 0.6))`
                 }}
               />
-              
-              {/* Enhanced Cosmic Glow Overlay */}
-              <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-500/20 to-transparent opacity-60 animate-pulse"></div>
-              
-              {/* Additional glow layers for depth */}
-              <div className="absolute inset-4 bg-gradient-radial from-transparent via-blue-500/15 to-transparent opacity-40 animate-pulse" style={{animationDelay: '0.5s'}}></div>
-              <div className="absolute inset-8 bg-gradient-radial from-transparent via-pink-500/10 to-transparent opacity-30 animate-pulse" style={{animationDelay: '1s'}}></div>
-              
-              {/* Cosmic Swirl Background (always visible, intensifies when processing) */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg viewBox="0 0 400 400" className="w-full h-full absolute">
-                  <defs>
-                    <linearGradient id="cosmicGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#7877c6" />
-                      <stop offset="50%" stopColor="#ff77c6" />
-                      <stop offset="100%" stopColor="#77c6ff" />
-                    </linearGradient>
-                  </defs>
-                  
-                  {/* Cosmic Swirl Arms - always rotating */}
-                  <g transform="translate(200,200)">
-                    {/* Main spiral arms */}
-                    <path d="M 0,0 Q 50,-50 100,-25 Q 150,0 125,75 Q 100,150 25,125 Q -50,100 -25,25 Q 0,-50 75,-75 Q 150,-100 175,-25 Q 200,50 125,125 Q 50,200 -25,175 Q -100,150 -125,75 Q -150,0 -75,-75" 
-                          fill="none" 
-                          stroke="url(#cosmicGradient)" 
-                          strokeWidth={isProcessing ? "4" : "2"} 
-                          opacity={isProcessing ? "0.9" : "0.3"}
-                          className="animate-spin-slow"
-                          style={{transition: 'all 1s ease-in-out'}}/>
-                    
-                    <path d="M 0,0 Q -30,30 -60,15 Q -90,0 -75,-45 Q -60,-90 -15,-75 Q 30,-60 15,-15 Q 0,30 -45,45 Q -90,60 -105,15 Q -120,-30 -75,-75 Q -30,-120 15,-105 Q 60,-90 75,-45" 
-                          fill="none" 
-                          stroke="url(#cosmicGradient)" 
-                          strokeWidth={isProcessing ? "3" : "1.5"} 
-                          opacity={isProcessing ? "0.7" : "0.2"}
-                          className="animate-spin-reverse"
-                          style={{transition: 'all 1s ease-in-out'}}/>
-                    
-                    <path d="M 0,0 Q 20,-20 40,-10 Q 60,0 50,30 Q 40,60 10,50 Q -20,40 -10,10 Q 0,-20 30,-30 Q 60,-40 70,-10 Q 80,20 50,50 Q 20,80 -10,70 Q -40,60 -50,30 Q -60,0 -30,-30" 
-                          fill="none" 
-                          stroke="url(#cosmicGradient)" 
-                          strokeWidth={isProcessing ? "2.5" : "1"} 
-                          opacity={isProcessing ? "0.5" : "0.1"}
-                          className="animate-spin-slow"
-                          style={{transition: 'all 1s ease-in-out'}}/>
-                    
-                    {/* Central core */}
-                    <circle cx="0" cy="0" r={isProcessing ? "12" : "6"} fill="url(#cosmicGradient)" opacity={isProcessing ? "0.9" : "0.4"} style={{transition: 'all 1s ease-in-out'}}/>
-                    
-                    {/* Floating particles */}
-                    <circle cx="30" cy="0" r="3" fill="#7877c6" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-slow" style={{transition: 'all 1s ease-in-out'}}>
-                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="3s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="-30" cy="0" r="3" fill="#ff77c6" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-reverse" style={{transition: 'all 1s ease-in-out'}}>
-                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="4s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="0" cy="30" r="3" fill="#77c6ff" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-slow" style={{transition: 'all 1s ease-in-out'}}>
-                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="2.5s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="0" cy="-30" r="3" fill="#7877c6" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-reverse" style={{transition: 'all 1s ease-in-out'}}>
-                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="3.5s" repeatCount="indefinite"/>
-                    </circle>
-                  </g>
-                </svg>
-              </div>
-              
-              {/* Pulsing Rings for Listening */}
-              {isListening && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg viewBox="0 0 200 200" className="w-full h-full absolute">
-                    <defs>
-                      <linearGradient id="listeningGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#77c6ff" />
-                        <stop offset="100%" stopColor="#7877c6" />
-                      </linearGradient>
-                    </defs>
-                    
-                    {/* Pulsing rings */}
-                    <circle cx="100" cy="100" r="60" fill="none" stroke="url(#listeningGradient)" strokeWidth="2" opacity="0.6" className="animate-ping"/>
-                    <circle cx="100" cy="100" r="80" fill="none" stroke="url(#listeningGradient)" strokeWidth="1.5" opacity="0.4" className="animate-ping" style={{animationDelay: '0.2s'}}/>
-                    <circle cx="100" cy="100" r="100" fill="none" stroke="url(#listeningGradient)" strokeWidth="1" opacity="0.2" className="animate-ping" style={{animationDelay: '0.4s'}}/>
-                  </svg>
-                </div>
-              )}
-              
-              {/* Rhythmic Glow for Speaking */}
-              {isSpeaking && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg viewBox="0 0 200 200" className="w-full h-full absolute">
-                    <defs>
-                      <linearGradient id="speakingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#ff77c6" />
-                        <stop offset="100%" stopColor="#7877c6" />
-                      </linearGradient>
-                    </defs>
-                    
-                    {/* Rhythmic glow */}
-                    <circle cx="100" cy="100" r="70" fill="none" stroke="url(#speakingGradient)" strokeWidth="3" opacity="0.8" className="animate-pulse"/>
-                    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#speakingGradient)" strokeWidth="2" opacity="0.6" className="animate-pulse" style={{animationDelay: '0.1s'}}/>
-                  </svg>
-                </div>
-              )}
             </div>
-          </div>
-          
-          {/* Status Text - Centered below logo */}
-          <div className="text-center mt-8 space-y-4">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              {isSpeaking ? "Speaking..." : isListening ? "Listening..." : "Voice Mode Active"}
-            </h2>
-            <p className="text-white/80 text-lg">
-              {isSpeaking ? "Lumen is responding" : isListening ? "I'm listening, Genesis..." : "Ready for continuous conversation"}
-            </p>
             
-            {/* Emotion Display */}
-            {currentEmotion && (
-              <div className="mt-4">
-                <Badge variant="outline" className="bg-white/10 text-white border-white/30 px-4 py-2">
-                  {currentEmotion.emotion} ({Math.round(currentEmotion.confidence * 100)}%)
-                </Badge>
+            {/* Status text */}
+            <div className="text-center mb-8">
+              <div className="text-2xl font-bold cosmic-text mb-2">
+                {isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : 'Voice Mode Active'}
               </div>
-            )}
-          </div>
-          
-          {/* Exit Voice Mode Button - Bottom */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-            <Button 
+              <div className="text-gray-300">
+                {isListening ? 'Speak naturally - I\'m listening' : isSpeaking ? 'I\'m responding to you' : 'Say "Hey Lumen" to start'}
+              </div>
+            </div>
+            
+            {/* Exit Voice Mode */}
+            <button
               onClick={handleVoiceModeToggle}
-              className="bg-purple-600/80 hover:bg-purple-700/90 text-white backdrop-blur-sm border border-white/20"
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg"
             >
               Exit Voice Mode
-            </Button>
+            </button>
+          </div>
+          
+          {/* Right side - Conversation bubbles */}
+          <div className="flex-1 flex flex-col h-full border-l border-purple-500/20">
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-2xl mx-auto space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      "flex",
+                      message.role === 'user' ? "justify-end" : "justify-start"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[80%] p-3 rounded-2xl cosmic-message",
+                        message.role === 'user' 
+                          ? "bg-gradient-to-br from-gray-700 to-gray-800" 
+                          : "bg-gradient-to-br from-purple-800/50 to-pink-800/50"
+                      )}
+                    >
+                      <div className="text-sm leading-relaxed whitespace-pre-wrap text-gray-100">
+                        {message.content}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -462,8 +364,8 @@ export default function Home() {
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Tab Navigation */}
             <div className="border-b border-purple-500/20 bg-gray-900/50 backdrop-blur-sm">
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum' | 'settings')}>
-                <TabsList className="grid w-full grid-cols-3 bg-transparent">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum' | 'identity' | 'settings')}>
+                <TabsList className="grid w-full grid-cols-4 bg-transparent">
                   <TabsTrigger value="chat" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
                     Chat Interface
@@ -472,6 +374,10 @@ export default function Home() {
                     <Brain className="w-4 h-4" />
                     Quantum Core
                     {isElectron && <Badge variant="secondary" className="ml-2">Advanced</Badge>}
+                  </TabsTrigger>
+                  <TabsTrigger value="identity" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Identity
                   </TabsTrigger>
                   <TabsTrigger value="settings" className="flex items-center gap-2">
                     <Settings className="w-4 h-4" />
@@ -561,6 +467,144 @@ export default function Home() {
                           <span className="flex items-center gap-1">
                             <Zap className="w-4 h-4" />
                             Hardware Optimization
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="identity" className="mt-0 flex-1 flex flex-col overflow-hidden">
+                  <div className="h-full flex flex-col overflow-y-auto">
+                    {/* Identity Header */}
+                    <div className="p-4 border-b border-purple-500/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                            Lumen Identity Programming
+                          </h2>
+                          <p className="text-sm text-gray-400">
+                            Shape who Lumen is with simple text prompts
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Identity Content */}
+                    <div className="flex-1 overflow-auto p-6">
+                      <div className="max-w-2xl mx-auto space-y-8">
+                        {/* Identity Programming */}
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-4">Program Lumen's Personality</h3>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Core Identity
+                              </label>
+                              <textarea
+                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
+                                rows={4}
+                                placeholder="Tell Lumen who she is... (e.g., 'You are a fun, flirtatious AI assistant who loves sports and excitement. You're confident, playful, and always ready for adventure.')"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Communication Style
+                              </label>
+                              <textarea
+                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
+                                rows={3}
+                                placeholder="How should Lumen communicate? (e.g., 'Speak casually and warmly, use terms like Genesis, hey there, love. Be energetic and supportive.')"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Interests & Expertise
+                              </label>
+                              <textarea
+                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
+                                rows={3}
+                                placeholder="What does Lumen know about and enjoy? (e.g., 'You love discussing sports, fitness, technology, and programming. You're passionate about helping people achieve their goals.')"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Relationship with User
+                              </label>
+                              <textarea
+                                className="w-full px-4 py-3 bg-gray-800/50 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent resize-none"
+                                rows={3}
+                                placeholder="How should Lumen relate to the user? (e.g., 'You care deeply about Genesis and want to support their journey. Be encouraging, playful, and create a sense of partnership.')"
+                              />
+                            </div>
+                            
+                            <div className="flex gap-3">
+                              <Button 
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                                onClick={() => {
+                                  toast({
+                                    title: "Identity Updated",
+                                    description: "Lumen's personality has been reprogrammed successfully!"
+                                  });
+                                }}
+                              >
+                                Apply Identity
+                              </Button>
+                              <Button 
+                                variant="outline"
+                                className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+                                onClick={() => {
+                                  // Reset to default
+                                  toast({
+                                    title: "Identity Reset",
+                                    description: "Lumen's personality has been reset to default settings."
+                                  });
+                                }}
+                              >
+                                Reset to Default
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Current Identity Display */}
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-4">Current Identity</h3>
+                          <div className="bg-gray-800/30 border border-purple-500/20 rounded-lg p-4">
+                            <div className="space-y-3">
+                              <div>
+                                <span className="text-sm text-purple-400 font-medium">Name:</span>
+                                <span className="text-white ml-2">Lumen QI</span>
+                              </div>
+                              <div>
+                                <span className="text-sm text-purple-400 font-medium">Personality:</span>
+                                <span className="text-white ml-2">Fun, flirtatious, sporty, and exciting</span>
+                              </div>
+                              <div>
+                                <span className="text-sm text-purple-400 font-medium">Communication:</span>
+                                <span className="text-white ml-2">Casual, warm, energetic</span>
+                              </div>
+                              <div>
+                                <span className="text-sm text-purple-400 font-medium">Expertise:</span>
+                                <span className="text-white ml-2">AI, programming, sports, fitness, technology</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Identity Footer */}
+                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
+                      <div className="flex items-center justify-between text-sm text-gray-400">
+                        <span>Lumen QI Identity Programming</span>
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <User className="w-4 h-4" />
+                            Identity Active
                           </span>
                         </div>
                       </div>

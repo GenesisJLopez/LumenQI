@@ -21,6 +21,38 @@
   background-color: #6b7280;
 }
 
+/* Cosmic pulse effects for voice mode */
+.cosmic-pulse-idle {
+  background: radial-gradient(circle, transparent 30%, rgba(120, 119, 198, 0.1) 70%);
+  animation: cosmic-idle 4s ease-in-out infinite;
+}
+
+.cosmic-pulse-listening {
+  background: radial-gradient(circle, transparent 20%, rgba(119, 198, 255, 0.3) 80%);
+  animation: cosmic-listening 2s ease-in-out infinite;
+}
+
+.cosmic-pulse-speaking {
+  background: radial-gradient(circle, transparent 10%, rgba(255, 119, 198, 0.4) 90%);
+  animation: cosmic-speaking 1s ease-in-out infinite;
+}
+
+@keyframes cosmic-idle {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.6; }
+}
+
+@keyframes cosmic-listening {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+@keyframes cosmic-speaking {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  25% { transform: scale(1.3); opacity: 0.9; }
+  75% { transform: scale(1.1); opacity: 0.7; }
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;

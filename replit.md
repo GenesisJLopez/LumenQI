@@ -192,6 +192,18 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Added proper onplay event handler for OpenAI TTS audio playback
 - Updated browser TTS fallback to use onstart event for precise timing
 
+**January 13, 2025**: Voice Mode & Identity Programming Enhancements
+- Fixed critical scrolling issue in chat area using native scrolling instead of complex ScrollArea
+- Redesigned voice mode with stationary logo and cosmic light effects pulsating to speech rhythm
+- Added conversation bubbles display in right panel during voice mode for better UX
+- Removed voice mode activation/deactivation popup notifications per user request
+- Created new "Identity" tab for programming Lumen's personality with simple text prompts
+- Added comprehensive identity programming interface with core identity, communication style, interests, and relationship fields
+- Implemented cosmic pulse effects (idle, listening, speaking) with CSS animations
+- Enhanced voice mode layout with split-screen design: logo on left, conversations on right
+- Added custom scrollbar styling for improved visual consistency
+- Fixed tab navigation to include 4 tabs: Chat, Quantum Core, Identity, Settings
+
 **January 12, 2025**: Complete TTS & UI Fixes
 - Fixed OpenAI TTS API integration by removing emojis and Unicode characters from text
 - Restored Lumen's beautiful Nova voice with proper text cleaning
