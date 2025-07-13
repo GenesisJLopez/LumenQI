@@ -132,23 +132,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   return (
     <div className="h-full cosmic-bg relative">
       
-      {/* Smaller Lumen Logo for Active Chat */}
-      <div className={cn(
-        "fixed top-4 right-4 w-16 h-16 z-10 pointer-events-none",
-        isListening ? 'lumen-logo-listening' : isSpeaking ? 'lumen-logo-speaking' : 'lumen-logo-idle',
-        isListening || isSpeaking ? 'opacity-80' : 'opacity-50'
-      )}>
-        <svg viewBox="0 0 200 200" className="w-full h-full">
-          <defs>
-            <linearGradient id="smallLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#7877c6" />
-              <stop offset="50%" stopColor="#ff77c6" />
-              <stop offset="100%" stopColor="#77c6ff" />
-            </linearGradient>
-          </defs>
-          <circle cx="100" cy="100" r="20" fill="url(#smallLogoGradient)" opacity="0.8"/>
-        </svg>
-      </div>
+
       
       {/* Chat Messages Container - Fixed Height with Forced Scrolling */}
       <div 
@@ -175,12 +159,6 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                   )}
                 >
                 <div className="flex items-start gap-3">
-                  {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-5 h-5 text-white" />
-                    </div>
-                  )}
-                  
                   <div className="flex-1">
                     {message.role === 'assistant' && (
                       <div className="text-sm font-semibold cosmic-text mb-2">Lumen QI</div>
@@ -192,12 +170,6 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                       {formatTime(message.timestamp)}
                     </div>
                   </div>
-                  
-                  {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
-                  )}
                 </div>
                 
                 {/* Message Actions - Only show for assistant messages */}
@@ -259,9 +231,6 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
               <div className="flex justify-start">
                 <div className="max-w-[70%] p-4 rounded-2xl cosmic-message assistant">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-5 h-5 text-white" />
-                    </div>
                     <div className="flex-1">
                       <div className="text-sm font-semibold cosmic-text mb-2">Lumen QI</div>
                       <div className="flex items-center gap-1">
