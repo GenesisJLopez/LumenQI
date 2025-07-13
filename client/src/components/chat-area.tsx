@@ -73,8 +73,22 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   if (!currentConversationId) {
     return (
       <div className="flex-1 flex items-center justify-center cosmic-bg relative">
-        {/* Cosmic Particles */}
-        <div className="cosmic-particles"></div>
+        {/* Subtle Lumen Logo Background */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-5">
+          <svg viewBox="0 0 200 200" className="w-96 h-96">
+            <defs>
+              <linearGradient id="bgLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#7877c6" />
+                <stop offset="50%" stopColor="#ff77c6" />
+                <stop offset="100%" stopColor="#77c6ff" />
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#bgLogoGradient)" strokeWidth="1" opacity="0.3"/>
+            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#bgLogoGradient)" strokeWidth="1.5" opacity="0.5"/>
+            <circle cx="100" cy="100" r="40" fill="none" stroke="url(#bgLogoGradient)" strokeWidth="2" opacity="0.7"/>
+            <circle cx="100" cy="100" r="15" fill="url(#bgLogoGradient)" opacity="0.8"/>
+          </svg>
+        </div>
         
         {/* Central Lumen Logo */}
         <div className={cn(
@@ -202,49 +216,51 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                   )}
                 </div>
                 
-                {/* Message Actions */}
-                <div className="absolute -bottom-8 left-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(message.content, message.id)}
-                    className="cosmic-button h-6 px-2"
-                  >
-                    <Copy className="w-3 h-3" />
-                    {copiedMessageId === message.id && (
-                      <span className="text-xs ml-1">Copied!</span>
-                    )}
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleSpeakMessage(message.content, message.id)}
-                    className="cosmic-button h-6 px-2"
-                  >
-                    {isSpeakingMessage === message.id ? (
-                      <VolumeX className="w-3 h-3" />
-                    ) : (
-                      <Volume2 className="w-3 h-3" />
-                    )}
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="cosmic-button h-6 px-2"
-                  >
-                    <ThumbsUp className="w-3 h-3" />
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="cosmic-button h-6 px-2"
-                  >
-                    <ThumbsDown className="w-3 h-3" />
-                  </Button>
-                </div>
+                {/* Message Actions - Only show for assistant messages */}
+                {message.role === 'assistant' && (
+                  <div className="absolute -bottom-8 left-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(message.content, message.id)}
+                      className="cosmic-button h-6 px-2"
+                    >
+                      <Copy className="w-3 h-3" />
+                      {copiedMessageId === message.id && (
+                        <span className="text-xs ml-1">Copied!</span>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleSpeakMessage(message.content, message.id)}
+                      className="cosmic-button h-6 px-2"
+                    >
+                      {isSpeakingMessage === message.id ? (
+                        <VolumeX className="w-3 h-3" />
+                      ) : (
+                        <Volume2 className="w-3 h-3" />
+                      )}
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="cosmic-button h-6 px-2"
+                    >
+                      <ThumbsUp className="w-3 h-3" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="cosmic-button h-6 px-2"
+                    >
+                      <ThumbsDown className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
