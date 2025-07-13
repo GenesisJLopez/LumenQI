@@ -108,8 +108,8 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
             <div
               key={conversation.id}
               className={cn(
-                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative",
-                currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800" : ""
+                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
+                currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600" : ""
               )}
               onClick={() => onConversationSelect(conversation.id)}
             >
@@ -126,10 +126,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2 flex-shrink-0 rounded-md"
+                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2 flex-shrink-0 rounded-md bg-transparent hover:bg-red-100 dark:hover:bg-red-800/30"
                   title="Delete conversation"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
             </div>
