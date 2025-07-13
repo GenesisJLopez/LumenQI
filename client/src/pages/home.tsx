@@ -570,66 +570,34 @@ export default function Home() {
                       <div className="space-y-6">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Quantum Core Interface
+                            Core System
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Advanced system monitoring and hardware optimization
+                            Basic system information and status
                           </p>
                         </div>
                         
                         <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                              <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-2">
-                                CPU Optimization
-                              </h4>
-                              <div className="text-xs text-purple-700 dark:text-purple-400">
-                                Multi-core processing enabled
-                              </div>
-                              <div className="mt-2 h-2 bg-purple-200 dark:bg-purple-800 rounded-full">
-                                <div className="h-2 bg-purple-500 rounded-full" style={{width: '78%'}}></div>
-                              </div>
-                            </div>
-                            
-                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
-                                Memory Usage
-                              </h4>
-                              <div className="text-xs text-blue-700 dark:text-blue-400">
-                                Adaptive allocation active
-                              </div>
-                              <div className="mt-2 h-2 bg-blue-200 dark:bg-blue-800 rounded-full">
-                                <div className="h-2 bg-blue-500 rounded-full" style={{width: '65%'}}></div>
-                              </div>
-                            </div>
-                          </div>
-                          
                           <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                             <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                              Quantum Processing Status
+                              System Status
                             </h4>
                             <div className="space-y-2">
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">Neural Networks</span>
+                                <span className="text-gray-600 dark:text-gray-400">AI System</span>
                                 <span className="text-green-600 dark:text-green-400">Active</span>
                               </div>
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600 dark:text-gray-400">Machine Learning</span>
-                                <span className="text-green-600 dark:text-green-400">Optimized</span>
+                                <span className="text-gray-600 dark:text-gray-400">Voice Recognition</span>
+                                <span className="text-green-600 dark:text-green-400">Ready</span>
                               </div>
                               <div className="flex justify-between text-xs">
                                 <span className="text-gray-600 dark:text-gray-400">Speech Synthesis</span>
-                                <span className="text-green-600 dark:text-green-400">Enhanced</span>
+                                <span className="text-green-600 dark:text-green-400">Active</span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        
-                        <QuantumInterface
-                          onTTSRequest={synthesizeAdvancedTTS}
-                          onMLAdapt={adaptMachineLearning}
-                          isElectron={isElectron}
-                        />
                       </div>
                     </TabsContent>
 
