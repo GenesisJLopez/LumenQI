@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
 import { lumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
+import { personalityEvolution } from "./services/personality-evolution";
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -244,6 +245,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get personality insights
+  app.get("/api/personality/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const insights = await personalityEvolution.getPersonalityInsights(userId);
+      res.json(insights);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch personality insights" });
+    }
+  });
+
   // WebSocket handling for real-time chat
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection established');
@@ -275,6 +287,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: memory.content,
             context: memory.context || undefined
           })); // Use recent memories
+
+          // Process interaction for personality evolution
+          await personalityEvolution.processInteraction({
+            userId: 1,
+            messageContent: content,
+            emotion: emotionContext?.emotion,
+            emotionConfidence: emotionContext?.confidence,
+            timestamp: new Date()
+          });
 
           // Generate AI response with emotion context
           const aiResponse = await lumenAI.generateResponse(
