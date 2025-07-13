@@ -122,23 +122,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   if (!currentConversationId) {
     return (
       <div className="flex-1 flex items-center justify-center cosmic-bg relative">
-        {/* Subtle Lumen Logo Background */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-5">
-          <svg viewBox="0 0 200 200" className="w-96 h-96">
-            <defs>
-              <linearGradient id="bgLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#7877c6" />
-                <stop offset="50%" stopColor="#ff77c6" />
-                <stop offset="100%" stopColor="#77c6ff" />
-              </linearGradient>
-            </defs>
-            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#bgLogoGradient)" strokeWidth="1" opacity="0.3"/>
-            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#bgLogoGradient)" strokeWidth="1.5" opacity="0.5"/>
-            <circle cx="100" cy="100" r="40" fill="none" stroke="url(#bgLogoGradient)" strokeWidth="2" opacity="0.7"/>
-            <circle cx="100" cy="100" r="15" fill="url(#bgLogoGradient)" opacity="0.8"/>
-          </svg>
-        </div>
-        {/* Central Lumen Logo */}
+        {/* Central Lumen Logo - Just the core without circles */}
         <div className={cn(
           "lumen-central-logo",
           isListening ? 'lumen-logo-listening' : isSpeaking ? 'lumen-logo-speaking' : 'lumen-logo-idle',
@@ -160,29 +144,8 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
               </filter>
             </defs>
             
-            {/* Outer rings */}
-            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#logoGradient)" strokeWidth="1" opacity="0.3"/>
-            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#logoGradient)" strokeWidth="1.5" opacity="0.5"/>
-            <circle cx="100" cy="100" r="40" fill="none" stroke="url(#logoGradient)" strokeWidth="2" opacity="0.7"/>
-            
-            {/* Central core */}
+            {/* Central core only */}
             <circle cx="100" cy="100" r="15" fill="url(#logoGradient)" opacity="0.8" filter="url(#glow)"/>
-            
-            {/* Quantum field lines */}
-            <g transform="translate(100,100)" stroke="url(#logoGradient)" strokeWidth="1" opacity="0.6">
-              <line x1="0" y1="-85" x2="0" y2="-65" />
-              <line x1="0" y1="65" x2="0" y2="85" />
-              <line x1="-85" y1="0" x2="-65" y2="0" />
-              <line x1="65" y1="0" x2="85" y2="0" />
-              <line x1="-60" y1="-60" x2="-45" y2="-45" />
-              <line x1="45" y1="45" x2="60" y2="60" />
-              <line x1="60" y1="-60" x2="45" y2="-45" />
-              <line x1="-45" y1="45" x2="-60" y2="60" />
-            </g>
-            
-            {/* Inner energy waves */}
-            <circle cx="100" cy="100" r="25" fill="none" stroke="url(#logoGradient)" strokeWidth="0.5" opacity="0.4"/>
-            <circle cx="100" cy="100" r="30" fill="none" stroke="url(#logoGradient)" strokeWidth="0.5" opacity="0.3"/>
           </svg>
         </div>
         <div className="text-center z-10 mt-96">
@@ -209,7 +172,6 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
               <stop offset="100%" stopColor="#77c6ff" />
             </linearGradient>
           </defs>
-          <circle cx="100" cy="100" r="80" fill="none" stroke="url(#smallLogoGradient)" strokeWidth="2" opacity="0.5"/>
           <circle cx="100" cy="100" r="20" fill="url(#smallLogoGradient)" opacity="0.8"/>
         </svg>
       </div>
