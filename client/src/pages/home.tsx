@@ -14,7 +14,7 @@ import { PersonalityEvolution } from '@/components/personality-evolution';
 import { VoiceSettings } from '@/components/voice-settings';
 import { MemoryManager } from '@/components/memory-manager';
 import { CodeGenerator } from '@/components/code-generator';
-import lumenLogo from '@assets/lumen-logo_1752354847791.png';
+import lumenLogo from '@/assets/lumen-logo.svg';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
