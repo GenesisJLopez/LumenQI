@@ -447,83 +447,89 @@ export default function Home() {
 
   return (
     <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
-      {/* Voice Mode Overlay - Full Screen Centered */}
+      {/* Voice Mode - Full Screen Interface */}
       {isVoiceMode && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center cosmic-bg">
+        <div className="fixed inset-0 z-50 cosmic-bg">
           <div className="cosmic-particles"></div>
           
-          {/* Cosmic glow centered behind logo */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div 
-              className={cn(
-                "w-80 h-80 rounded-full transition-all duration-300",
-                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
-              )}
-              style={isSpeaking ? {
-                animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
-                opacity: 0.3 + (speechIntensity * 0.2),
-                transform: `scale(${1 + speechIntensity * 0.02})`
-              } : {}}
-            ></div>
-          </div>
-          
-          {/* Centered Logo */}
-          <div className="relative z-10 mb-8">
-            <img 
-              src={lumenLogo} 
-              alt="Lumen" 
-              className="w-32 h-32 mx-auto"
-            />
-          </div>
-          
-          {/* Status text */}
-          <div className="text-center mb-8 relative z-10">
-            <div className="text-2xl font-bold cosmic-text mb-2">
-              {isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : 'Voice Mode Active'}
+          {/* Full screen centered container */}
+          <div className="w-full h-full flex items-center justify-center relative">
+            {/* Cosmic glow positioned exactly behind logo */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div 
+                className={cn(
+                  "w-80 h-80 rounded-full transition-all duration-300",
+                  isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+                )}
+                style={isSpeaking ? {
+                  animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
+                  opacity: 0.3 + (speechIntensity * 0.2),
+                  transform: `scale(${1 + speechIntensity * 0.02})`
+                } : {}}
+              ></div>
             </div>
-            <div className="text-gray-300">
-              {isListening ? 'Speak naturally - I\'m listening' : isSpeaking ? 'I\'m responding to you' : 'Say "Hey Lumen" to start'}
-            </div>
-          </div>
-          
-          {/* Conversation bubbles overlay - Always visible */}
-          <div className="relative z-10 w-full max-w-6xl px-8 flex-1 flex items-center justify-center">
-            <div className="w-full max-h-96 overflow-y-auto">
-              <div className="space-y-4">
-                {messages.slice(-6).map((message, index) => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "flex w-full",
-                      message.role === 'user' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[70%] px-4 py-3 rounded-2xl text-sm backdrop-blur-sm",
-                        message.role === 'user'
-                          ? "bg-gradient-to-br from-blue-600/80 to-blue-700/80 text-white"
-                          : "bg-gradient-to-br from-purple-800/60 to-pink-800/60 text-white"
-                      )}
-                    >
-                      <div className="leading-relaxed whitespace-pre-wrap">
-                        {message.content}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            
+            {/* Main content - centered */}
+            <div className="flex flex-col items-center justify-center relative z-10">
+              {/* Logo */}
+              <div className="mb-8">
+                <img 
+                  src={lumenLogo} 
+                  alt="Lumen" 
+                  className="w-32 h-32 mx-auto"
+                />
+              </div>
+              
+              {/* Status text */}
+              <div className="text-center mb-8">
+                <div className="text-2xl font-bold cosmic-text mb-2">
+                  {isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : 'Voice Mode Active'}
+                </div>
+                <div className="text-gray-300">
+                  {isListening ? 'Speak naturally - I\'m listening' : isSpeaking ? 'I\'m responding to you' : 'Say "Hey Lumen" to start'}
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Exit Voice Mode Button */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-            <Button
-              onClick={handleVoiceModeToggle}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
-            >
-              Exit Voice Mode
-            </Button>
+            
+            {/* Conversation bubbles overlay */}
+            <div className="absolute inset-0 flex items-end justify-center pb-32">
+              <div className="w-full max-w-6xl px-8">
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {messages.slice(-6).map((message, index) => (
+                    <div
+                      key={message.id}
+                      className={cn(
+                        "flex w-full",
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "max-w-[70%] px-4 py-3 rounded-2xl text-sm backdrop-blur-sm",
+                          message.role === 'user'
+                            ? "bg-gradient-to-br from-blue-600/80 to-blue-700/80 text-white"
+                            : "bg-gradient-to-br from-purple-800/60 to-pink-800/60 text-white"
+                        )}
+                      >
+                        <div className="leading-relaxed whitespace-pre-wrap">
+                          {message.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Exit Voice Mode Button */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+              <Button
+                onClick={handleVoiceModeToggle}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
+              >
+                Exit Voice Mode
+              </Button>
+            </div>
           </div>
         </div>
       )}

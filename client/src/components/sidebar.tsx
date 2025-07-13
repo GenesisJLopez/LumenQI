@@ -49,6 +49,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
     e.stopPropagation();
     e.preventDefault();
     
+    if (!window.confirm('Are you sure you want to delete this conversation?')) {
+      return;
+    }
+    
     // If this is the current conversation, clear it
     if (currentConversationId === id) {
       onNewConversation();
