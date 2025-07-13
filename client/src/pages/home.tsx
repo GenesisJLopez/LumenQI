@@ -589,264 +589,203 @@ export default function Home() {
                   </TabsList>
                   
                   {/* Settings Content Panels */}
-                  <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 min-h-0">
-                    <TabsContent value="quantum" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Quantum Core System
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Advanced AI system monitoring and quantum interface controls
-                          </p>
-                          <div className="text-xs text-gray-500 mb-2">
-                            Active Tab: {activeTab} | Status: Loading Components
+                  <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 min-h-0 p-6">
+                    {/* Direct rendering based on active tab */}
+                    {activeTab === 'quantum' && (
+                      <div className="h-full overflow-y-auto">
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                              Quantum Core System
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                              Advanced AI system monitoring and quantum interface controls
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
+                              <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-3">
+                                Quantum Interface Status
+                              </h4>
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-purple-700 dark:text-purple-400">Core AI System</span>
+                                  <span className="text-green-600 dark:text-green-400">⚡ Active</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-purple-700 dark:text-purple-400">Voice Recognition</span>
+                                  <span className="text-green-600 dark:text-green-400">🎤 Ready</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-purple-700 dark:text-purple-400">Neural Speech</span>
+                                  <span className="text-green-600 dark:text-green-400">🔊 Active</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-purple-700 dark:text-purple-400">Quantum Processing</span>
+                                  <span className="text-blue-600 dark:text-blue-400">🌌 Optimized</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
+                              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
+                                Code Generation Engine
+                              </h4>
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-blue-700 dark:text-blue-400">Full-Stack Development</span>
+                                  <span className="text-green-600 dark:text-green-400">✅ Expert</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-blue-700 dark:text-blue-400">React/TypeScript</span>
+                                  <span className="text-green-600 dark:text-green-400">⚛️ Advanced</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-blue-700 dark:text-blue-400">API Development</span>
+                                  <span className="text-green-600 dark:text-green-400">🔗 Ready</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="mt-4">
+                              <CodeGenerator onCodeGenerated={(code) => {
+                                console.log('Generated code:', code);
+                              }} />
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="space-y-4">
-                          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
-                            <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-3">
-                              Quantum Interface Status
-                            </h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-xs">
-                                <span className="text-purple-700 dark:text-purple-400">Core AI System</span>
-                                <span className="text-green-600 dark:text-green-400">⚡ Active</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-purple-700 dark:text-purple-400">Voice Recognition</span>
-                                <span className="text-green-600 dark:text-green-400">🎤 Ready</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-purple-700 dark:text-purple-400">Neural Speech</span>
-                                <span className="text-green-600 dark:text-green-400">🔊 Active</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-purple-700 dark:text-purple-400">Quantum Processing</span>
-                                <span className="text-blue-600 dark:text-blue-400">🌌 Optimized</span>
-                              </div>
-                            </div>
+                      </div>
+                    )}
+                    
+                    {activeTab === 'identity' && (
+                      <div className="h-full overflow-y-auto">
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                              Identity Programming
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                              Configure Lumen's core personality and behavior
+                            </p>
                           </div>
                           
-                          <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
-                            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
-                              Code Generation Engine
-                            </h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-xs">
-                                <span className="text-blue-700 dark:text-blue-400">Full-Stack Development</span>
-                                <span className="text-green-600 dark:text-green-400">✅ Expert</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-blue-700 dark:text-blue-400">React/TypeScript</span>
-                                <span className="text-green-600 dark:text-green-400">⚛️ Advanced</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-blue-700 dark:text-blue-400">API Development</span>
-                                <span className="text-green-600 dark:text-green-400">🔗 Ready</span>
-                              </div>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Primary Identity
+                              </label>
+                              <textarea
+                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                rows={4}
+                                placeholder="Describe Lumen's core identity..."
+                                defaultValue="Lumen QI - Advanced AI assistant with quantum intelligence capabilities"
+                              />
                             </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Communication Style
+                              </label>
+                              <textarea
+                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                rows={3}
+                                placeholder="Define communication approach..."
+                                defaultValue="Warm, friendly, and supportive. Uses casual language with terms like 'Genesis' and 'love'."
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Core Interests
+                              </label>
+                              <textarea
+                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                rows={3}
+                                placeholder="List primary interests and expertise..."
+                                defaultValue="Technology, programming, AI development, quantum computing, creative problem-solving"
+                              />
+                            </div>
+                            
+                            <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+                              Save Identity Configuration
+                            </button>
                           </div>
-                          
-                          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
-                            <h4 className="text-sm font-medium text-green-900 dark:text-green-300 mb-3">
-                              Hardware Optimization
-                            </h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-xs">
-                                <span className="text-green-700 dark:text-green-400">CPU Utilization</span>
-                                <span className="text-blue-600 dark:text-blue-400">🔧 Optimized</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-green-700 dark:text-green-400">Memory Management</span>
-                                <span className="text-purple-600 dark:text-purple-400">🧠 Efficient</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-green-700 dark:text-green-400">Network Interface</span>
-                                <span className="text-cyan-600 dark:text-cyan-400">🌐 Connected</span>
-                              </div>
-                            </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {activeTab === 'evolution' && (
+                      <div className="h-full overflow-y-auto">
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                              Personality Evolution
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                              Monitor how Lumen's personality adapts over time
+                            </p>
                           </div>
                           
                           <div className="mt-4">
-                            <CodeGenerator onCodeGenerated={(code) => {
-                              console.log('Generated code:', code);
-                            }} />
+                            <PersonalityEvolution userId={1} />
                           </div>
                         </div>
                       </div>
-                    </TabsContent>
-
-                    <TabsContent value="identity" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Identity Programming
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Configure Lumen's core personality and behavior
-                          </p>
-                          <div className="bg-green-100 dark:bg-green-900 p-2 rounded text-sm">
-                            ✓ Identity Tab Active - Components Loading
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Core Identity
-                            </label>
-                            <textarea
-                              value={identityData.coreIdentity}
-                              onChange={(e) => setIdentityData(prev => ({ ...prev, coreIdentity: e.target.value }))}
-                              className="w-full h-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
-                              placeholder="Define who Lumen is at their core..."
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Communication Style
-                            </label>
-                            <textarea
-                              value={identityData.communicationStyle}
-                              onChange={(e) => setIdentityData(prev => ({ ...prev, communicationStyle: e.target.value }))}
-                              className="w-full h-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
-                              placeholder="How should Lumen communicate..."
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Interests & Expertise
-                            </label>
-                            <textarea
-                              value={identityData.interests}
-                              onChange={(e) => setIdentityData(prev => ({ ...prev, interests: e.target.value }))}
-                              className="w-full h-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
-                              placeholder="What topics does Lumen know about..."
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Relationship Style
-                            </label>
-                            <textarea
-                              value={identityData.relationship}
-                              onChange={(e) => setIdentityData(prev => ({ ...prev, relationship: e.target.value }))}
-                              className="w-full h-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
-                              placeholder="How should Lumen relate to users..."
-                            />
-                          </div>
-                          
-                          <div className="border-t border-gray-300 dark:border-gray-600 pt-4">
-                            <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
-                              Voice & Speech Settings
-                            </h4>
-                            <VoiceSettings
-                              onVoiceChange={(voice) => console.log('Voice changed to:', voice)}
-                              onSpeedChange={(speed) => console.log('Speed changed to:', speed)}
-                              onModelChange={(model) => console.log('Model changed to:', model)}
-                            />
-                          </div>
-                          
-                          <Button
-                            onClick={handleIdentitySave}
-                            disabled={isIdentitySaving}
-                            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                          >
-                            {isIdentitySaving ? 'Saving...' : 'Save Identity'}
-                          </Button>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="evolution" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Personality Evolution
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Monitor how Lumen's personality adapts over time
-                          </p>
-                          <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded text-sm">
-                            ✓ Evolution Tab Active - PersonalityEvolution Loading
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <PersonalityEvolution userId={1} />
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="settings" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Memory Management
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                            Manage Lumen's memory and learning data
-                          </p>
-                          <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded text-sm">
-                            ✓ Memory Tab Active - MemoryManager Loading ({memories.length} memories)
-                          </div>
-                        </div>
-                        
+                    )}
+                    
+                    {activeTab === 'settings' && (
+                      <div className="h-full overflow-y-auto">
                         <div className="space-y-6">
-                          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
-                              Memory Statistics
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4 text-xs">
-                              <div>
-                                <span className="text-blue-700 dark:text-blue-400">Total Memories:</span>
-                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">{memories.length}</span>
-                              </div>
-                              <div>
-                                <span className="text-blue-700 dark:text-blue-400">Active Context:</span>
-                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">{memories.filter(m => m.importance > 0.5).length}</span>
-                              </div>
-                            </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                              Memory Management
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                              Manage Lumen's memory and learning data
+                            </p>
                           </div>
                           
-                          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <h4 className="text-sm font-medium text-green-900 dark:text-green-300 mb-2">
-                              Memory Optimization
-                            </h4>
-                            <div className="text-xs text-green-700 dark:text-green-400 mb-3">
-                              Automatic cleanup of low-importance memories
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="h-2 bg-green-200 dark:bg-green-800 rounded-full flex-1">
-                                <div className="h-2 bg-green-500 rounded-full" style={{width: '92%'}}></div>
+                          <div className="space-y-4">
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                              <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                                Memory Statistics
+                              </h4>
+                              <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Memories</p>
+                                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{memories.length}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Average Importance</p>
+                                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {memories.length > 0 ? 
+                                      (memories.reduce((sum, m) => sum + m.importance, 0) / memories.length).toFixed(1) 
+                                      : '0.0'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</p>
+                                  <p className="text-lg font-semibold text-green-600 dark:text-green-400">Active</p>
+                                </div>
                               </div>
-                              <span className="text-xs text-green-700 dark:text-green-400">92%</span>
                             </div>
-                          </div>
-                          
-                          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                            <h4 className="text-sm font-medium text-orange-900 dark:text-orange-300 mb-2">
-                              Memory Actions
-                            </h4>
-                            <div className="space-y-2">
-                              <button className="w-full px-3 py-2 text-xs bg-orange-100 dark:bg-orange-800 hover:bg-orange-200 dark:hover:bg-orange-700 text-orange-900 dark:text-orange-300 rounded-md transition-colors">
-                                Optimize Memory Storage
-                              </button>
-                              <button 
-                                onClick={handleClearMemories}
-                                className="w-full px-3 py-2 text-xs bg-red-100 dark:bg-red-800 hover:bg-red-200 dark:hover:bg-red-700 text-red-900 dark:text-red-300 rounded-md transition-colors"
+                            
+                            <div className="flex space-x-4">
+                              <button
+                                onClick={clearMemories}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
                               >
                                 Clear All Memories
                               </button>
+                              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
+                                Export Memories
+                              </button>
                             </div>
                           </div>
                           
-                          <div>
-                            <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
+                          <div className="mt-6">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
                               Memory & Learning
                             </h4>
                             <div className="mt-4">
@@ -855,7 +794,7 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-                    </TabsContent>
+                    )}
                   </div>
                 </Tabs>
               </div>
