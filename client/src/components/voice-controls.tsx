@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Mic, MicOff, Send, Keyboard, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Send, Keyboard, Volume2, Radio } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/use-speech';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -123,13 +123,9 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
                 isListening && "bg-red-500/20 border-red-500/30 animate-pulse"
               )}
               onClick={onVoiceModeToggle}
-              title={isListening ? "Stop Voice Mode" : "Enter Voice Mode"}
+              title={isListening ? "Exit Voice Mode" : "Enter Voice Mode"}
             >
-              {isListening ? (
-                <MicOff className="h-5 w-5 text-red-400" />
-              ) : (
-                <Volume2 className="h-5 w-5" />
-              )}
+              <Radio className="h-5 w-5" />
             </Button>
             
             {/* Voice Button */}
