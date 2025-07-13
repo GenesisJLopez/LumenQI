@@ -480,22 +480,28 @@ export default function Home() {
                 </TabsList>
                 
                 <TabsContent value="chat" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <ChatArea
-                    messages={messages}
-                    isTyping={isTyping}
-                    currentConversationId={currentConversationId || undefined}
-                    isSpeaking={isSpeaking}
-                    isListening={isListening}
-                  />
+                  {/* Chat Messages Area - Scrollable */}
+                  <div className="flex-1 overflow-hidden">
+                    <ChatArea
+                      messages={messages}
+                      isTyping={isTyping}
+                      currentConversationId={currentConversationId || undefined}
+                      isSpeaking={isSpeaking}
+                      isListening={isListening}
+                    />
+                  </div>
                   
-                  <VoiceControls
-                    onSendMessage={handleSendMessage}
-                    isLoading={createConversationMutation.isPending}
-                    connectionStatus={connectionStatus}
-                    onSpeakingChange={setIsSpeaking}
-                    onListeningChange={setIsListening}
-                    onVoiceModeToggle={handleVoiceModeToggle}
-                  />
+                  {/* Voice Controls - Fixed at Bottom */}
+                  <div className="flex-shrink-0 border-t border-purple-500/20 bg-gray-900/30">
+                    <VoiceControls
+                      onSendMessage={handleSendMessage}
+                      isLoading={createConversationMutation.isPending}
+                      connectionStatus={connectionStatus}
+                      onSpeakingChange={setIsSpeaking}
+                      onListeningChange={setIsListening}
+                      onVoiceModeToggle={handleVoiceModeToggle}
+                    />
+                  </div>
                 </TabsContent>
                 
                 <TabsContent value="quantum" className="mt-0 flex-1 flex flex-col overflow-hidden">

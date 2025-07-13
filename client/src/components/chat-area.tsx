@@ -28,7 +28,10 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
         if (scrollContainer) {
           setTimeout(() => {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            scrollContainer.scrollTo({
+              top: scrollContainer.scrollHeight,
+              behavior: 'smooth'
+            });
           }, 100);
         }
       }
@@ -223,9 +226,11 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         </svg>
       </div>
       
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea ref={scrollAreaRef} className="h-full px-4 py-6">
-          <div className="max-w-4xl mx-auto space-y-8 pb-16">
+      {/* Chat Messages Container - Fixed Height with Scrolling */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea ref={scrollAreaRef} className="h-full px-4 py-6">
+            <div className="max-w-4xl mx-auto space-y-6 pb-4">
             {messages.map((message, index) => (
               <div
                 key={message.id}
@@ -340,8 +345,9 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                 </div>
               </div>
             )}
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
