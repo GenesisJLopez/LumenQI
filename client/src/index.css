@@ -244,6 +244,68 @@ body {
   pointer-events: none;
 }
 
+/* Cosmic pulse effects for voice mode */
+.cosmic-pulse-idle {
+  background: radial-gradient(circle, rgba(120, 119, 198, 0.1) 0%, transparent 70%);
+  animation: cosmicPulseIdle 3s ease-in-out infinite;
+}
+
+.cosmic-pulse-listening {
+  background: radial-gradient(circle, rgba(255, 119, 198, 0.2) 0%, transparent 70%);
+  animation: cosmicPulseListening 1.5s ease-in-out infinite;
+}
+
+.cosmic-pulse-speaking {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  animation: cosmicPulseSpeaking 0.8s ease-in-out infinite;
+}
+
+@keyframes cosmicPulseIdle {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.6; }
+}
+
+@keyframes cosmicPulseListening {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+@keyframes cosmicPulseSpeaking {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* Cosmic particles */
+.cosmic-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cosmic-particles::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 70% 90%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 200px 200px, 300px 300px, 150px 150px, 250px 250px, 180px 180px;
+  animation: cosmicFloat 20s linear infinite;
+}
+
+@keyframes cosmicFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-100px) rotate(360deg); }
+}
+
 /* Lumen Logo Animations */
 @keyframes breathe {
   0%, 100% {

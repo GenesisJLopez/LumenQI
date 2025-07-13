@@ -367,7 +367,16 @@ export default function Home() {
             {/* Cosmic light swirls around stationary logo */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className={cn(
-                "w-80 h-80 rounded-full",
+                "w-96 h-96 rounded-full",
+                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+              )}></div>
+              {/* Additional cosmic layers */}
+              <div className={cn(
+                "absolute w-72 h-72 rounded-full opacity-60",
+                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+              )}></div>
+              <div className={cn(
+                "absolute w-48 h-48 rounded-full opacity-40",
                 isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
               )}></div>
             </div>
@@ -395,18 +404,18 @@ export default function Home() {
             </div>
             
             {/* Exit Voice Mode */}
-            <button
+            <Button
               onClick={handleVoiceModeToggle}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg"
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg z-20"
             >
               Exit Voice Mode
-            </button>
+            </Button>
           </div>
           
           {/* Right side - Conversation bubbles */}
           <div className="flex-1 flex flex-col h-full border-l border-purple-500/20">
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="max-w-2xl mx-auto space-y-4">
+              <div className="max-w-4xl mx-auto space-y-4">
                 {messages.map((message, index) => (
                   <div
                     key={message.id}
@@ -417,7 +426,7 @@ export default function Home() {
                   >
                     <div
                       className={cn(
-                        "max-w-[80%] p-3 rounded-2xl cosmic-message",
+                        "max-w-[90%] p-4 rounded-2xl cosmic-message",
                         message.role === 'user' 
                           ? "bg-gradient-to-br from-gray-700 to-gray-800" 
                           : "bg-gradient-to-br from-purple-800/50 to-pink-800/50"
@@ -493,7 +502,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="quantum" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto quantum-scroll">
+                  <div className="h-full flex flex-col overflow-y-auto quantum-scroll max-h-[calc(100vh-12rem)]">
                     {/* Quantum Interface Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">
@@ -557,7 +566,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="identity" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto identity-scroll">
+                  <div className="h-full flex flex-col overflow-y-auto identity-scroll max-h-[calc(100vh-12rem)]">
                     {/* Identity Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">
@@ -693,7 +702,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="settings" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto settings-scroll">
+                  <div className="h-full flex flex-col overflow-y-auto settings-scroll max-h-[calc(100vh-12rem)]">
                     {/* Settings Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">
