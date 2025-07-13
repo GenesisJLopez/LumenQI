@@ -108,7 +108,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
             <div
               key={conversation.id}
               className={cn(
-                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group",
+                "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative",
                 currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800" : ""
               )}
               onClick={() => onConversationSelect(conversation.id)}
