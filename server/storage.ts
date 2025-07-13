@@ -6,7 +6,7 @@ import {
   type Memory, type InsertMemory
 } from "@shared/schema";
 import { db } from './db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and, not, like } from 'drizzle-orm';
 
 export interface IStorage {
   // User operations
@@ -198,7 +198,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(conversations)
-      .where(eq(conversations.userId, userId))
+      .where(and(eq(conversations.userId, userId), not(like(conversations.title, '[DELETED]%'))))
       .orderBy(desc(conversations.createdAt));
   }
 
