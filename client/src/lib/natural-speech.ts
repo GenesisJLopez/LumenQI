@@ -121,9 +121,6 @@ export class NaturalSpeech {
     if (!text.trim()) return;
 
     try {
-      this.isPlaying = true;
-      options.onStart?.();
-
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
@@ -147,6 +144,13 @@ export class NaturalSpeech {
 
       this.currentAudio = new Audio(audioUrl);
       
+      // Only start logo animation when audio actually starts playing
+      this.currentAudio.onplay = () => {
+        this.isPlaying = true;
+        options.onStart?.();
+        console.log('OpenAI TTS playback started');
+      };
+      
       this.currentAudio.onended = () => {
         this.isPlaying = false;
         URL.revokeObjectURL(audioUrl);
@@ -160,7 +164,6 @@ export class NaturalSpeech {
       };
 
       await this.currentAudio.play();
-      console.log('OpenAI TTS playback started');
 
     } catch (error) {
       this.isPlaying = false;
@@ -183,6 +186,13 @@ export class NaturalSpeech {
     utterance.rate = 0.75;  // Much slower for natural human pace
     utterance.pitch = 0.9;  // Slightly lower for warmth
     utterance.volume = 1.0;
+    
+    // Only start logo animation when speech actually starts
+    utterance.onstart = () => {
+      this.isPlaying = true;
+      options.onStart?.();
+      console.log('Browser TTS playback started');
+    };
     
     // Fine-tune based on voice characteristics
     if (this.preferredVoice.name.includes('Samantha')) {

@@ -110,9 +110,14 @@ export default function Home() {
             // Stop any existing speech first
             naturalSpeech.stop();
             
+            console.log('Starting speech synthesis for:', lastMessage.content.substring(0, 50) + '...');
             naturalSpeech.speak(lastMessage.content, {
-              onStart: () => setIsSpeaking(true),
+              onStart: () => {
+                console.log('Speech actually started - triggering logo animation');
+                setIsSpeaking(true);
+              },
               onEnd: () => {
+                console.log('Speech ended - stopping logo animation');
                 setIsSpeaking(false);
                 // Auto-continue listening after response if in voice mode
                 if (isVoiceMode) {
@@ -124,7 +129,10 @@ export default function Home() {
                   }, 1000);
                 }
               },
-              onError: () => setIsSpeaking(false)
+              onError: () => {
+                console.log('Speech error - stopping logo animation');
+                setIsSpeaking(false);
+              }
             });
           });
         }
