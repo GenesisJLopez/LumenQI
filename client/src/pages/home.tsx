@@ -11,6 +11,7 @@ import { ChatArea } from '@/components/chat-area';
 import { VoiceControls } from '@/components/voice-controls';
 import { QuantumInterface } from '@/components/quantum-interface';
 import { PersonalityEvolution } from '@/components/personality-evolution';
+import lumenLogo from '@assets/lumen-logo_1752354847791.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -286,7 +287,7 @@ export default function Home() {
             {/* Actual Lumen Logo */}
             <div className="relative w-full h-full flex items-center justify-center">
               <img 
-                src="/attached_assets/lumen-logo_1752354847791.png" 
+                src={lumenLogo} 
                 alt="Lumen QI" 
                 className="w-64 h-64 object-contain filter drop-shadow-2xl z-10"
                 style={{

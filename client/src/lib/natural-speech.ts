@@ -1,8 +1,10 @@
-// Ultra-natural speech synthesis with human-like delivery
+// Ultra-natural speech synthesis with OpenAI TTS fallback
 export class NaturalSpeech {
   private synthesis: SpeechSynthesis;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private preferredVoice: SpeechSynthesisVoice | null = null;
+  private currentAudio: HTMLAudioElement | null = null;
+  private isPlaying = false;
 
   constructor() {
     this.synthesis = window.speechSynthesis;
@@ -91,7 +93,10 @@ export class NaturalSpeech {
       .trim();
   }
 
-  speak(text: string, options: {
+  async speak(text: string, options: {
+    voice?: string;
+    model?: string;  
+    speed?: number;
     onStart?: () => void;
     onEnd?: () => void;
     onError?: (error: any) => void;
@@ -99,14 +104,79 @@ export class NaturalSpeech {
     // Stop any current speech
     this.stop();
 
+    const cleanText = this.cleanTextForNaturalSpeech(text);
+    if (!cleanText.trim()) return;
+
+    // Try OpenAI TTS first
+    try {
+      await this.speakWithOpenAI(cleanText, options);
+    } catch (error) {
+      console.warn('OpenAI TTS failed, falling back to browser TTS:', error);
+      // Fallback to browser TTS
+      this.speakWithBrowserTTS(cleanText, options);
+    }
+  }
+
+  private async speakWithOpenAI(text: string, options: any) {
+    if (!text.trim()) return;
+
+    try {
+      this.isPlaying = true;
+      options.onStart?.();
+
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: text,
+          voice: options.voice || 'nova',
+          model: options.model || 'tts-1-hd',
+          speed: options.speed || 1.0,
+          response_format: 'mp3'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`TTS request failed: ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      this.currentAudio = new Audio(audioUrl);
+      
+      this.currentAudio.onended = () => {
+        this.isPlaying = false;
+        URL.revokeObjectURL(audioUrl);
+        options.onEnd?.();
+      };
+
+      this.currentAudio.onerror = () => {
+        this.isPlaying = false;
+        URL.revokeObjectURL(audioUrl);
+        options.onError?.('Audio playback failed');
+      };
+
+      await this.currentAudio.play();
+      console.log('OpenAI TTS playback started');
+
+    } catch (error) {
+      this.isPlaying = false;
+      console.error('OpenAI TTS error:', error);
+      throw error;
+    }
+  }
+
+  private speakWithBrowserTTS(text: string, options: any) {
     if (!this.preferredVoice) {
       console.warn('No suitable voice found');
       options.onError?.('No voice available');
       return;
     }
 
-    const cleanText = this.cleanTextForNaturalSpeech(text);
-    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const utterance = new SpeechSynthesisUtterance(text);
     
     // Configure for ultra-natural speech
     utterance.voice = this.preferredVoice;
@@ -128,18 +198,18 @@ export class NaturalSpeech {
 
     // Add event listeners
     utterance.onstart = () => {
-      console.log('Natural speech started');
+      console.log('Browser TTS started');
       options.onStart?.();
     };
 
     utterance.onend = () => {
-      console.log('Natural speech ended');
+      console.log('Browser TTS ended');
       this.currentUtterance = null;
       options.onEnd?.();
     };
 
     utterance.onerror = (error) => {
-      console.error('Natural speech error:', error);
+      console.error('Browser TTS error:', error);
       this.currentUtterance = null;
       options.onError?.(error);
     };
@@ -149,10 +219,20 @@ export class NaturalSpeech {
   }
 
   stop() {
+    // Stop OpenAI TTS audio
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio = null;
+    }
+    
+    // Stop browser TTS
     if (this.currentUtterance) {
       this.synthesis.cancel();
       this.currentUtterance = null;
     }
+    
+    this.isPlaying = false;
   }
 
   pause() {
@@ -168,7 +248,7 @@ export class NaturalSpeech {
   }
 
   isSpeaking(): boolean {
-    return this.synthesis.speaking;
+    return this.isPlaying || this.synthesis.speaking;
   }
 
   getCurrentVoice(): SpeechSynthesisVoice | null {
