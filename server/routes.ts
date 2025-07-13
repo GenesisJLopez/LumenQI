@@ -507,6 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('message', async (data: string) => {
       try {
         const message = JSON.parse(data);
+        console.log('Received WebSocket message:', message);
         
         if (message.type === 'chat_message') {
           const { content, conversationId, emotionContext } = message;

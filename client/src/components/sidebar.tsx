@@ -175,8 +175,8 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
               )}
               onClick={() => editingConversationId !== conversation.id && onConversationSelect(conversation.id)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between w-full">
+                <div className="flex-1 min-w-0 mr-2">
                   {editingConversationId === conversation.id ? (
                     <div className="flex items-center space-x-2">
                       <Input
@@ -219,12 +219,12 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                 </div>
                 
                 {editingConversationId !== conversation.id && (
-                  <div className="flex items-center space-x-1 opacity-100 transition-opacity duration-200">
+                  <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={(e) => handleEditConversation(conversation.id, conversation.title, e)}
-                      className="transition-all duration-200 p-1 h-7 w-7 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-800/30 flex-shrink-0 rounded-md z-10"
+                      className="p-1 h-6 w-6 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-800/30 border border-blue-300 dark:border-blue-600"
                       title="Edit conversation"
                     >
                       <Edit2 className="h-3 w-3" />
@@ -233,7 +233,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                       variant="ghost"
                       size="sm"
                       onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                      className="transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 flex-shrink-0 rounded-md z-10"
+                      className="p-1 h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 border border-red-300 dark:border-red-600"
                       title="Delete conversation"
                     >
                       <Trash2 className="h-3 w-3" />
