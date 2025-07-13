@@ -271,7 +271,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen cosmic-bg">
+    <div className="flex h-screen cosmic-bg overflow-hidden">
       {/* Voice Mode Overlay */}
       {isVoiceMode && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center cosmic-bg">
@@ -450,7 +450,7 @@ export default function Home() {
             onNewConversation={handleNewConversation}
           />
           
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col overflow-hidden">
             {/* Tab Navigation */}
             <div className="border-b border-purple-500/20 bg-gray-900/50 backdrop-blur-sm">
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum')}>
@@ -466,7 +466,7 @@ export default function Home() {
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="chat" className="mt-0">
+                <TabsContent value="chat" className="mt-0 flex-1 flex flex-col overflow-hidden">
                   <ChatArea
                     messages={messages}
                     isTyping={isTyping}
@@ -485,8 +485,8 @@ export default function Home() {
                   />
                 </TabsContent>
                 
-                <TabsContent value="quantum" className="mt-0 h-full">
-                  <div className="h-full flex flex-col">
+                <TabsContent value="quantum" className="mt-0 flex-1 flex flex-col overflow-hidden">
+                  <div className="h-full flex flex-col overflow-y-auto">
                     {/* Quantum Interface Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">
