@@ -122,15 +122,17 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                     {formatTimeAgo(conversation.updatedAt)}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                  className="opacity-100 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 ml-2 flex-shrink-0 rounded-md z-10"
-                  title="Delete conversation"
-                >
-                  <Trash2 className="h-3 w-3 pointer-events-none" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                    className="h-8 w-8 p-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md transition-colors border border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20"
+                    title="Delete conversation"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
