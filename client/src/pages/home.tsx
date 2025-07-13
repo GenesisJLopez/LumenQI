@@ -31,7 +31,7 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'identity' | 'evolution' | 'settings'>('chat');
+  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'settings'>('quantum');
   const [identityData, setIdentityData] = useState({
     coreIdentity: '',
     communicationStyle: '',
@@ -568,8 +568,8 @@ export default function Home() {
             <div className="flex h-full">
               {/* Settings Sidebar */}
               <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} orientation="vertical" className="h-full">
-                  <TabsList className="flex flex-col h-full w-full justify-start bg-gray-50 dark:bg-gray-800 p-4 space-y-2">
+                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} orientation="vertical" className="h-full flex">
+                  <TabsList className="flex flex-col h-fit w-full justify-start bg-gray-50 dark:bg-gray-800 p-4 space-y-2">
                     <TabsTrigger value="quantum" className="w-full justify-start bg-transparent hover:bg-white/10 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">
                       <Cpu className="w-4 h-4 mr-2" />
                       Quantum Core
@@ -589,8 +589,8 @@ export default function Home() {
                   </TabsList>
                   
                   {/* Settings Content Panels */}
-                  <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900">
-                    <TabsContent value="quantum" className="h-full m-0 p-6 overflow-y-auto">
+                  <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 min-h-0">
+                    <TabsContent value="quantum" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
                       <div className="space-y-6">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -673,7 +673,7 @@ export default function Home() {
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="identity" className="h-full m-0 p-6 overflow-y-auto">
+                    <TabsContent value="identity" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
                       <div className="space-y-6">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -755,7 +755,7 @@ export default function Home() {
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="evolution" className="h-full m-0 p-6 overflow-y-auto">
+                    <TabsContent value="evolution" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
                       <div className="space-y-6">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -769,7 +769,7 @@ export default function Home() {
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="settings" className="h-full m-0 p-6 overflow-y-auto">
+                    <TabsContent value="settings" className="h-full m-0 p-6 overflow-y-auto data-[state=active]:block">
                       <div className="space-y-6">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
