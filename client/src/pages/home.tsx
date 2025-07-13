@@ -411,7 +411,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="quantum" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto">
+                  <div className="h-full flex flex-col overflow-y-auto quantum-scroll">
                     {/* Quantum Interface Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">
@@ -475,7 +475,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="identity" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto">
+                  <div className="h-full flex flex-col overflow-y-auto identity-scroll">
                     {/* Identity Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">
@@ -613,7 +613,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="settings" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto">
+                  <div className="h-full flex flex-col overflow-y-auto settings-scroll">
                     {/* Settings Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">

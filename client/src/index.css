@@ -21,6 +21,40 @@
   background-color: #6b7280;
 }
 
+/* Enhanced scrollbar styles for all sections */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: rgba(31, 41, 55, 0.3);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 69, 196, 0.5);
+  border-radius: 4px;
+  border: 1px solid rgba(139, 69, 196, 0.2);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 69, 196, 0.8);
+}
+
+*::-webkit-scrollbar-corner {
+  background-color: rgba(31, 41, 55, 0.3);
+}
+
+/* Enhanced scrolling for specific sections */
+.quantum-scroll,
+.identity-scroll,
+.settings-scroll,
+.chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 69, 196, 0.5) rgba(31, 41, 55, 0.3);
+}
+
 /* Cosmic pulse effects for voice mode */
 .cosmic-pulse-idle {
   background: radial-gradient(circle, transparent 30%, rgba(120, 119, 198, 0.1) 70%);
