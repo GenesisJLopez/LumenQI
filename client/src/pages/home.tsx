@@ -450,11 +450,11 @@ export default function Home() {
       {/* Voice Mode - Full Screen Interface */}
       {isVoiceMode ? (
         <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
-          {/* Cosmic glow positioned exactly behind logo - bigger than logo */}
+          {/* Cosmic glow positioned exactly behind logo - thin layer */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div 
               className={cn(
-                "w-96 h-96 rounded-full transition-all duration-300",
+                "w-50 h-50 rounded-full transition-all duration-300",
                 isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
               )}
               style={isSpeaking ? {
