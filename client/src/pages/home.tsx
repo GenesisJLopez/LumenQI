@@ -124,10 +124,34 @@ export default function Home() {
               onStart: () => {
                 console.log('Speech actually started - triggering logo animation');
                 setIsSpeaking(true);
+                setSpeechIntensity(0.8);
+                
+                // Create realistic speech rhythm
+                let rhythmIndex = 0;
+                const rhythmPattern = [0.9, 0.6, 0.8, 0.4, 0.7, 0.9, 0.5, 0.8, 0.3, 0.6, 0.9, 0.7];
+                const rhythmInterval = setInterval(() => {
+                  if (rhythmIndex < rhythmPattern.length) {
+                    setSpeechIntensity(rhythmPattern[rhythmIndex]);
+                    rhythmIndex++;
+                  } else {
+                    rhythmIndex = 0;
+                  }
+                }, 200);
+                
+                // Store interval for cleanup
+                (window as any).speechRhythmInterval = rhythmInterval;
               },
               onEnd: () => {
                 console.log('Speech ended - stopping logo animation');
                 setIsSpeaking(false);
+                setSpeechIntensity(0);
+                
+                // Clear rhythm interval
+                if ((window as any).speechRhythmInterval) {
+                  clearInterval((window as any).speechRhythmInterval);
+                  (window as any).speechRhythmInterval = null;
+                }
+                
                 // Auto-continue listening after response if in voice mode
                 if (isVoiceMode) {
                   setTimeout(() => {
@@ -141,6 +165,13 @@ export default function Home() {
               onError: () => {
                 console.log('Speech error - stopping logo animation');
                 setIsSpeaking(false);
+                setSpeechIntensity(0);
+                
+                // Clear rhythm interval on error
+                if ((window as any).speechRhythmInterval) {
+                  clearInterval((window as any).speechRhythmInterval);
+                  (window as any).speechRhythmInterval = null;
+                }
               }
             });
           });
@@ -388,10 +419,21 @@ export default function Home() {
                   isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
                 )}
                 style={isSpeaking ? {
-                  animationDuration: `${Math.max(0.3, 1 - speechIntensity)}s`,
-                  opacity: 0.4 + (speechIntensity * 0.6)
+                  animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
+                  opacity: 0.6 + (speechIntensity * 0.4),
+                  transform: `scale(${1 + speechIntensity * 0.3})`
                 } : {}}
               ></div>
+              {/* Additional outer ring for more dramatic effect */}
+              {isSpeaking && (
+                <div 
+                  className="absolute w-[500px] h-[500px] rounded-full border-2 border-pink-400/20 animate-pulse"
+                  style={{
+                    animationDuration: `${Math.max(0.3, 1 - speechIntensity)}s`,
+                    opacity: speechIntensity * 0.8
+                  }}
+                ></div>
+              )}
             </div>
             
             {/* Stationary Lumen Logo */}
@@ -721,12 +763,20 @@ export default function Home() {
                       <div className="flex items-center justify-between">
                         <div>
                           <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            Lumen Settings
+                            System Settings
                           </h2>
                           <p className="text-sm text-gray-400">
                             Customize your Lumen QI experience
                           </p>
                         </div>
+                        <Button
+                          onClick={() => setActiveTab('chat')}
+                          variant="ghost"
+                          size="sm"
+                          className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20"
+                        >
+                          Back to Chat
+                        </Button>
                       </div>
                     </div>
                     

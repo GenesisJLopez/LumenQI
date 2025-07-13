@@ -75,7 +75,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Lumen</h1>
-          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800" title="Voice Settings">
             <Settings className="h-4 w-4 text-gray-500" />
           </Button>
         </div>
@@ -116,7 +116,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                  className="opacity-70 hover:opacity-100 transition-opacity p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2 flex-shrink-0"
+                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2 flex-shrink-0"
                   title="Delete conversation"
                 >
                   <Trash2 className="h-4 w-4" />
