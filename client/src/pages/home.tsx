@@ -108,6 +108,24 @@ export default function Home() {
     }
   };
 
+  // Clear memories handler
+  const handleClearMemories = async () => {
+    try {
+      const response = await fetch('/api/memories', {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/memories'] });
+        toast({ title: "All memories cleared successfully" });
+      } else {
+        throw new Error('Failed to clear memories');
+      }
+    } catch (error) {
+      toast({ title: "Failed to clear memories", variant: "destructive" });
+    }
+  };
+
   // Fetch current conversation and messages
   const { data: conversationData } = useQuery<{
     conversation: Conversation;
@@ -118,6 +136,11 @@ export default function Home() {
   });
 
   const messages = conversationData?.messages || [];
+
+  // Fetch memories
+  const { data: memories = [] } = useQuery({
+    queryKey: ['/api/memories'],
+  });
 
   // Create new conversation mutation
   const createConversationMutation = useMutation({
