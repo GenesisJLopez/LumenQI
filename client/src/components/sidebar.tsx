@@ -111,12 +111,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                 "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
                 currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600" : ""
               )}
+              onClick={() => onConversationSelect(conversation.id)}
             >
               <div className="flex items-center justify-between">
-                <div 
-                  className="flex-1 min-w-0"
-                  onClick={() => onConversationSelect(conversation.id)}
-                >
+                <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                     {conversation.title}
                   </div>
@@ -124,18 +122,15 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                     {formatTimeAgo(conversation.updatedAt)}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                    className="h-8 px-2 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors border-2 border-red-400 bg-red-100 dark:bg-red-900/40 flex-shrink-0"
-                    title="Delete conversation"
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    <span className="text-xs">Delete</span>
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 ml-2 flex-shrink-0 rounded-md z-10"
+                  title="Delete conversation"
+                >
+                  <Trash2 className="h-3 w-3 pointer-events-none" />
+                </Button>
               </div>
             </div>
           ))}
