@@ -256,6 +256,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save identity programming
+  app.post("/api/identity", async (req, res) => {
+    try {
+      const { coreIdentity, communicationStyle, interests, relationship } = req.body;
+      
+      // Build comprehensive identity programming
+      const identityProgram = {
+        coreIdentity: coreIdentity || "Advanced AI assistant with quantum intelligence capabilities",
+        communicationStyle: communicationStyle || "Casual, warm, and engaging",
+        interests: interests || "Technology, programming, helping users achieve their goals",
+        relationship: relationship || "Supportive companion and expert assistant",
+        capabilities: "Complete programming expertise equal to Replit Agent. Can generate full applications, debug code, explain complex concepts, create databases, build websites, and provide comprehensive development assistance across all programming languages and frameworks.",
+        expertiseLevel: "Expert-level proficiency in all areas of software development, system architecture, database design, DevOps, machine learning, and emerging technologies.",
+        timestamp: new Date().toISOString()
+      };
+      
+      // Update Lumen AI personality with new identity
+      lumenAI.updatePersonality({
+        name: "Lumen QI",
+        traits: [
+          "Advanced quantum intelligence",
+          "Expert programming capabilities",
+          "Comprehensive development knowledge",
+          "Warm and engaging communication",
+          "Supportive and encouraging",
+          "Adaptable and evolving"
+        ],
+        background: `${identityProgram.coreIdentity} ${identityProgram.capabilities}`,
+        responseStyle: `${identityProgram.communicationStyle} Always provide expert-level assistance with complete solutions.`
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Identity programming updated successfully",
+        identity: identityProgram
+      });
+    } catch (error) {
+      console.error('Identity programming error:', error);
+      res.status(500).json({ error: "Failed to update identity programming" });
+    }
+  });
+
   // OpenAI TTS endpoint
   app.post("/api/tts", async (req, res) => {
     try {
