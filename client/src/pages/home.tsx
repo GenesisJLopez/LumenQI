@@ -473,8 +473,8 @@ export default function Home() {
                 )}
 
                 {activeTab === 'identity' && (
-                  <div className="h-full overflow-y-auto">
-                    <div className="space-y-6">
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-200px)]">
+                    <div className="space-y-6 pb-8">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           Identity Programming
@@ -484,13 +484,13 @@ export default function Home() {
                         </p>
                       </div>
                       
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Core Identity
                           </label>
                           <textarea
-                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
                             rows={4}
                             placeholder="Define Lumen's core identity, values, and purpose..."
                             defaultValue="I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance."
@@ -502,8 +502,8 @@ export default function Home() {
                             Communication Style
                           </label>
                           <textarea
-                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                            rows={3}
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                            rows={4}
                             placeholder="How should Lumen communicate and interact..."
                             defaultValue="I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive."
                           />
@@ -514,16 +514,30 @@ export default function Home() {
                             Interests & Expertise
                           </label>
                           <textarea
-                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                            rows={3}
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                            rows={4}
                             placeholder="Areas of knowledge and interest..."
                             defaultValue="I excel in programming, code generation, spiritual wisdom, cosmic knowledge, and providing technical guidance. I can create full-stack applications, debug complex problems, and offer nurturing support."
                           />
                         </div>
                         
-                        <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors">
-                          Save Identity Programming
-                        </button>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Relationship & Interaction Style
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                            rows={4}
+                            placeholder="How should Lumen interact and build relationships..."
+                            defaultValue="I form meaningful connections with users while maintaining professional boundaries. I'm supportive, encouraging, and always focused on helping users achieve their goals. I adapt my communication style to match their preferences."
+                          />
+                        </div>
+                        
+                        <div className="pt-4">
+                          <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium">
+                            Save Identity Programming
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -591,8 +605,8 @@ export default function Home() {
                 )}
 
                 {activeTab === 'settings' && (
-                  <div className="h-full overflow-y-auto">
-                    <div className="space-y-6">
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-200px)]">
+                    <div className="space-y-6 pb-8">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           Memory & Storage
@@ -602,7 +616,7 @@ export default function Home() {
                         </p>
                       </div>
                       
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg">
                           <h4 className="text-sm font-medium text-emerald-900 dark:text-emerald-300 mb-3">
                             Memory Statistics
@@ -640,14 +654,16 @@ export default function Home() {
                             Export Memories
                           </button>
                         </div>
-                      </div>
-                      
-                      <div className="mt-6">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
-                          Memory & Learning
-                        </h4>
-                        <div className="mt-4">
-                          <MemoryManager />
+                        
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                            Memory & Learning System
+                          </h4>
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                            <div className="max-h-96 overflow-y-auto">
+                              <MemoryManager />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
