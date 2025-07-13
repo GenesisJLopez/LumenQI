@@ -201,8 +201,6 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
 
   return (
     <div className="h-full cosmic-bg relative">
-      {/* Cosmic Particles */}
-      <div className="cosmic-particles"></div>
       
       {/* Smaller Lumen Logo for Active Chat */}
       <div className={cn(
