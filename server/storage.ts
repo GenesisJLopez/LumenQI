@@ -28,6 +28,8 @@ export interface IStorage {
   getMemoriesByUser(userId: number): Promise<Memory[]>;
   createMemory(memory: InsertMemory): Promise<Memory>;
   searchMemories(userId: number, query: string): Promise<Memory[]>;
+  deleteMemory(id: number): Promise<void>;
+  deleteAllMemories(userId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -153,6 +155,19 @@ export class MemStorage implements IStorage {
       (memory.context && memory.context.toLowerCase().includes(query.toLowerCase()))
     );
   }
+
+  async deleteMemory(id: number): Promise<void> {
+    this.memories.delete(id);
+  }
+
+  async deleteAllMemories(userId: number): Promise<void> {
+    const userMemories = Array.from(this.memories.values())
+      .filter(memory => memory.userId === userId);
+    
+    for (const memory of userMemories) {
+      this.memories.delete(memory.id);
+    }
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -257,6 +272,14 @@ export class DatabaseStorage implements IStorage {
       memory.content.toLowerCase().includes(query.toLowerCase()) ||
       (memory.context && memory.context.toLowerCase().includes(query.toLowerCase()))
     );
+  }
+
+  async deleteMemory(id: number): Promise<void> {
+    await db.delete(memories).where(eq(memories.id, id));
+  }
+
+  async deleteAllMemories(userId: number): Promise<void> {
+    await db.delete(memories).where(eq(memories.userId, userId));
   }
 }
 

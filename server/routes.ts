@@ -315,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/memories/:id", async (req, res) => {
     try {
       const memoryId = parseInt(req.params.id);
-      // Add delete memory functionality to storage
+      await storage.deleteMemory(memoryId);
       res.json({ success: true, message: "Memory deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete memory" });
@@ -344,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/memories", async (req, res) => {
     try {
       const userId = 1; // Default user
-      // Clear all memories for user
+      await storage.deleteAllMemories(userId);
       res.json({ success: true, message: "All memories cleared successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to clear memories" });
