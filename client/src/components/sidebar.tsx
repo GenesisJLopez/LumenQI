@@ -166,7 +166,9 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
         <div className="space-y-1">
           {conversations
             .filter(conversation => !conversation.title.startsWith('[DELETED]'))
-            .map((conversation) => (
+            .map((conversation) => {
+              console.log('Rendering conversation:', conversation.id, conversation.title);
+              return (
             <div
               key={conversation.id}
               className={cn(
@@ -218,25 +220,34 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   )}
                 </div>
                 
-                <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
+                <div className="flex items-center space-x-1 flex-shrink-0 ml-2" style={{ minWidth: '60px' }}>
                   <button
-                    onClick={(e) => handleEditConversation(conversation.id, conversation.title, e)}
+                    onClick={(e) => {
+                      console.log('Edit button clicked for conversation:', conversation.id);
+                      handleEditConversation(conversation.id, conversation.title, e);
+                    }}
                     className="p-1 h-6 w-6 bg-blue-500 text-white rounded border border-blue-300 hover:bg-blue-600"
                     title="Edit conversation"
+                    style={{ position: 'relative', zIndex: 10 }}
                   >
-                    <Edit2 className="h-3 w-3" />
+                    ✏️
                   </button>
                   <button
-                    onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                    onClick={(e) => {
+                      console.log('Delete button clicked for conversation:', conversation.id);
+                      handleDeleteConversation(conversation.id, e);
+                    }}
                     className="p-1 h-6 w-6 bg-red-500 text-white rounded border border-red-300 hover:bg-red-600"
                     title="Delete conversation"
+                    style={{ position: 'relative', zIndex: 10 }}
                   >
-                    <Trash2 className="h-3 w-3" />
+                    🗑️
                   </button>
                 </div>
               </div>
             </div>
-          ))}
+          );
+            })}
           
           {conversations.filter(c => !c.title.startsWith('[DELETED]')).length === 0 && (
             <div className="text-sm text-gray-500 text-center py-8">
