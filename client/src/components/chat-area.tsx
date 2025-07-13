@@ -225,7 +225,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
       
       {/* Chat Messages Container - Fixed Height with Forced Scrolling */}
       <div 
-        className="absolute inset-0 overflow-y-scroll px-4 py-6 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500" 
+        className="absolute inset-0 overflow-y-scroll px-4 py-6 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500 chat-scroll" 
         ref={scrollAreaRef}
         style={{ 
           paddingTop: '24px',
