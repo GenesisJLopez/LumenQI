@@ -250,6 +250,7 @@ export default function Home() {
     const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
 
     sendMessage({
+      type: 'chat_message',
       content,
       conversationId: currentConversationId,
       emotion: textEmotion,
@@ -260,17 +261,22 @@ export default function Home() {
   // Process incoming WebSocket messages
   useEffect(() => {
     if (lastMessage) {
-      const data = JSON.parse(lastMessage.data);
+      console.log('Received WebSocket message:', lastMessage);
       
-      if (data.type === 'typing') {
-        setIsTyping(data.isTyping);
+      if (lastMessage.type === 'typing') {
+        setIsTyping(lastMessage.isTyping);
       }
       
-      if (data.type === 'response') {
+      if (lastMessage.type === 'ai_response') {
         setIsTyping(false);
         // Invalidate queries to refresh the UI
         queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
         queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+      }
+      
+      if (lastMessage.type === 'error') {
+        setIsTyping(false);
+        toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
       }
     }
   }, [lastMessage, currentConversationId]);
