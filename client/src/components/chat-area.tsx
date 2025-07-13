@@ -264,7 +264,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                 
                 {/* Message Actions - Only show for assistant messages */}
                 {message.role === 'assistant' && (
-                  <div className="absolute -bottom-8 left-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                  <div className="absolute -bottom-8 left-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
                     <Button
                       variant="ghost"
                       size="sm"

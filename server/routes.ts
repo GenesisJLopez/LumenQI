@@ -281,7 +281,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!openaiResponse.ok) {
-        throw new Error(`OpenAI TTS API error: ${openaiResponse.status}`);
+        const errorText = await openaiResponse.text();
+        console.error('OpenAI TTS API error:', {
+          status: openaiResponse.status,
+          statusText: openaiResponse.statusText,
+          body: errorText,
+          request: { model, input: text, voice, speed, response_format }
+        });
+        throw new Error(`OpenAI TTS API error: ${openaiResponse.status} - ${errorText}`);
       }
 
       // Stream the audio response
