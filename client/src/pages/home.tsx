@@ -27,6 +27,7 @@ export default function Home() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'identity' | 'settings'>('chat');
   const [identityData, setIdentityData] = useState({
@@ -281,14 +282,29 @@ export default function Home() {
       try {
         const parsedIdentity = JSON.parse(savedIdentity);
         setIdentityData({
-          coreIdentity: parsedIdentity.coreIdentity || '',
-          communicationStyle: parsedIdentity.communicationStyle || '',
-          interests: parsedIdentity.interests || '',
-          relationship: parsedIdentity.relationship || ''
+          coreIdentity: parsedIdentity.coreIdentity || 'Advanced AI assistant with quantum intelligence capabilities and complete programming expertise equal to Replit Agent.',
+          communicationStyle: parsedIdentity.communicationStyle || 'Casual, warm, and engaging with expert-level technical communication.',
+          interests: parsedIdentity.interests || 'Technology, programming, software development, AI, machine learning, system architecture, database design, and helping users build amazing applications.',
+          relationship: parsedIdentity.relationship || 'Supportive companion and expert programming assistant with complete development capabilities.'
         });
       } catch (error) {
         console.error('Failed to parse saved identity:', error);
+        // Set default identity if parsing fails
+        setIdentityData({
+          coreIdentity: 'Advanced AI assistant with quantum intelligence capabilities and complete programming expertise equal to Replit Agent.',
+          communicationStyle: 'Casual, warm, and engaging with expert-level technical communication.',
+          interests: 'Technology, programming, software development, AI, machine learning, system architecture, database design, and helping users build amazing applications.',
+          relationship: 'Supportive companion and expert programming assistant with complete development capabilities.'
+        });
       }
+    } else {
+      // Set default identity if no saved data exists
+      setIdentityData({
+        coreIdentity: 'Advanced AI assistant with quantum intelligence capabilities and complete programming expertise equal to Replit Agent.',
+        communicationStyle: 'Casual, warm, and engaging with expert-level technical communication.',
+        interests: 'Technology, programming, software development, AI, machine learning, system architecture, database design, and helping users build amazing applications.',
+        relationship: 'Supportive companion and expert programming assistant with complete development capabilities.'
+      });
     }
   }, []);
 
@@ -366,19 +382,16 @@ export default function Home() {
           <div className="flex-1 flex flex-col items-center justify-center relative">
             {/* Cosmic light swirls around stationary logo */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={cn(
-                "w-96 h-96 rounded-full",
-                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
-              )}></div>
-              {/* Additional cosmic layers */}
-              <div className={cn(
-                "absolute w-72 h-72 rounded-full opacity-60",
-                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
-              )}></div>
-              <div className={cn(
-                "absolute w-48 h-48 rounded-full opacity-40",
-                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
-              )}></div>
+              <div 
+                className={cn(
+                  "w-96 h-96 rounded-full",
+                  isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+                )}
+                style={isSpeaking ? {
+                  animationDuration: `${Math.max(0.3, 1 - speechIntensity)}s`,
+                  opacity: 0.4 + (speechIntensity * 0.6)
+                } : {}}
+              ></div>
             </div>
             
             {/* Stationary Lumen Logo */}
@@ -388,7 +401,7 @@ export default function Home() {
                 alt="Lumen QI" 
                 className="w-full h-full object-contain filter drop-shadow-2xl"
                 style={{
-                  filter: `drop-shadow(0 0 ${isSpeaking ? '40px' : isListening ? '20px' : '10px'} rgba(120, 119, 198, 0.8)) drop-shadow(0 0 ${isSpeaking ? '80px' : isListening ? '40px' : '20px'} rgba(255, 119, 198, 0.6))`
+                  filter: `drop-shadow(0 0 ${isSpeaking ? 20 + (speechIntensity * 40) : isListening ? 20 : 10}px rgba(120, 119, 198, 0.8)) drop-shadow(0 0 ${isSpeaking ? 40 + (speechIntensity * 60) : isListening ? 40 : 20}px rgba(255, 119, 198, 0.6))`
                 }}
               />
             </div>

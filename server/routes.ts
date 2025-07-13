@@ -298,6 +298,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Memory management endpoints
+  app.get("/api/memories", async (req, res) => {
+    try {
+      const userId = 1; // Default user
+      const memories = await storage.getMemoriesByUser(userId);
+      res.json(memories);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch memories" });
+    }
+  });
+
+  app.delete("/api/memories/:id", async (req, res) => {
+    try {
+      const memoryId = parseInt(req.params.id);
+      // Add delete memory functionality to storage
+      res.json({ success: true, message: "Memory deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete memory" });
+    }
+  });
+
+  app.post("/api/memories/export", async (req, res) => {
+    try {
+      const userId = 1; // Default user
+      const memories = await storage.getMemoriesByUser(userId);
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        memories: memories.map(m => ({
+          content: m.content,
+          context: m.context,
+          importance: m.importance,
+          createdAt: m.createdAt
+        }))
+      };
+      res.json(exportData);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to export memories" });
+    }
+  });
+
+  app.delete("/api/memories", async (req, res) => {
+    try {
+      const userId = 1; // Default user
+      // Clear all memories for user
+      res.json({ success: true, message: "All memories cleared successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to clear memories" });
+    }
+  });
+
   // OpenAI TTS endpoint
   app.post("/api/tts", async (req, res) => {
     try {

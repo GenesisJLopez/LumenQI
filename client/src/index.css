@@ -271,8 +271,8 @@ body {
 }
 
 @keyframes cosmicPulseSpeaking {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.3); opacity: 1; }
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.15); opacity: 0.8; }
 }
 
 /* Cosmic particles */
