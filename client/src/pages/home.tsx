@@ -10,6 +10,7 @@ import { Sidebar } from '@/components/sidebar';
 import { ChatArea } from '@/components/chat-area';
 import { VoiceControls } from '@/components/voice-controls';
 import { QuantumInterface } from '@/components/quantum-interface';
+import { PersonalityEvolution } from '@/components/personality-evolution';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -514,6 +515,16 @@ export default function Home() {
                         onMLAdapt={adaptMachineLearning}
                         isElectron={isElectron}
                       />
+                      
+                      <div className="p-4 border-t border-purple-500/20 mt-6">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold text-white mb-2">Personality Evolution</h3>
+                          <p className="text-sm text-gray-400">
+                            See how Lumen's personality adapts to your interactions
+                          </p>
+                        </div>
+                        <PersonalityEvolution userId={1} />
+                      </div>
                     </div>
                     
                     {/* Quantum Interface Footer */}
