@@ -280,7 +280,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen cosmic-bg overflow-hidden">
+    <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
       {/* Voice Mode Overlay */}
       {isVoiceMode && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center cosmic-bg">
@@ -479,9 +479,9 @@ export default function Home() {
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="chat" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  {/* Chat Messages Area - Scrollable */}
-                  <div className="flex-1 overflow-hidden">
+                <TabsContent value="chat" className="mt-0 flex-1 flex flex-col overflow-hidden h-full">
+                  {/* Chat Messages Area - Scrollable with Fixed Height */}
+                  <div className="flex-1 overflow-hidden min-h-0">
                     <ChatArea
                       messages={messages}
                       isTyping={isTyping}

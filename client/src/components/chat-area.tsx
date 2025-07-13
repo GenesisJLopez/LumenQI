@@ -25,15 +25,12 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     // Auto-scroll to bottom when new messages arrive
     const scrollToBottom = () => {
       if (scrollAreaRef.current) {
-        const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-        if (scrollContainer) {
-          setTimeout(() => {
-            scrollContainer.scrollTo({
-              top: scrollContainer.scrollHeight,
-              behavior: 'smooth'
-            });
-          }, 100);
-        }
+        setTimeout(() => {
+          scrollAreaRef.current.scrollTo({
+            top: scrollAreaRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }, 100);
       }
     };
     
@@ -203,7 +200,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   }
 
   return (
-    <div className="flex-1 flex flex-col cosmic-bg">
+    <div className="h-full flex flex-col cosmic-bg relative">
       {/* Cosmic Particles */}
       <div className="cosmic-particles"></div>
       
@@ -226,11 +223,13 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         </svg>
       </div>
       
-      {/* Chat Messages Container - Fixed Height with Scrolling */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea ref={scrollAreaRef} className="h-full px-4 py-6">
-            <div className="max-w-4xl mx-auto space-y-6 pb-4">
+      {/* Chat Messages Container - Constrained Height with Native Scrolling */}
+      <div 
+        className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500" 
+        ref={scrollAreaRef}
+        style={{ maxHeight: '100%' }}
+      >
+        <div className="max-w-4xl mx-auto space-y-6 pb-4">
             {messages.map((message, index) => (
               <div
                 key={message.id}
@@ -345,8 +344,6 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                 </div>
               </div>
             )}
-            </div>
-          </ScrollArea>
         </div>
       </div>
     </div>
