@@ -154,8 +154,9 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
             variant="ghost" 
             className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={() => {
-              // TODO: Open memory management modal
-              window.open('/memory-management', '_blank');
+              // Open internal settings menu
+              const event = new CustomEvent('openSettings');
+              window.dispatchEvent(event);
             }}
           >
             <Settings className="h-4 w-4 mr-3" />
