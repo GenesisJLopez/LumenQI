@@ -139,6 +139,48 @@ export default function Home() {
     }
   };
 
+  // Set current identity as permanent default
+  const handleSetAsDefault = async () => {
+    try {
+      const response = await fetch('/api/identity/set-default', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Failed to set default');
+
+      toast({ title: "Current identity set as permanent default!" });
+    } catch (error) {
+      toast({ title: "Failed to set default identity", variant: "destructive" });
+    }
+  };
+
+  // Reset identity to default
+  const handleResetToDefault = async () => {
+    try {
+      const response = await fetch('/api/identity/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Failed to reset identity');
+
+      const result = await response.json();
+      if (result.identity) {
+        setIdentityData({
+          coreIdentity: result.identity.coreIdentity || '',
+          communicationStyle: result.identity.communicationStyle || '',
+          interests: result.identity.interests || '',
+          relationship: result.identity.relationship || ''
+        });
+      }
+
+      toast({ title: "Identity reset to default successfully!" });
+    } catch (error) {
+      toast({ title: "Failed to reset identity", variant: "destructive" });
+    }
+  };
+
   // Settings modal event listener and identity loading
   useEffect(() => {
     const handleOpenSettings = () => {
@@ -561,14 +603,30 @@ export default function Home() {
                           />
                         </div>
                         
-                        <div className="pt-4">
-                          <button 
-                            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium disabled:opacity-50"
-                            onClick={handleIdentitySave}
-                            disabled={isIdentitySaving}
-                          >
-                            {isIdentitySaving ? 'Saving...' : 'Save Identity Programming'}
-                          </button>
+                        <div className="pt-4 space-y-4">
+                          <div className="flex space-x-4">
+                            <button 
+                              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium disabled:opacity-50"
+                              onClick={handleIdentitySave}
+                              disabled={isIdentitySaving}
+                            >
+                              {isIdentitySaving ? 'Saving...' : 'Save Identity Programming'}
+                            </button>
+                            <button 
+                              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium"
+                              onClick={handleSetAsDefault}
+                            >
+                              Set as Permanent Default
+                            </button>
+                          </div>
+                          <div className="flex space-x-4">
+                            <button 
+                              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors font-medium"
+                              onClick={handleResetToDefault}
+                            >
+                              Reset to Default
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

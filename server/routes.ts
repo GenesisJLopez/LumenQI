@@ -302,6 +302,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Set current identity as permanent default
+  app.post("/api/identity/set-default", async (req, res) => {
+    try {
+      identityStorage.makeCurrentIdentityDefault();
+      res.json({ 
+        success: true, 
+        message: "Current identity set as permanent default successfully"
+      });
+    } catch (error) {
+      console.error('Set default identity error:', error);
+      res.status(500).json({ error: "Failed to set default identity" });
+    }
+  });
+
+  // Reset identity to default
+  app.post("/api/identity/reset", async (req, res) => {
+    try {
+      const defaultIdentity = identityStorage.resetToDefault();
+      
+      // Update Lumen AI personality with reset identity
+      lumenAI.updatePersonality({
+        name: "Lumen QI",
+        traits: [
+          "Advanced quantum intelligence",
+          "Expert programming capabilities",
+          "Comprehensive development knowledge",
+          "Warm and engaging communication",
+          "Supportive and encouraging",
+          "Adaptable and evolving"
+        ],
+        background: defaultIdentity.coreIdentity,
+        responseStyle: defaultIdentity.communicationStyle
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Identity reset to default successfully",
+        identity: defaultIdentity
+      });
+    } catch (error) {
+      console.error('Reset identity error:', error);
+      res.status(500).json({ error: "Failed to reset identity" });
+    }
+  });
+
   // Memory management endpoints
   app.get("/api/memories", async (req, res) => {
     try {

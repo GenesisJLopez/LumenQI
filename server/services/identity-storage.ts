@@ -86,18 +86,28 @@ export class IdentityStorage {
   // Update defaults with current identity (for permanent changes)
   makeCurrentIdentityDefault(): void {
     try {
-      // Update the default in this file
+      // Read current file
       const currentCode = fs.readFileSync(__filename, 'utf8');
-      const newDefault = `const DEFAULT_IDENTITY: LumenIdentityData = ${JSON.stringify(this.currentIdentity, null, 2)};`;
       
-      // This is a simplified approach - in production, you'd want more sophisticated code updates
-      console.log('Current identity set as new default (requires restart to take effect)');
-      console.log('Identity data:', this.currentIdentity);
+      // Create the new default object string
+      const newDefaultString = `const DEFAULT_IDENTITY: LumenIdentityData = ${JSON.stringify(this.currentIdentity, null, 2)};`;
       
-      // Save current identity as the persistent default
+      // Replace the DEFAULT_IDENTITY definition
+      const defaultRegex = /const DEFAULT_IDENTITY: LumenIdentityData = \{[\s\S]*?\};/;
+      const updatedCode = currentCode.replace(defaultRegex, newDefaultString);
+      
+      // Write the updated file
+      fs.writeFileSync(__filename, updatedCode);
+      
+      console.log('✓ Updated default identity in source code');
+      console.log('✓ Current identity set as permanent default');
+      
+      // Also save to persistent storage
       this.saveIdentity();
     } catch (error) {
       console.error('Failed to update default identity:', error);
+      // Fallback: just save to persistent storage
+      this.saveIdentity();
     }
   }
 }
