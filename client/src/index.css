@@ -49,6 +49,7 @@
 /* Enhanced scrolling for specific sections */
 .quantum-scroll,
 .identity-scroll,
+.evolution-scroll,
 .settings-scroll,
 .chat-scroll {
   scrollbar-width: thin;

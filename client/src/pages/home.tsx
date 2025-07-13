@@ -12,13 +12,14 @@ import { VoiceControls } from '@/components/voice-controls';
 import { QuantumInterface } from '@/components/quantum-interface';
 import { PersonalityEvolution } from '@/components/personality-evolution';
 import { VoiceSettings } from '@/components/voice-settings';
+import { MemoryManager } from '@/components/memory-manager';
 import lumenLogo from '@assets/lumen-logo_1752354847791.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { Cpu, Brain, Zap, MessageSquare, Settings, User } from 'lucide-react';
+import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
@@ -29,7 +30,7 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'identity' | 'settings'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'quantum' | 'identity' | 'evolution' | 'settings'>('chat');
   const [identityData, setIdentityData] = useState({
     coreIdentity: '',
     communicationStyle: '',
@@ -510,8 +511,8 @@ export default function Home() {
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Tab Navigation */}
             <div className="border-b border-purple-500/20 bg-gray-900/50 backdrop-blur-sm">
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum' | 'identity' | 'settings')}>
-                <TabsList className="grid w-full grid-cols-4 bg-transparent">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'quantum' | 'identity' | 'evolution' | 'settings')}>
+                <TabsList className="grid w-full grid-cols-5 bg-transparent">
                   <TabsTrigger value="chat" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
                     Chat Interface
@@ -525,9 +526,13 @@ export default function Home() {
                     <User className="w-4 h-4" />
                     Identity
                   </TabsTrigger>
+                  <TabsTrigger value="evolution" className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    Evolution
+                  </TabsTrigger>
                   <TabsTrigger value="settings" className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    Settings
+                    <Database className="w-4 h-4" />
+                    Memory
                   </TabsTrigger>
                 </TabsList>
                 
@@ -557,7 +562,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="quantum" className="mt-0 flex-1 flex flex-col overflow-hidden">
-                  <div className="h-full flex flex-col overflow-y-auto quantum-scroll max-h-[calc(100vh-12rem)]">
+                  <div className="h-full flex flex-col">
                     {/* Quantum Interface Header */}
                     <div className="p-4 border-b border-purple-500/20">
                       <div className="flex items-center justify-between">
@@ -583,22 +588,12 @@ export default function Home() {
                     </div>
                     
                     {/* Quantum Interface Content */}
-                    <div className="flex-1 overflow-auto">
+                    <div className="flex-1">
                       <QuantumInterface
                         onTTSRequest={synthesizeAdvancedTTS}
                         onMLAdapt={adaptMachineLearning}
                         isElectron={isElectron}
                       />
-                      
-                      <div className="p-4 border-t border-purple-500/20 mt-6">
-                        <div className="mb-4">
-                          <h3 className="text-lg font-semibold text-white mb-2">Personality Evolution</h3>
-                          <p className="text-sm text-gray-400">
-                            See how Lumen's personality adapts to your interactions
-                          </p>
-                        </div>
-                        <PersonalityEvolution userId={1} />
-                      </div>
                     </div>
                     
                     {/* Quantum Interface Footer */}
@@ -756,6 +751,42 @@ export default function Home() {
                   </div>
                 </TabsContent>
                 
+                <TabsContent value="evolution" className="mt-0 flex-1 flex flex-col overflow-hidden">
+                  <div className="h-full flex flex-col overflow-y-auto evolution-scroll max-h-[calc(100vh-12rem)]">
+                    {/* Evolution Header */}
+                    <div className="p-4 border-b border-purple-500/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                            Personality Evolution
+                          </h2>
+                          <p className="text-sm text-gray-400">
+                            See how Lumen's personality adapts to your interactions
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Evolution Content */}
+                    <div className="flex-1 overflow-auto p-6">
+                      <PersonalityEvolution userId={1} />
+                    </div>
+                    
+                    {/* Evolution Footer */}
+                    <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
+                      <div className="flex items-center justify-between text-sm text-gray-400">
+                        <span>Lumen QI Personality Evolution System</span>
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <TrendingUp className="w-4 h-4" />
+                            Evolution Active
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
                 <TabsContent value="settings" className="mt-0 flex-1 flex flex-col overflow-hidden">
                   <div className="h-full flex flex-col overflow-y-auto settings-scroll max-h-[calc(100vh-12rem)]">
                     {/* Settings Header */}
@@ -763,10 +794,10 @@ export default function Home() {
                       <div className="flex items-center justify-between">
                         <div>
                           <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            System Settings
+                            Memory Management
                           </h2>
                           <p className="text-sm text-gray-400">
-                            Customize your Lumen QI experience
+                            Manage Lumen's memory and learning data
                           </p>
                         </div>
                         <Button
@@ -780,9 +811,15 @@ export default function Home() {
                       </div>
                     </div>
                     
-                    {/* Settings Content */}
+                    {/* Memory Content */}
                     <div className="flex-1 overflow-auto p-6">
                       <div className="max-w-2xl mx-auto space-y-8">
+                        {/* Memory Management */}
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-4">Memory & Learning</h3>
+                          <MemoryManager />
+                        </div>
+                        
                         {/* Voice Settings */}
                         <div>
                           <h3 className="text-lg font-semibold text-white mb-4">Voice & Speech</h3>
@@ -798,19 +835,17 @@ export default function Home() {
                             }}
                           />
                         </div>
-                        
-                        {/* More settings can be added here */}
                       </div>
                     </div>
                     
                     {/* Settings Footer */}
                     <div className="p-4 border-t border-purple-500/20 bg-gray-900/30">
                       <div className="flex items-center justify-between text-sm text-gray-400">
-                        <span>Lumen QI Configuration Panel</span>
+                        <span>Lumen QI Memory Management</span>
                         <div className="flex items-center gap-4">
                           <span className="flex items-center gap-1">
-                            <Settings className="w-4 h-4" />
-                            Settings Active
+                            <Database className="w-4 h-4" />
+                            Memory Active
                           </span>
                         </div>
                       </div>
