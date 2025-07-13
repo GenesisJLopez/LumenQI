@@ -599,6 +599,9 @@ export default function Home() {
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                             Advanced AI system monitoring and quantum interface controls
                           </p>
+                          <div className="text-xs text-gray-500 mb-2">
+                            Active Tab: {activeTab} | Status: Loading Components
+                          </div>
                         </div>
                         
                         <div className="space-y-4">
@@ -666,9 +669,11 @@ export default function Home() {
                             </div>
                           </div>
                           
-                          <CodeGenerator onCodeGenerated={(code) => {
-                            console.log('Generated code:', code);
-                          }} />
+                          <div className="mt-4">
+                            <CodeGenerator onCodeGenerated={(code) => {
+                              console.log('Generated code:', code);
+                            }} />
+                          </div>
                         </div>
                       </div>
                     </TabsContent>
@@ -682,6 +687,9 @@ export default function Home() {
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                             Configure Lumen's core personality and behavior
                           </p>
+                          <div className="bg-green-100 dark:bg-green-900 p-2 rounded text-sm">
+                            ✓ Identity Tab Active - Components Loading
+                          </div>
                         </div>
                         
                         <div className="space-y-4">
@@ -764,8 +772,13 @@ export default function Home() {
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                             Monitor how Lumen's personality adapts over time
                           </p>
+                          <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded text-sm">
+                            ✓ Evolution Tab Active - PersonalityEvolution Loading
+                          </div>
                         </div>
-                        <PersonalityEvolution userId={1} />
+                        <div className="mt-4">
+                          <PersonalityEvolution userId={1} />
+                        </div>
                       </div>
                     </TabsContent>
 
@@ -778,6 +791,9 @@ export default function Home() {
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                             Manage Lumen's memory and learning data
                           </p>
+                          <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded text-sm">
+                            ✓ Memory Tab Active - MemoryManager Loading ({memories.length} memories)
+                          </div>
                         </div>
                         
                         <div className="space-y-6">
@@ -833,7 +849,9 @@ export default function Home() {
                             <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
                               Memory & Learning
                             </h4>
-                            <MemoryManager />
+                            <div className="mt-4">
+                              <MemoryManager />
+                            </div>
                           </div>
                         </div>
                       </div>
