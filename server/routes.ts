@@ -512,6 +512,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (message.type === 'chat_message') {
           const { content, conversationId, emotionContext } = message;
           
+          // Validate that conversationId is provided
+          if (!conversationId) {
+            throw new Error('Conversation ID is required');
+          }
+          
           // Save user message
           await storage.createMessage({
             conversationId,

@@ -231,14 +231,17 @@ export default function Home() {
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
 
+    let conversationId = currentConversationId;
+
     // Create new conversation if none exists
-    if (!currentConversationId) {
+    if (!conversationId) {
       try {
         const newConversation = await createConversationMutation.mutateAsync({
           title: content.slice(0, 50) + (content.length > 50 ? '...' : ''),
           userId: 1,
         });
-        setCurrentConversationId(newConversation.id);
+        conversationId = newConversation.id;
+        setCurrentConversationId(conversationId);
       } catch (error) {
         toast({ title: "Failed to create conversation", variant: "destructive" });
         return;
@@ -252,7 +255,7 @@ export default function Home() {
     sendMessage({
       type: 'chat_message',
       content,
-      conversationId: currentConversationId,
+      conversationId,
       emotion: textEmotion,
       emotionContext,
     });
