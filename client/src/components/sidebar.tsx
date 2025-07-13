@@ -219,12 +219,12 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                 </div>
                 
                 {editingConversationId !== conversation.id && (
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={(e) => handleEditConversation(conversation.id, conversation.title, e)}
-                      className="opacity-100 transition-all duration-200 p-1 h-7 w-7 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-800/30 flex-shrink-0 rounded-md z-10"
+                      className="transition-all duration-200 p-1 h-7 w-7 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-800/30 flex-shrink-0 rounded-md z-10"
                       title="Edit conversation"
                     >
                       <Edit2 className="h-3 w-3 pointer-events-none" />
@@ -233,7 +233,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                       variant="ghost"
                       size="sm"
                       onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                      className="opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 flex-shrink-0 rounded-md z-10"
+                      className="transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 flex-shrink-0 rounded-md z-10"
                       title="Delete conversation"
                     >
                       <Trash2 className="h-3 w-3 pointer-events-none" />
