@@ -4,8 +4,9 @@ import { queryClient } from '@/lib/queryClient';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Brain, UserCog, Database, Trash2, MessageSquare } from 'lucide-react';
+import { Settings, Plus, Brain, UserCog, Database, Trash2, MessageSquare, Edit2, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, Memory } from '@shared/schema';
 
@@ -17,6 +18,8 @@ interface SidebarProps {
 
 export function Sidebar({ currentConversationId, onConversationSelect, onNewConversation }: SidebarProps) {
   const { toast } = useToast();
+  const [editingConversationId, setEditingConversationId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
   
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ['/api/conversations'],
@@ -45,6 +48,29 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
     },
   });
 
+  const updateConversationTitle = useMutation({
+    mutationFn: async ({ id, title }: { id: number; title: string }) => {
+      const response = await fetch(`/api/conversations/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update conversation title');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      setEditingConversationId(null);
+      setEditingTitle('');
+      toast({ title: "Chat title updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update chat title", variant: "destructive" });
+    },
+  });
+
   const handleDeleteConversation = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -59,6 +85,42 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
     }
     
     deleteConversation.mutate(id);
+  };
+
+  const handleEditConversation = (id: number, currentTitle: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEditingConversationId(id);
+    setEditingTitle(currentTitle);
+  };
+
+  const handleSaveEdit = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (!editingTitle.trim()) {
+      toast({ title: "Title cannot be empty", variant: "destructive" });
+      return;
+    }
+    
+    updateConversationTitle.mutate({ id, title: editingTitle.trim() });
+  };
+
+  const handleCancelEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEditingConversationId(null);
+    setEditingTitle('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveEdit(id, e as any);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancelEdit(e as any);
+    }
   };
 
   const formatTimeAgo = (date: string | Date) => {
@@ -111,26 +173,73 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                 "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
                 currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600" : ""
               )}
-              onClick={() => onConversationSelect(conversation.id)}
+              onClick={() => editingConversationId !== conversation.id && onConversationSelect(conversation.id)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                    {conversation.title}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {formatTimeAgo(conversation.updatedAt)}
-                  </div>
+                  {editingConversationId === conversation.id ? (
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(e, conversation.id)}
+                        className="text-sm h-8 font-medium"
+                        placeholder="Enter title..."
+                        autoFocus
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleSaveEdit(conversation.id, e)}
+                        className="p-1 h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-800/30"
+                        title="Save"
+                      >
+                        <Check className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelEdit}
+                        className="p-1 h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/30"
+                        title="Cancel"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {conversation.title}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {formatTimeAgo(conversation.updatedAt)}
+                      </div>
+                    </>
+                  )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 ml-2 flex-shrink-0 rounded-md z-10"
-                  title="Delete conversation"
-                >
-                  <Trash2 className="h-3 w-3 pointer-events-none" />
-                </Button>
+                
+                {editingConversationId !== conversation.id && (
+                  <div className="flex items-center space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleEditConversation(conversation.id, conversation.title, e)}
+                      className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-800/30 flex-shrink-0 rounded-md z-10"
+                      title="Edit conversation"
+                    >
+                      <Edit2 className="h-3 w-3 pointer-events-none" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                      className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 flex-shrink-0 rounded-md z-10"
+                      title="Delete conversation"
+                    >
+                      <Trash2 className="h-3 w-3 pointer-events-none" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

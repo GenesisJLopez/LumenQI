@@ -85,6 +85,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/conversations/:id", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { title } = req.body;
+      
+      if (!title || typeof title !== 'string' || !title.trim()) {
+        return res.status(400).json({ error: "Title is required and must be a non-empty string" });
+      }
+
+      const conversation = await storage.getConversation(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+
+      // Update the conversation title
+      const updatedConversation = await storage.updateConversation(conversationId, { 
+        title: title.trim(),
+        updatedAt: new Date()
+      });
+      
+      if (!updatedConversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      res.json(updatedConversation);
+    } catch (error) {
+      console.error('Error updating conversation:', error);
+      res.status(500).json({ error: "Failed to update conversation" });
+    }
+  });
+
   app.get("/api/memories", async (req, res) => {
     try {
       const userId = 1; // Demo user ID
