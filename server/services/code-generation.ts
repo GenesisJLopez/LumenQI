@@ -297,5 +297,7 @@ ${request.features.map(f => `- ${f}`).join('\n')}`;
   }
 }
 
-// Export singleton instance
-export const lumenCodeGenerator = new LumenCodeGenerator(new LumenAI());
+// Export factory function to avoid circular dependencies
+export function createLumenCodeGenerator() {
+  return new LumenCodeGenerator(new LumenAI());
+}

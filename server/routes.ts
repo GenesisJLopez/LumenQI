@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
-import { lumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
+import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { personalityEvolution } from "./services/personality-evolution";
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema } from "@shared/schema";
 import { z } from "zod";
@@ -14,6 +14,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  // Create code generator instance
+  const lumenCodeGenerator = createLumenCodeGenerator();
 
   // API Routes
   app.get("/api/conversations", async (req, res) => {
