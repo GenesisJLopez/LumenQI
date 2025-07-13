@@ -175,71 +175,40 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                 "p-3 cursor-pointer transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
                 currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600" : ""
               )}
-              onClick={() => editingConversationId !== conversation.id && onConversationSelect(conversation.id)}
             >
-              <div className="flex items-start justify-between w-full">
-                <div className="flex-1 min-w-0 mr-2">
-                  {editingConversationId === conversation.id ? (
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        value={editingTitle}
-                        onChange={(e) => setEditingTitle(e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(e, conversation.id)}
-                        className="text-sm h-8 font-medium"
-                        placeholder="Enter title..."
-                        autoFocus
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => handleSaveEdit(conversation.id, e)}
-                        className="p-1 h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-800/30"
-                        title="Save"
-                      >
-                        <Check className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleCancelEdit}
-                        className="p-1 h-7 w-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800/30"
-                        title="Cancel"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {conversation.title}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {formatTimeAgo(conversation.updatedAt)}
-                      </div>
-                    </>
-                  )}
+              <div className="flex items-center justify-between w-full">
+                <div 
+                  className="flex-1 min-w-0 mr-2"
+                  onClick={() => editingConversationId !== conversation.id && onConversationSelect(conversation.id)}
+                >
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    {conversation.title}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {formatTimeAgo(conversation.updatedAt)}
+                  </div>
                 </div>
                 
-                <div className="flex items-center space-x-1 flex-shrink-0 ml-2" style={{ minWidth: '60px' }}>
+                <div className="flex items-center space-x-1 flex-shrink-0">
                   <button
                     onClick={(e) => {
+                      e.stopPropagation();
                       console.log('Edit button clicked for conversation:', conversation.id);
                       handleEditConversation(conversation.id, conversation.title, e);
                     }}
-                    className="p-1 h-6 w-6 bg-blue-500 text-white rounded border border-blue-300 hover:bg-blue-600"
+                    className="w-8 h-8 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
                     title="Edit conversation"
-                    style={{ position: 'relative', zIndex: 10 }}
                   >
                     ✏️
                   </button>
                   <button
                     onClick={(e) => {
+                      e.stopPropagation();
                       console.log('Delete button clicked for conversation:', conversation.id);
                       handleDeleteConversation(conversation.id, e);
                     }}
-                    className="p-1 h-6 w-6 bg-red-500 text-white rounded border border-red-300 hover:bg-red-600"
+                    className="w-8 h-8 bg-red-500 text-white rounded hover:bg-red-600 flex items-center justify-center"
                     title="Delete conversation"
-                    style={{ position: 'relative', zIndex: 10 }}
                   >
                     🗑️
                   </button>
