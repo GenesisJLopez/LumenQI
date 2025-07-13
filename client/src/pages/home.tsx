@@ -218,10 +218,17 @@ export default function Home() {
   };
 
   const handleNewConversation = () => {
-    createConversationMutation.mutate({
-      title: 'New conversation',
-      userId: 1, // Demo user ID
-    });
+    // Clear current conversation selection
+    setCurrentConversationId(undefined);
+    
+    // Only create a new conversation if explicitly requested
+    // This allows clearing the current conversation without creating a new one
+    if (arguments.length > 0 && arguments[0] === true) {
+      createConversationMutation.mutate({
+        title: 'New conversation',
+        userId: 1, // Demo user ID
+      });
+    }
   };
 
   const handleConversationSelect = (conversationId: number) => {

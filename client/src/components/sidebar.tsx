@@ -39,7 +39,11 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, deletedId) => {
+      // If deleted conversation was the current one, clear selection
+      if (currentConversationId === deletedId) {
+        onNewConversation();
+      }
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       toast({ title: "Chat deleted successfully" });
     },
@@ -77,11 +81,6 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
     
     if (!window.confirm('Are you sure you want to delete this conversation?')) {
       return;
-    }
-    
-    // If this is the current conversation, clear it
-    if (currentConversationId === id) {
-      onNewConversation();
     }
     
     deleteConversation.mutate(id);
@@ -153,7 +152,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
         </div>
         
         <Button 
-          onClick={onNewConversation}
+          onClick={() => onNewConversation(true)}
           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -189,29 +188,36 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-1 flex-shrink-0">
-                  <button
+                <div className={cn(
+                  "flex items-center space-x-1 flex-shrink-0 transition-opacity",
+                  currentConversationId === conversation.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                )}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       console.log('Edit button clicked for conversation:', conversation.id);
                       handleEditConversation(conversation.id, conversation.title, e);
                     }}
-                    className="w-8 h-8 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+                    className="p-1.5 h-auto hover:bg-blue-100 dark:hover:bg-blue-900"
                     title="Edit conversation"
                   >
-                    ✏️
-                  </button>
-                  <button
+                    <Edit2 className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       console.log('Delete button clicked for conversation:', conversation.id);
                       handleDeleteConversation(conversation.id, e);
                     }}
-                    className="w-8 h-8 bg-red-500 text-white rounded hover:bg-red-600 flex items-center justify-center"
+                    className="p-1.5 h-auto hover:bg-red-100 dark:hover:bg-red-900"
                     title="Delete conversation"
                   >
-                    🗑️
-                  </button>
+                    <Trash2 className="h-3 w-3 text-red-600 dark:text-red-400" />
+                  </Button>
                 </div>
               </div>
             </div>
