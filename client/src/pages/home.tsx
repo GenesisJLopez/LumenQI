@@ -274,13 +274,25 @@ export default function Home() {
     <div className="flex h-screen cosmic-bg">
       {/* Voice Mode Overlay */}
       {isVoiceMode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center cosmic-bg">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center cosmic-bg">
           <div className="cosmic-particles"></div>
+          
+          {/* Enhanced Cosmic Background Effects */}
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Floating cosmic orbs */}
+            <div className="absolute top-20 left-20 w-32 h-32 bg-purple-500/10 rounded-full animate-pulse blur-xl"></div>
+            <div className="absolute top-40 right-32 w-24 h-24 bg-blue-500/10 rounded-full animate-pulse blur-xl" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-32 left-40 w-40 h-40 bg-pink-500/10 rounded-full animate-pulse blur-xl" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-20 right-20 w-28 h-28 bg-cyan-500/10 rounded-full animate-pulse blur-xl" style={{animationDelay: '3s'}}></div>
+            
+            {/* Cosmic dust trails */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-transparent to-blue-900/5 animate-spin-slow"></div>
+            <div className="absolute inset-0 bg-gradient-to-tl from-pink-900/5 via-transparent to-cyan-900/5 animate-spin-reverse"></div>
+          </div>
           
           {/* Voice Mode Lumen Logo */}
           <div className={cn(
             "w-80 h-80 transition-all duration-500 relative",
-            isProcessing ? 'animate-spin' : 
             isListening ? 'lumen-logo-listening' : 
             isSpeaking ? 'lumen-logo-speaking' : 'lumen-logo-idle'
           )}>
@@ -295,68 +307,70 @@ export default function Home() {
                 }}
               />
               
-              {/* Cosmic Glow Overlay */}
-              <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-500/10 to-transparent opacity-60 animate-pulse"></div>
+              {/* Enhanced Cosmic Glow Overlay */}
+              <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-500/20 to-transparent opacity-60 animate-pulse"></div>
               
-              {/* Galactic Swirl for Processing */}
-              {isProcessing && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg viewBox="0 0 400 400" className="w-full h-full absolute">
-                    <defs>
-                      <linearGradient id="processingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#7877c6" />
-                        <stop offset="50%" stopColor="#ff77c6" />
-                        <stop offset="100%" stopColor="#77c6ff" />
-                      </linearGradient>
-                    </defs>
+              {/* Additional glow layers for depth */}
+              <div className="absolute inset-4 bg-gradient-radial from-transparent via-blue-500/15 to-transparent opacity-40 animate-pulse" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-8 bg-gradient-radial from-transparent via-pink-500/10 to-transparent opacity-30 animate-pulse" style={{animationDelay: '1s'}}></div>
+              
+              {/* Cosmic Swirl Background (always visible, intensifies when processing) */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg viewBox="0 0 400 400" className="w-full h-full absolute">
+                  <defs>
+                    <linearGradient id="cosmicGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#7877c6" />
+                      <stop offset="50%" stopColor="#ff77c6" />
+                      <stop offset="100%" stopColor="#77c6ff" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Cosmic Swirl Arms - always rotating */}
+                  <g transform="translate(200,200)">
+                    {/* Main spiral arms */}
+                    <path d="M 0,0 Q 50,-50 100,-25 Q 150,0 125,75 Q 100,150 25,125 Q -50,100 -25,25 Q 0,-50 75,-75 Q 150,-100 175,-25 Q 200,50 125,125 Q 50,200 -25,175 Q -100,150 -125,75 Q -150,0 -75,-75" 
+                          fill="none" 
+                          stroke="url(#cosmicGradient)" 
+                          strokeWidth={isProcessing ? "4" : "2"} 
+                          opacity={isProcessing ? "0.9" : "0.3"}
+                          className="animate-spin-slow"
+                          style={{transition: 'all 1s ease-in-out'}}/>
                     
-                    {/* Galactic Swirl Arms */}
-                    <g transform="translate(200,200)">
-                      {/* Main spiral arms */}
-                      <path d="M 0,0 Q 50,-50 100,-25 Q 150,0 125,75 Q 100,150 25,125 Q -50,100 -25,25 Q 0,-50 75,-75 Q 150,-100 175,-25 Q 200,50 125,125 Q 50,200 -25,175 Q -100,150 -125,75 Q -150,0 -75,-75" 
-                            fill="none" 
-                            stroke="url(#processingGradient)" 
-                            strokeWidth="3" 
-                            opacity="0.8"
-                            className="animate-spin"
-                            style={{animationDuration: '8s'}}/>
-                      
-                      <path d="M 0,0 Q -30,30 -60,15 Q -90,0 -75,-45 Q -60,-90 -15,-75 Q 30,-60 15,-15 Q 0,30 -45,45 Q -90,60 -105,15 Q -120,-30 -75,-75 Q -30,-120 15,-105 Q 60,-90 75,-45" 
-                            fill="none" 
-                            stroke="url(#processingGradient)" 
-                            strokeWidth="2.5" 
-                            opacity="0.6"
-                            className="animate-spin"
-                            style={{animationDuration: '6s', animationDirection: 'reverse'}}/>
-                      
-                      <path d="M 0,0 Q 20,-20 40,-10 Q 60,0 50,30 Q 40,60 10,50 Q -20,40 -10,10 Q 0,-20 30,-30 Q 60,-40 70,-10 Q 80,20 50,50 Q 20,80 -10,70 Q -40,60 -50,30 Q -60,0 -30,-30" 
-                            fill="none" 
-                            stroke="url(#processingGradient)" 
-                            strokeWidth="2" 
-                            opacity="0.4"
-                            className="animate-spin"
-                            style={{animationDuration: '4s'}}/>
-                      
-                      {/* Central core */}
-                      <circle cx="0" cy="0" r="8" fill="url(#processingGradient)" opacity="0.9"/>
-                      
-                      {/* Rotating particles */}
-                      <circle cx="30" cy="0" r="3" fill="#7877c6" opacity="0.8" className="animate-spin" style={{animationDuration: '3s'}}>
-                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="3s" repeatCount="indefinite"/>
-                      </circle>
-                      <circle cx="-30" cy="0" r="3" fill="#ff77c6" opacity="0.8" className="animate-spin" style={{animationDuration: '4s'}}>
-                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="4s" repeatCount="indefinite"/>
-                      </circle>
-                      <circle cx="0" cy="30" r="3" fill="#77c6ff" opacity="0.8" className="animate-spin" style={{animationDuration: '2.5s'}}>
-                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="2.5s" repeatCount="indefinite"/>
-                      </circle>
-                      <circle cx="0" cy="-30" r="3" fill="#7877c6" opacity="0.8" className="animate-spin" style={{animationDuration: '3.5s'}}>
-                        <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="3.5s" repeatCount="indefinite"/>
-                      </circle>
-                    </g>
-                  </svg>
-                </div>
-              )}
+                    <path d="M 0,0 Q -30,30 -60,15 Q -90,0 -75,-45 Q -60,-90 -15,-75 Q 30,-60 15,-15 Q 0,30 -45,45 Q -90,60 -105,15 Q -120,-30 -75,-75 Q -30,-120 15,-105 Q 60,-90 75,-45" 
+                          fill="none" 
+                          stroke="url(#cosmicGradient)" 
+                          strokeWidth={isProcessing ? "3" : "1.5"} 
+                          opacity={isProcessing ? "0.7" : "0.2"}
+                          className="animate-spin-reverse"
+                          style={{transition: 'all 1s ease-in-out'}}/>
+                    
+                    <path d="M 0,0 Q 20,-20 40,-10 Q 60,0 50,30 Q 40,60 10,50 Q -20,40 -10,10 Q 0,-20 30,-30 Q 60,-40 70,-10 Q 80,20 50,50 Q 20,80 -10,70 Q -40,60 -50,30 Q -60,0 -30,-30" 
+                          fill="none" 
+                          stroke="url(#cosmicGradient)" 
+                          strokeWidth={isProcessing ? "2.5" : "1"} 
+                          opacity={isProcessing ? "0.5" : "0.1"}
+                          className="animate-spin-slow"
+                          style={{transition: 'all 1s ease-in-out'}}/>
+                    
+                    {/* Central core */}
+                    <circle cx="0" cy="0" r={isProcessing ? "12" : "6"} fill="url(#cosmicGradient)" opacity={isProcessing ? "0.9" : "0.4"} style={{transition: 'all 1s ease-in-out'}}/>
+                    
+                    {/* Floating particles */}
+                    <circle cx="30" cy="0" r="3" fill="#7877c6" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-slow" style={{transition: 'all 1s ease-in-out'}}>
+                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="-30" cy="0" r="3" fill="#ff77c6" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-reverse" style={{transition: 'all 1s ease-in-out'}}>
+                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="4s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="0" cy="30" r="3" fill="#77c6ff" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-slow" style={{transition: 'all 1s ease-in-out'}}>
+                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;360 0 0" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="0" cy="-30" r="3" fill="#7877c6" opacity={isProcessing ? "0.8" : "0.3"} className="animate-spin-reverse" style={{transition: 'all 1s ease-in-out'}}>
+                      <animateTransform attributeName="transform" type="rotate" values="0 0 0;-360 0 0" dur="3.5s" repeatCount="indefinite"/>
+                    </circle>
+                  </g>
+                </svg>
+              </div>
               
               {/* Pulsing Rings for Listening */}
               {isListening && (
@@ -397,50 +411,33 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Voice Mode Status */}
-          <div className="absolute bottom-20 text-center">
-            <div className="text-2xl font-bold cosmic-text mb-2">
-              {isProcessing ? 'Processing...' : 
-               isListening ? 'Listening...' : 
-               isSpeaking ? 'Speaking...' : 'Voice Mode'}
-            </div>
-            <div className="text-gray-300 mb-4">
-              {isProcessing ? 'Lumen is thinking with cosmic wisdom...' :
-               isListening ? 'Speak your thoughts, Genesis...' :
-               isSpeaking ? 'Lumen QI is sharing her wisdom...' :
-               'Tap to speak or exit voice mode'}
-            </div>
+          {/* Status Text - Centered below logo */}
+          <div className="text-center mt-8 space-y-4">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              {isSpeaking ? "Speaking..." : isListening ? "Listening..." : "Voice Mode Active"}
+            </h2>
+            <p className="text-white/80 text-lg">
+              {isSpeaking ? "Lumen is responding" : isListening ? "I'm listening, Genesis..." : "Ready for continuous conversation"}
+            </p>
             
-            {/* Emotion Detection Display */}
-            {isAnalyzing && currentEmotion && (
-              <div className="mb-4 p-3 bg-black/20 backdrop-blur-sm rounded-lg border border-white/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-white/80">Emotion Detection Active</span>
-                </div>
-                <div className="text-sm text-purple-400">
-                  {currentEmotion.emotion} ({Math.round(currentEmotion.confidence * 100)}% confidence)
-                </div>
+            {/* Emotion Display */}
+            {currentEmotion && (
+              <div className="mt-4">
+                <Badge variant="outline" className="bg-white/10 text-white border-white/30 px-4 py-2">
+                  {currentEmotion.emotion} ({Math.round(currentEmotion.confidence * 100)}%)
+                </Badge>
               </div>
             )}
-            <div className="flex gap-4">
-              <button 
-                onClick={handleVoiceListenToggle}
-                className={cn(
-                  "cosmic-button px-6 py-2 rounded-full",
-                  isListening && "active"
-                )}
-                disabled={!isSupported}
-              >
-                {isListening ? 'Stop Listening' : 'Start Listening'}
-              </button>
-              <button 
-                onClick={handleVoiceModeToggle}
-                className="cosmic-button px-6 py-2 rounded-full"
-              >
-                Exit Voice Mode
-              </button>
-            </div>
+          </div>
+          
+          {/* Exit Voice Mode Button - Bottom */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <Button 
+              onClick={handleVoiceModeToggle}
+              className="bg-purple-600/80 hover:bg-purple-700/90 text-white backdrop-blur-sm border border-white/20"
+            >
+              Exit Voice Mode
+            </Button>
           </div>
         </div>
       )}
