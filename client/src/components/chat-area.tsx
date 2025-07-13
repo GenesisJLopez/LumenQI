@@ -121,14 +121,14 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
 
   if (!currentConversationId) {
     return (
-      <div className="flex-1 flex items-center justify-center cosmic-bg relative">
-        {/* Central Lumen Logo - Just the core without circles */}
+      <div className="flex-1 flex flex-col items-center justify-center cosmic-bg relative">
+        {/* Simple Lumen Logo - No circles, just the logo */}
         <div className={cn(
-          "lumen-central-logo",
+          "lumen-central-logo mb-8",
           isListening ? 'lumen-logo-listening' : isSpeaking ? 'lumen-logo-speaking' : 'lumen-logo-idle',
           isListening || isSpeaking ? 'active' : ''
         )}>
-          <svg viewBox="0 0 200 200" className="w-full h-full">
+          <svg viewBox="0 0 200 200" className="w-48 h-48">
             <defs>
               <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#7877c6" />
@@ -144,11 +144,11 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
               </filter>
             </defs>
             
-            {/* Central core only */}
-            <circle cx="100" cy="100" r="15" fill="url(#logoGradient)" opacity="0.8" filter="url(#glow)"/>
+            {/* Simple logo design */}
+            <circle cx="100" cy="100" r="30" fill="url(#logoGradient)" opacity="0.8" filter="url(#glow)"/>
           </svg>
         </div>
-        <div className="text-center z-10 mt-96">
+        <div className="text-center z-10">
           <h2 className="text-4xl font-bold cosmic-text mb-6">How can I serve you today Genesis?</h2>
         </div>
       </div>
