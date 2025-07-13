@@ -12,6 +12,16 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Test database connection before starting server
+  try {
+    console.log('Testing database connection...');
+    const testResult = await storage.getConversationsByUser(1);
+    console.log('Database connection test successful');
+  } catch (error) {
+    console.error('Database connection test failed:', error);
+    throw new Error('Database connection failed during startup');
+  }
+
   // Create HTTP server
   const httpServer = createServer(app);
 
