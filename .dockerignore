@@ -1,0 +1,49 @@
+# Exclude large assets and build artifacts
+attached_assets/
+node_modules/
+dist/
+.git/
+.cache/
+.pythonlibs/
+coverage/
+*.log
+*.tmp
+*.temp
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.md
+README.md
+electron-main.js
+ml-backend.py
+*.py
+
+# Exclude development and test files
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+test/
+tests/
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Exclude editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Exclude large dependency caches
+.npm/
+.yarn/
+.pnpm/
+yarn.lock
+package-lock.json

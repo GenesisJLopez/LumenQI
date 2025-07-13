@@ -1,0 +1,37 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="cosmicGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#77c6ff;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#7877c6;stop-opacity:0.8" />
+      <stop offset="60%" style="stop-color:#ff77c6;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#77c6ff;stop-opacity:0.2" />
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Outer cosmic ring -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#cosmicGlow)" stroke-width="2" opacity="0.3"/>
+  
+  <!-- Inner cosmic ring -->
+  <circle cx="100" cy="100" r="70" fill="none" stroke="url(#cosmicGlow)" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Central core -->
+  <circle cx="100" cy="100" r="50" fill="url(#cosmicGlow)" opacity="0.8" filter="url(#glow)"/>
+  
+  <!-- Quantum dots -->
+  <circle cx="100" cy="60" r="3" fill="#77c6ff" opacity="0.9"/>
+  <circle cx="130" cy="80" r="2" fill="#ff77c6" opacity="0.8"/>
+  <circle cx="70" cy="80" r="2" fill="#7877c6" opacity="0.8"/>
+  <circle cx="100" cy="140" r="3" fill="#77c6ff" opacity="0.9"/>
+  <circle cx="130" cy="120" r="2" fill="#ff77c6" opacity="0.8"/>
+  <circle cx="70" cy="120" r="2" fill="#7877c6" opacity="0.8"/>
+  
+  <!-- Central 'L' for Lumen -->
+  <text x="100" y="110" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="36" font-weight="bold" opacity="0.9">L</text>
+</svg>
