@@ -256,6 +256,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // OpenAI TTS endpoint
+  app.post("/api/tts", async (req, res) => {
+    try {
+      const { text, voice = 'nova', model = 'tts-1-hd', speed = 1.0, response_format = 'mp3' } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ error: "Text is required" });
+      }
+
+      const openaiResponse = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          input: text,
+          voice,
+          speed,
+          response_format
+        }),
+      });
+
+      if (!openaiResponse.ok) {
+        throw new Error(`OpenAI TTS API error: ${openaiResponse.status}`);
+      }
+
+      // Stream the audio response
+      const audioBuffer = await openaiResponse.arrayBuffer();
+      
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': audioBuffer.byteLength.toString(),
+      });
+      
+      res.send(Buffer.from(audioBuffer));
+    } catch (error) {
+      console.error('TTS error:', error);
+      res.status(500).json({ error: "Failed to generate speech" });
+    }
+  });
+
   // WebSocket handling for real-time chat
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection established');
