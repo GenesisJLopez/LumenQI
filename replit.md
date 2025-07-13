@@ -183,6 +183,14 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Enhanced cosmic background with multiple animated layers and particle effects
 - Verified OpenAI TTS working with natural, vibrant speech quality
 
+**January 12, 2025**: Speech-Logo Animation Timing Fix
+- Fixed timing issue where logo animation started before actual speech playback
+- Modified natural-speech.ts to trigger onStart callback only when audio actually plays
+- Added proper onplay event handler for OpenAI TTS audio playback
+- Updated browser TTS fallback to use onstart event for precise timing
+- Added console logging to track speech lifecycle events
+- Logo animation now perfectly synchronized with actual speech audio
+
 **January 12, 2025**: Database implementation
 - Migrated from in-memory storage to PostgreSQL database
 - Created DatabaseStorage class implementing IStorage interface
