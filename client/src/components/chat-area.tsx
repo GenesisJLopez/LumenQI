@@ -52,21 +52,67 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     setTimeout(() => setCopiedMessageId(null), 2000);
   };
 
-  const toggleSpeakMessage = (text: string, messageId: number) => {
+  const toggleSpeakMessage = async (text: string, messageId: number) => {
     if (isSpeakingMessage === messageId) {
-      import('@/lib/natural-speech').then(({ naturalSpeech }) => {
-        naturalSpeech.stop();
-        setIsSpeakingMessage(null);
+      // Stop current speech
+      setIsSpeakingMessage(null);
+      // You could add speech stop logic here if needed
+      return;
+    }
+
+    setIsSpeakingMessage(messageId);
+    
+    try {
+      // Use OpenAI TTS API
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: text,
+          voice: 'nova',
+          model: 'tts-1-hd',
+          speed: 1.0
+        })
       });
-    } else {
-      import('@/lib/natural-speech').then(({ naturalSpeech }) => {
-        naturalSpeech.stop();
-        setIsSpeakingMessage(messageId);
-        naturalSpeech.speak(text, {
-          onEnd: () => setIsSpeakingMessage(null),
-          onError: () => setIsSpeakingMessage(null)
-        });
-      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        audio.onended = () => {
+          setIsSpeakingMessage(null);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audio.onerror = () => {
+          setIsSpeakingMessage(null);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        await audio.play();
+      } else {
+        // Fallback to browser TTS
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.8;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        utterance.onend = () => {
+          setIsSpeakingMessage(null);
+        };
+        
+        utterance.onerror = () => {
+          setIsSpeakingMessage(null);
+        };
+        
+        speechSynthesis.speak(utterance);
+      }
+    } catch (error) {
+      console.error('Speech error:', error);
+      setIsSpeakingMessage(null);
     }
   };
 
