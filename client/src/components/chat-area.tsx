@@ -200,7 +200,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   }
 
   return (
-    <div className="h-full flex flex-col cosmic-bg relative">
+    <div className="h-full cosmic-bg relative">
       {/* Cosmic Particles */}
       <div className="cosmic-particles"></div>
       
@@ -223,11 +223,14 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         </svg>
       </div>
       
-      {/* Chat Messages Container - Constrained Height with Native Scrolling */}
+      {/* Chat Messages Container - Fixed Height with Forced Scrolling */}
       <div 
-        className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500" 
+        className="absolute inset-0 overflow-y-scroll px-4 py-6 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500" 
         ref={scrollAreaRef}
-        style={{ maxHeight: '100%' }}
+        style={{ 
+          paddingTop: '24px',
+          paddingBottom: '24px'
+        }}
       >
         <div className="max-w-4xl mx-auto space-y-6 pb-4">
             {messages.map((message, index) => (
