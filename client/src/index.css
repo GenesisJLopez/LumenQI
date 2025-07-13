@@ -224,6 +224,49 @@ body {
   border: 1px solid rgba(119, 198, 255, 0.3);
 }
 
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 119, 198, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 119, 198, 0.5);
+}
+
+/* Ensure proper scrolling behavior */
+.overflow-y-auto {
+  overflow-y: auto !important;
+}
+
+/* Fix layout containers */
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+
 /* Cosmic Input */
 .cosmic-input {
   background: linear-gradient(135deg, rgba(120, 119, 198, 0.1) 0%, rgba(255, 119, 198, 0.1) 100%);
