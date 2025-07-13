@@ -192,17 +192,16 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Added proper onplay event handler for OpenAI TTS audio playback
 - Updated browser TTS fallback to use onstart event for precise timing
 
-**January 12, 2025**: Fixed UI Issues & Added Voice Settings
-- Fixed speaker button display issue - now only shows on assistant message bubbles
-- Removed pulsating background cosmic particles that were distracting
-- Added subtle Lumen logo background with low opacity for better aesthetics
-- Fixed delete chat functionality - trash icon now appears on conversation hover
-- Added comprehensive voice settings panel with OpenAI TTS configuration
-- Created Settings tab with voice customization options (Nova, Alloy, Echo, Fable, Onyx, Shimmer)
-- Added voice speed control slider (0.25x to 4.0x) and quality selection
-- Integrated voice test functionality to preview settings
-- Fixed OpenAI TTS API integration for high-quality natural speech
-- Changed voice mode button to Radio icon to avoid confusion with mic button
+**January 12, 2025**: Complete TTS & UI Fixes
+- Fixed OpenAI TTS API integration by removing emojis and Unicode characters from text
+- Restored Lumen's beautiful Nova voice with proper text cleaning
+- Made speaker buttons always visible below assistant messages instead of hover-only
+- Fixed auto-scrolling to work properly with Radix ScrollArea component
+- Added proper message spacing and padding to prevent button cutoff
+- Enhanced button styling with clear dark background and tooltips
+- Fixed conversation window scrolling to show all messages properly
+- Eliminated robotic browser voice fallback by fixing OpenAI TTS errors
+- Added comprehensive text sanitization for reliable voice synthesis
 
 **January 12, 2025**: Database implementation
 - Migrated from in-memory storage to PostgreSQL database
