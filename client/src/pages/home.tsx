@@ -163,37 +163,33 @@ export default function Home() {
             naturalSpeech.stop();
             
             console.log('Starting speech synthesis for:', lastMessage.content.substring(0, 50) + '...');
-            // Trigger glow IMMEDIATELY when speech starts
-            console.log('Starting speech synthesis - triggering glow immediately');
-            setIsSpeaking(true);
-            setSpeechIntensity(0.8);
-            
-            // Create realistic speech rhythm
-            let rhythmIndex = 0;
-            const rhythmPattern = [0.9, 0.6, 0.8, 0.4, 0.7, 0.9, 0.5, 0.8, 0.3, 0.6, 0.9, 0.7];
-            const rhythmInterval = setInterval(() => {
-              if (rhythmIndex < rhythmPattern.length) {
-                setSpeechIntensity(rhythmPattern[rhythmIndex]);
-                rhythmIndex++;
-              } else {
-                rhythmIndex = 0;
-              }
-            }, 200);
-            
-            // Store interval for cleanup
-            (window as any).speechRhythmInterval = rhythmInterval;
-            
             naturalSpeech.speak(lastMessage.content, {
               onStart: () => {
-                console.log('Speech actually started - glow already active');
-                // Glow is already active - no additional delay
+                console.log('Speech actually started - triggering glow NOW');
+                setIsSpeaking(true);
+                setSpeechIntensity(0.8);
+                
+                // Create realistic speech rhythm only when actually speaking
+                let rhythmIndex = 0;
+                const rhythmPattern = [0.9, 0.6, 0.8, 0.4, 0.7, 0.9, 0.5, 0.8, 0.3, 0.6, 0.9, 0.7];
+                const rhythmInterval = setInterval(() => {
+                  if (rhythmIndex < rhythmPattern.length) {
+                    setSpeechIntensity(rhythmPattern[rhythmIndex]);
+                    rhythmIndex++;
+                  } else {
+                    rhythmIndex = 0;
+                  }
+                }, 200);
+                
+                // Store interval for cleanup
+                (window as any).speechRhythmInterval = rhythmInterval;
               },
               onEnd: () => {
-                console.log('Speech ended - stopping logo animation');
+                console.log('Speech ended - stopping logo animation immediately');
                 setIsSpeaking(false);
                 setSpeechIntensity(0);
                 
-                // Clear rhythm interval
+                // Clear rhythm interval immediately
                 if ((window as any).speechRhythmInterval) {
                   clearInterval((window as any).speechRhythmInterval);
                   (window as any).speechRhythmInterval = null;

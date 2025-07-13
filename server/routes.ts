@@ -5,8 +5,10 @@ import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
 import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { personalityEvolution } from "./services/personality-evolution";
-import { insertConversationSchema, insertMessageSchema, insertMemorySchema } from "@shared/schema";
+import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
 import { z } from "zod";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
@@ -72,11 +74,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Conversation not found" });
       }
 
-      // Mark the conversation as deleted so it won't appear in the list
-      await storage.updateConversation(conversationId, { 
-        title: `[DELETED] ${conversation.title}`,
-        updatedAt: new Date()
-      });
+      // Actually delete the conversation from database
+      await db.delete(conversations).where(eq(conversations.id, conversationId));
       
       res.json({ message: "Conversation deleted successfully" });
     } catch (error) {
