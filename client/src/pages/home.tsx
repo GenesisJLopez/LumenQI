@@ -496,15 +496,13 @@ export default function Home() {
           <div className="flex-1 flex flex-col overflow-hidden">
                 
             {/* Chat Messages Area - Scrollable with Fixed Height */}
-            <div className="flex-1 overflow-hidden min-h-0" style={{ height: 'calc(100vh - 150px)' }}>
-              <ChatArea
-                messages={messages}
-                isTyping={isTyping}
-                currentConversationId={currentConversationId || undefined}
-                isSpeaking={isSpeaking}
-                isListening={isListening}
-              />
-            </div>
+            <ChatArea
+              messages={messages}
+              isTyping={isTyping}
+              currentConversationId={currentConversationId || undefined}
+              isSpeaking={isSpeaking}
+              isListening={isListening}
+            />
             
             {/* Voice Controls - Fixed at Bottom */}
             <div className="flex-shrink-0 border-t border-purple-500/20 bg-gray-900/30">
