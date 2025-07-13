@@ -34,7 +34,8 @@ export default function Home() {
     getEmotionBasedPrompt, 
     startDetection, 
     stopDetection, 
-    isAnalyzing 
+    isAnalyzing,
+    detectEmotionFromText
   } = useEmotionDetection();
   const { 
     isListening: speechIsListening, 
@@ -147,12 +148,14 @@ export default function Home() {
       
       // Send message after conversation is created
       setTimeout(() => {
+        const textEmotion = detectEmotionFromText(content);
         const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
         sendMessage({
           type: 'chat_message',
           content,
           conversationId: newConversation.id,
-          emotionContext
+          emotionContext,
+          textEmotion
         });
         setIsTyping(true);
         setIsProcessing(true);
@@ -160,13 +163,15 @@ export default function Home() {
       return;
     }
 
-    // Send message via WebSocket with emotion context
+    // Detect emotion from text and send message via WebSocket
+    const textEmotion = detectEmotionFromText(content);
     const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
     sendMessage({
       type: 'chat_message',
       content,
       conversationId: currentConversationId,
-      emotionContext
+      emotionContext,
+      textEmotion
     });
 
     setIsTyping(true);

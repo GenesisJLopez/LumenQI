@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { emotionDetector, type EmotionData } from '@/lib/emotion-detector';
+import { enhancedEmotionDetector } from '@/lib/enhanced-emotion-detector';
 
 interface EmotionDetectionState {
   currentEmotion: EmotionData | null;
@@ -111,6 +112,12 @@ export function useEmotionDetection() {
       case 'sad':
         prompt += `They sound sad. Be empathetic and comforting. `;
         break;
+      case 'afraid':
+        prompt += `They seem afraid or scared. Provide reassurance and comfort. `;
+        break;
+      case 'ambitious':
+        prompt += `They're showing ambition and drive. Match their energy and focus on actionable steps. `;
+        break;
       case 'happy':
         prompt += `They're happy! Share their joy and maintain the positive vibe. `;
         break;
@@ -135,6 +142,16 @@ export function useEmotionDetection() {
     };
   }, [state.currentEmotion, state.emotionSummary]);
 
+  // Text-based emotion detection for chat messages
+  const detectEmotionFromText = useCallback((text: string) => {
+    const result = enhancedEmotionDetector.detectEmotionFromText(text);
+    
+    // Log the detected emotion for debugging
+    console.log('Emotion detected:', result.emotion, result);
+    
+    return result;
+  }, []);
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -147,6 +164,7 @@ export function useEmotionDetection() {
     startDetection,
     stopDetection,
     getEmotionBasedPrompt,
-    getResponseAdaptation
+    getResponseAdaptation,
+    detectEmotionFromText
   };
 }

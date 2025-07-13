@@ -227,6 +227,40 @@ export class PersonalityEvolutionSystem {
             reason: 'User preferred gentle approach'
           });
           break;
+        case 'afraid':
+          adjustments.push({
+            trait: 'supportiveness',
+            change: 0.12,
+            reason: 'User was afraid and needed comfort'
+          });
+          adjustments.push({
+            trait: 'empathy',
+            change: 0.1,
+            reason: 'User needed emotional protection'
+          });
+          adjustments.push({
+            trait: 'assertiveness',
+            change: -0.05,
+            reason: 'User needed gentle, non-threatening approach'
+          });
+          break;
+        case 'ambitious':
+          adjustments.push({
+            trait: 'excitement',
+            change: 0.1,
+            reason: 'User showed ambition and drive'
+          });
+          adjustments.push({
+            trait: 'assertiveness',
+            change: 0.08,
+            reason: 'User appreciated confident energy'
+          });
+          adjustments.push({
+            trait: 'technical_depth',
+            change: 0.06,
+            reason: 'Ambitious users often want detailed guidance'
+          });
+          break;
       }
     }
 
