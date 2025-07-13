@@ -449,99 +449,75 @@ export default function Home() {
     <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
       {/* Voice Mode Overlay */}
       {isVoiceMode && (
-        <div className="fixed inset-0 z-50 flex cosmic-bg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center cosmic-bg">
           <div className="cosmic-particles"></div>
           
-          {/* Left side - Voice Mode with stationary logo */}
-          <div className="flex-1 flex flex-col items-center justify-center relative">
-            {/* Cosmic light swirls around stationary logo */}
+          {/* Centered Voice Mode Layout */}
+          <div className="flex flex-col items-center justify-center relative w-full h-full">
+            {/* Cosmic light background effect */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div 
                 className={cn(
-                  "w-96 h-96 rounded-full",
+                  "w-32 h-32 rounded-full opacity-40",
                   isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
                 )}
                 style={isSpeaking ? {
                   animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
-                  opacity: 0.6 + (speechIntensity * 0.4),
-                  transform: `scale(${1 + speechIntensity * 0.3})`
+                  opacity: 0.3 + (speechIntensity * 0.2),
+                  transform: `scale(${1 + speechIntensity * 0.1})`
                 } : {}}
               ></div>
-              {/* Additional outer ring for more dramatic effect */}
-              {isSpeaking && (
-                <div 
-                  className="absolute w-[500px] h-[500px] rounded-full border-2 border-pink-400/20 animate-pulse"
-                  style={{
-                    animationDuration: `${Math.max(0.3, 1 - speechIntensity)}s`,
-                    opacity: speechIntensity * 0.8
-                  }}
-                ></div>
-              )}
             </div>
             
-            {/* Stationary Lumen Logo */}
-            <div className="relative w-64 h-64 mb-8 z-10">
+            {/* Centered Logo */}
+            <div className="relative z-10 mb-8">
               <img 
                 src={lumenLogo} 
-                alt="Lumen QI" 
-                className="w-full h-full object-contain filter drop-shadow-2xl"
-                style={{
-                  filter: `drop-shadow(0 0 ${isSpeaking ? 20 + (speechIntensity * 40) : isListening ? 20 : 10}px rgba(120, 119, 198, 0.8)) drop-shadow(0 0 ${isSpeaking ? 40 + (speechIntensity * 60) : isListening ? 40 : 20}px rgba(255, 119, 198, 0.6))`
-                }}
+                alt="Lumen" 
+                className="w-24 h-24 mx-auto"
               />
             </div>
             
-            {/* Status text */}
-            <div className="text-center mb-8">
-              <div className="text-2xl font-bold cosmic-text mb-2">
-                {isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : 'Voice Mode Active'}
-              </div>
-              <div className="text-gray-300">
-                {isListening ? 'Speak naturally - I\'m listening' : isSpeaking ? 'I\'m responding to you' : 'Say "Hey Lumen" to start'}
-              </div>
-            </div>
-            
-            {/* Exit Voice Mode */}
-            <Button
-              onClick={handleVoiceModeToggle}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg z-20"
-            >
-              Exit Voice Mode
-            </Button>
-          </div>
-          
-          {/* Right side - Conversation bubbles */}
-          <div className="flex-1 flex flex-col h-full border-l border-purple-500/20">
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="max-w-4xl mx-auto space-y-4">
+            {/* Centered Conversation Bubbles */}
+            <div className="relative z-10 w-full max-w-4xl px-6 max-h-96 overflow-y-auto">
+              <div className="space-y-4">
                 {messages.map((message, index) => (
                   <div
-                    key={message.id}
+                    key={index}
                     className={cn(
-                      "flex",
-                      message.role === 'user' ? "justify-end" : "justify-start"
+                      "flex w-full justify-center",
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
                     )}
                   >
                     <div
                       className={cn(
-                        "max-w-[90%] p-4 rounded-2xl cosmic-message",
-                        message.role === 'user' 
-                          ? "bg-gradient-to-br from-gray-700 to-gray-800" 
-                          : "bg-gradient-to-br from-purple-800/50 to-pink-800/50"
+                        "max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg text-sm",
+                        message.role === 'user'
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-700 text-white"
                       )}
                     >
-                      <div className="text-sm leading-relaxed whitespace-pre-wrap text-gray-100">
-                        {message.content}
-                      </div>
+                      {message.content}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
+            
+            {/* Exit Voice Mode Button */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+              <Button
+                onClick={handleVoiceModeToggle}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
+              >
+                Exit Voice Mode
+              </Button>
+            </div>
           </div>
         </div>
       )}
       
+      {/* Normal Chat Interface */}
       {!isVoiceMode && (
         <>
           <Sidebar
