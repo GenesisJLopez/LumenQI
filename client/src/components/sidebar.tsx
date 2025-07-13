@@ -126,10 +126,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 ml-2 flex-shrink-0 rounded-md"
+                  className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 p-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-800/30 ml-2 flex-shrink-0 rounded-md z-10"
                   title="Delete conversation"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3 w-3 pointer-events-none" />
                 </Button>
               </div>
             </div>

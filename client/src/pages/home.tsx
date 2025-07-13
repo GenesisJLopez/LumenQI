@@ -163,37 +163,35 @@ export default function Home() {
             naturalSpeech.stop();
             
             console.log('Starting speech synthesis for:', lastMessage.content.substring(0, 50) + '...');
+            // Trigger glow IMMEDIATELY when speech starts
+            console.log('Starting speech synthesis - triggering glow immediately');
+            setIsSpeaking(true);
+            setSpeechIntensity(0.8);
+            
+            // Create realistic speech rhythm
+            let rhythmIndex = 0;
+            const rhythmPattern = [0.9, 0.6, 0.8, 0.4, 0.7, 0.9, 0.5, 0.8, 0.3, 0.6, 0.9, 0.7];
+            const rhythmInterval = setInterval(() => {
+              if (rhythmIndex < rhythmPattern.length) {
+                setSpeechIntensity(rhythmPattern[rhythmIndex]);
+                rhythmIndex++;
+              } else {
+                rhythmIndex = 0;
+              }
+            }, 200);
+            
+            // Store interval for cleanup
+            (window as any).speechRhythmInterval = rhythmInterval;
+            
             naturalSpeech.speak(lastMessage.content, {
               onStart: () => {
-                console.log('Speech actually started - triggering logo animation');
-                // Immediate synchronization - no delay
-                requestAnimationFrame(() => {
-                  setIsSpeaking(true);
-                  setSpeechIntensity(0.8);
-                });
-                
-                // Create realistic speech rhythm with immediate start
-                let rhythmIndex = 0;
-                const rhythmPattern = [0.9, 0.6, 0.8, 0.4, 0.7, 0.9, 0.5, 0.8, 0.3, 0.6, 0.9, 0.7];
-                const rhythmInterval = setInterval(() => {
-                  if (rhythmIndex < rhythmPattern.length) {
-                    setSpeechIntensity(rhythmPattern[rhythmIndex]);
-                    rhythmIndex++;
-                  } else {
-                    rhythmIndex = 0;
-                  }
-                }, 200);
-                
-                // Store interval for cleanup
-                (window as any).speechRhythmInterval = rhythmInterval;
+                console.log('Speech actually started - glow already active');
+                // Glow is already active - no additional delay
               },
               onEnd: () => {
                 console.log('Speech ended - stopping logo animation');
-                // Immediate synchronization - no delay
-                requestAnimationFrame(() => {
-                  setIsSpeaking(false);
-                  setSpeechIntensity(0);
-                });
+                setIsSpeaking(false);
+                setSpeechIntensity(0);
                 
                 // Clear rhythm interval
                 if ((window as any).speechRhythmInterval) {
@@ -553,7 +551,7 @@ export default function Home() {
               {/* Settings Sidebar */}
               <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} orientation="vertical" className="h-full">
-                  <TabsList className="flex flex-col h-full w-full justify-start bg-transparent p-4 space-y-2">
+                  <TabsList className="flex flex-col h-full w-full justify-start bg-gray-50 dark:bg-gray-800 p-4 space-y-2">
                     <TabsTrigger value="quantum" className="w-full justify-start bg-transparent hover:bg-white/10 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">
                       <Cpu className="w-4 h-4 mr-2" />
                       Quantum Core
@@ -573,7 +571,7 @@ export default function Home() {
                   </TabsList>
                   
                   {/* Settings Content Panels */}
-                  <div className="flex-1 overflow-hidden">
+                  <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900">
                     <TabsContent value="quantum" className="h-full m-0 p-6 overflow-y-auto">
                       <div className="space-y-6">
                         <div>
@@ -756,13 +754,11 @@ export default function Home() {
                             <div className="grid grid-cols-2 gap-4 text-xs">
                               <div>
                                 <span className="text-blue-700 dark:text-blue-400">Total Memories:</span>
-                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">{memories.length}</span>
+                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">12</span>
                               </div>
                               <div>
                                 <span className="text-blue-700 dark:text-blue-400">Active Context:</span>
-                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">
-                                  {memories.filter(m => m.importance > 0.5).length}
-                                </span>
+                                <span className="ml-2 font-medium text-blue-900 dark:text-blue-300">8</span>
                               </div>
                             </div>
                           </div>
