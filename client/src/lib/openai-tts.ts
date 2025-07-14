@@ -96,32 +96,40 @@ export class OpenAITTS {
     console.log('🦙 Playing Llama TTS generated audio...');
     
     try {
-      // Convert base64 to audio buffer
-      const audioBuffer = this.base64ToArrayBuffer(audioBase64);
+      // Create audio element for better compatibility
+      const audio = new Audio();
       
-      // Create audio context
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Convert base64 to blob URL
+      const audioBlob = this.base64ToBlob(audioBase64, 'audio/wav');
+      const audioUrl = URL.createObjectURL(audioBlob);
       
-      // Decode audio data
-      const decodedAudio = await audioContext.decodeAudioData(audioBuffer);
-      
-      // Create audio source
-      const source = audioContext.createBufferSource();
-      source.buffer = decodedAudio;
-      source.connect(audioContext.destination);
+      // Set up audio source
+      audio.src = audioUrl;
+      audio.preload = 'auto';
       
       // Set up event handlers
-      source.onended = () => {
+      audio.onplay = () => {
+        console.log('🎤 Llama TTS playback started');
+        this.isPlaying = true;
+        options.onStart?.();
+      };
+      
+      audio.onended = () => {
         console.log('✨ Llama TTS playback completed');
         this.isPlaying = false;
+        URL.revokeObjectURL(audioUrl);
         options.onEnd?.();
       };
       
+      audio.onerror = (error) => {
+        console.error('Audio playback error:', error);
+        this.isPlaying = false;
+        URL.revokeObjectURL(audioUrl);
+        options.onError?.('Audio playback failed');
+      };
+      
       // Start playback
-      console.log('🎤 Starting Llama TTS playback...');
-      this.isPlaying = true;
-      options.onStart?.();
-      source.start();
+      await audio.play();
       
     } catch (error) {
       console.error('Llama TTS playback failed:', error);
@@ -133,7 +141,7 @@ export class OpenAITTS {
     }
   }
 
-  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+  private base64ToBlob(base64: string, contentType: string): Blob {
     const binaryString = window.atob(base64);
     const bytes = new Uint8Array(binaryString.length);
     
@@ -141,7 +149,7 @@ export class OpenAITTS {
       bytes[i] = binaryString.charCodeAt(i);
     }
     
-    return bytes.buffer;
+    return new Blob([bytes], { type: contentType });
   }
 
   private async synthesizeWithLumenVoice(config: any, options: OpenAITTSOptions): Promise<void> {

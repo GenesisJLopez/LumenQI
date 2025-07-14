@@ -591,9 +591,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emotionalTone = 'warm';
       }
 
-      // Llama TTS is temporarily disabled due to PyTorch/CUDA compatibility issues
-      // Using enhanced synthesis fallback instead
-      console.log('🔄 Using enhanced synthesis (Llama TTS temporarily disabled)');
+      // Use Llama 3 TTS Service for high-quality voice synthesis
+      try {
+        const { llama3TTSService } = await import('./services/llama3-tts');
+        
+        // Initialize if needed
+        await llama3TTSService.initialize();
+        
+        // Generate audio with Llama 3 TTS
+        const audioResponse = await llama3TTSService.synthesizeVoice(cleanText, {
+          voice: voice as any,
+          emotionalTone,
+          speed,
+          pitch: 1.0,
+          temperature: 0.7,
+          model: model as any
+        });
+        
+        // Convert audio buffer to base64 for client
+        const audioBase64 = audioResponse.audioBuffer.toString('base64');
+        
+        res.json({
+          success: true,
+          audioData: audioBase64,
+          duration: audioResponse.duration * 1000, // Convert to milliseconds
+          sampleRate: audioResponse.sampleRate,
+          format: audioResponse.format,
+          provider: audioResponse.provider,
+          model: audioResponse.model,
+          voiceSignature: audioResponse.voiceSignature
+        });
+        
+        return;
+        
+      } catch (llama3Error) {
+        console.error('Llama 3 TTS failed, falling back to enhanced synthesis:', llama3Error);
+      }
+      
+      // Fallback to enhanced synthesis if Llama 3 TTS fails
+      console.log('🔄 Using enhanced synthesis fallback...');
         
         // Generate synthetic audio as fallback
         console.log('🔄 Generating synthetic audio for fallback...');
