@@ -161,23 +161,23 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
       </div>
 
       {/* Chat History */}
-      <ScrollArea className="flex-1 p-2 overflow-y-auto">
-        <div className="space-y-1">
+      <div className="flex-1 p-2 overflow-y-auto">
+        <div className="space-y-2">
           {conversations
             .filter(conversation => !conversation.title.startsWith('[DELETED]'))
             .map((conversation) => (
             <div
               key={conversation.id}
               className={cn(
-                "p-3 rounded-lg border transition-all duration-200 group relative",
+                "p-3 rounded-lg border-2 transition-all duration-200 group relative",
                 currentConversationId === conversation.id 
-                  ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700" 
-                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  ? "bg-blue-50 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500" 
+                  : "bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
               )}
             >
               {editingConversationId === conversation.id ? (
                 // Edit mode
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <Input
                     value={editingTitle}
                     onChange={(e) => setEditingTitle(e.target.value)}
@@ -185,27 +185,24 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                     className="flex-1 text-sm"
                     autoFocus
                   />
-                  <Button
-                    size="sm"
+                  <button
                     onClick={(e) => handleSaveEdit(conversation.id, e)}
-                    className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white"
+                    className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-sm font-medium"
                   >
-                    <Check className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
+                    Save
+                  </button>
+                  <button
                     onClick={handleCancelEdit}
-                    className="px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-sm font-medium"
                   >
-                    <X className="h-3 w-3" />
-                  </Button>
+                    Cancel
+                  </button>
                 </div>
               ) : (
                 // View mode
                 <div className="flex items-center justify-between">
                   <div 
-                    className="flex-1 cursor-pointer"
+                    className="flex-1 cursor-pointer mr-3"
                     onClick={() => onConversationSelect(conversation.id)}
                   >
                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -216,17 +213,17 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-1 ml-2">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => handleEditConversation(conversation.id, conversation.title, e)}
-                      className="p-1 w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 transition-colors"
+                      className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center transition-colors"
                       title="Edit conversation"
                     >
                       <Edit2 className="h-4 w-4" />
                     </button>
                     <button
                       onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                      className="p-1 w-8 h-8 rounded bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-600 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 transition-colors"
+                      className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-colors"
                       title="Delete conversation"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -243,7 +240,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">

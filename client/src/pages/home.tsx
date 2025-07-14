@@ -284,34 +284,41 @@ export default function Home() {
         if (isVoiceMode && lastMessage.content) {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
-          import('@/lib/openai-tts').then(({ openAITTS }) => {
-            openAITTS.speak(lastMessage.content, {
-              voice: 'nova',
-              model: 'tts-1',
-              speed: 1.2,
-              onStart: () => {
-                console.log('Voice mode: Started speaking');
-                setIsSpeaking(true);
-              },
-              onEnd: () => {
-                console.log('Voice mode: Finished speaking, restarting listening');
-                setIsSpeaking(false);
-                // Restart listening after speaking
-                if (isSupported) {
-                  setTimeout(() => {
-                    startListening();
-                  }, 500);
+          
+          // Use async function to handle TTS
+          const speakResponse = async () => {
+            try {
+              const { openAITTS } = await import('@/lib/openai-tts');
+              await openAITTS.speak(lastMessage.content, {
+                voice: 'nova',
+                model: 'tts-1',
+                speed: 1.2,
+                onStart: () => {
+                  console.log('Voice mode: Started speaking');
+                  setIsSpeaking(true);
+                },
+                onEnd: () => {
+                  console.log('Voice mode: Finished speaking, restarting listening');
+                  setIsSpeaking(false);
+                  // Restart listening after speaking
+                  if (isSupported) {
+                    setTimeout(() => {
+                      startListening();
+                    }, 500);
+                  }
+                },
+                onError: (error) => {
+                  console.error('Voice synthesis error:', error);
+                  setIsSpeaking(false);
                 }
-              },
-              onError: (error) => {
-                console.error('Voice synthesis error:', error);
-                setIsSpeaking(false);
-              }
-            });
-          }).catch(error => {
-            console.error('Failed to import OpenAI TTS:', error);
-            setIsSpeaking(false);
-          });
+              });
+            } catch (error) {
+              console.error('Failed to import or use OpenAI TTS:', error);
+              setIsSpeaking(false);
+            }
+          };
+          
+          speakResponse();
         }
         
         // Invalidate queries to refresh the UI
