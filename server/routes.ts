@@ -573,6 +573,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const message = JSON.parse(data);
         console.log('Received WebSocket message:', message);
         
+        if (message.type === 'emotion_update') {
+          const { emotion, confidence, features, timestamp, conversationId } = message;
+          
+          // Store continuous emotion data for better adaptation
+          if (emotion && confidence > 0.6) {
+            const emotionData = {
+              emotion,
+              confidence,
+              features: features || {}
+            };
+            
+            // Create emotion context for future responses
+            const emotionContext = emotionAdaptationService.generateEmotionContext(emotionData);
+            
+            // Store high-confidence emotions as memories
+            storage.createMemory({
+              userId: 1,
+              content: `Voice mode emotion detected: ${emotion} with ${Math.round(confidence * 100)}% confidence`,
+              context: `Emotion: ${emotion} (${Math.round(confidence * 100)}%) - Voice Mode`,
+              importance: 3
+            }).catch(error => {
+              console.error('Error storing emotion memory:', error);
+            });
+            
+            console.log(`Continuous emotion detected: ${emotion} (${Math.round(confidence * 100)}%)`);
+          }
+          
+          // Acknowledge emotion update
+          ws.send(JSON.stringify({
+            type: 'emotion_acknowledged',
+            emotion,
+            confidence,
+            timestamp
+          }));
+        }
+        
         if (message.type === 'chat_message') {
           const { content, conversationId, emotion, emotionContext } = message;
           

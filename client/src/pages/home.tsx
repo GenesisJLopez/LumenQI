@@ -350,17 +350,55 @@ export default function Home() {
     fetchCurrentIdentity();
   }, []);
 
+  // Listen for emotion detection events
+  useEffect(() => {
+    const handleEmotionDetected = (event: CustomEvent) => {
+      const { emotion, confidence, features, timestamp } = event.detail;
+      
+      // Only process high-confidence emotions in voice mode
+      if (isVoiceMode && confidence > 0.6) {
+        console.log('Emotion detected in voice mode:', emotion, confidence);
+        
+        // Send emotion data to server for conversation adaptation
+        if (sendMessage && currentConversationId) {
+          sendMessage({
+            type: 'emotion_update',
+            emotion,
+            confidence,
+            features,
+            timestamp,
+            conversationId: currentConversationId
+          });
+        }
+      }
+    };
+
+    window.addEventListener('emotionDetected', handleEmotionDetected as EventListener);
+    
+    return () => {
+      window.removeEventListener('emotionDetected', handleEmotionDetected as EventListener);
+    };
+  }, [isVoiceMode, currentConversationId, sendMessage]);
+
   // Enhanced voice mode toggle
   const handleVoiceModeToggle = () => {
-    setIsVoiceMode(!isVoiceMode);
+    const newVoiceMode = !isVoiceMode;
+    setIsVoiceMode(newVoiceMode);
     
-    if (!isVoiceMode) {
+    // Emit event to trigger emotion detection
+    const voiceModeEvent = new CustomEvent('voiceModeChanged', {
+      detail: { active: newVoiceMode }
+    });
+    window.dispatchEvent(voiceModeEvent);
+    
+    if (newVoiceMode) {
       // Entering voice mode
       startDetection();
       setIsListening(true);
       if (isSupported) {
         startListening();
       }
+      console.log('Voice mode activated - emotion detection should start automatically');
     } else {
       // Exiting voice mode
       setIsListening(false);
@@ -369,7 +407,7 @@ export default function Home() {
         naturalSpeech.stop();
       });
       setIsSpeaking(false);
-
+      console.log('Voice mode deactivated - emotion detection should stop automatically');
     }
   };
 
