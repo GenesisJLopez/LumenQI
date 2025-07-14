@@ -188,29 +188,29 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-1 flex-shrink-0">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       console.log('Edit button clicked for conversation:', conversation.id);
                       handleEditConversation(conversation.id, conversation.title, e);
                     }}
-                    className="p-2 h-8 w-8 hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 border border-gray-300 dark:border-gray-600"
+                    className="p-2 h-9 w-9 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 shadow-sm"
                     title="Edit conversation"
                   >
                     <Edit2 className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       console.log('Delete button clicked for conversation:', conversation.id);
                       handleDeleteConversation(conversation.id, e);
                     }}
-                    className="p-2 h-8 w-8 hover:bg-red-100 dark:hover:bg-red-900 text-gray-600 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 border border-gray-300 dark:border-gray-600"
+                    className="p-2 h-9 w-9 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 shadow-sm"
                     title="Delete conversation"
                   >
                     <Trash2 className="h-4 w-4" />

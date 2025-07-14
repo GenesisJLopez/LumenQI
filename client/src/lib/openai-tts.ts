@@ -45,28 +45,45 @@ export class OpenAITTS {
       });
 
       if (!response.ok) {
-        throw new Error(`TTS request failed: ${response.status}`);
+        const errorText = await response.text();
+        console.error('TTS request failed:', response.status, errorText);
+        throw new Error(`TTS request failed: ${response.status} - ${errorText}`);
       }
 
       // Get audio blob
       const audioBlob = await response.blob();
+      console.log('TTS audio blob size:', audioBlob.size);
+      
+      if (audioBlob.size === 0) {
+        throw new Error('Empty audio response from TTS service');
+      }
+      
       const audioUrl = URL.createObjectURL(audioBlob);
 
       // Create and play audio
       this.currentAudio = new Audio(audioUrl);
       
+      this.currentAudio.onplay = () => {
+        console.log('TTS audio playback started');
+        this.isPlaying = true;
+        options.onStart?.();
+      };
+      
       this.currentAudio.onended = () => {
+        console.log('TTS audio playback ended');
         this.isPlaying = false;
         URL.revokeObjectURL(audioUrl);
         options.onEnd?.();
       };
 
-      this.currentAudio.onerror = () => {
+      this.currentAudio.onerror = (error) => {
+        console.error('TTS audio playback error:', error);
         this.isPlaying = false;
         URL.revokeObjectURL(audioUrl);
         options.onError?.('Audio playback failed');
       };
 
+      console.log('Starting TTS audio playback');
       await this.currentAudio.play();
 
     } catch (error) {
