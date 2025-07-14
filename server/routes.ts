@@ -665,9 +665,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             throw new Error('Conversation ID is required');
           }
           
-          // Enhanced emotion processing
+          // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
-          if (emotion) {
+          if (emotion && !isVoiceMode) {
             // Generate comprehensive emotion context using the adaptation service
             enhancedEmotionContext = emotionAdaptationService.generateEmotionContext(emotion);
             
@@ -685,36 +685,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
-          // Parallel operations for better performance
-          const [userMessage, messages, memories] = await Promise.all([
-            // Save user message
-            storage.createMessage({
-              conversationId,
-              role: 'user',
-              content
-            }),
-            // Get conversation context (limit to last 8 messages for faster processing)
-            storage.getMessagesByConversation(conversationId).then(msgs => 
-              msgs.slice(-8).map(msg => ({
-                role: msg.role,
-                content: msg.content
-              }))
-            ),
-            // Get only 3 most recent memories for faster processing
-            storage.getMemoriesByUser(1).then(mems => 
-              mems.slice(0, 3).map(memory => ({
-                content: memory.content,
-                context: memory.context || undefined
-              }))
-            )
-          ]);
+          // Optimize for voice mode - minimal context for speed
+          const isVoiceMode = message.isVoiceMode || false;
+          
+          let userMessage, messages, memories;
+          
+          if (isVoiceMode) {
+            // Ultra-fast voice mode: minimal context, parallel processing
+            [userMessage, messages] = await Promise.all([
+              // Save user message
+              storage.createMessage({
+                conversationId,
+                role: 'user',
+                content
+              }),
+              // Get only last 4 messages for voice mode speed
+              storage.getMessagesByConversation(conversationId).then(msgs => 
+                msgs.slice(-4).map(msg => ({
+                  role: msg.role,
+                  content: msg.content
+                }))
+              )
+            ]);
+            // Skip memories in voice mode for speed
+            memories = [];
+          } else {
+            // Normal mode: full context
+            [userMessage, messages, memories] = await Promise.all([
+              storage.createMessage({
+                conversationId,
+                role: 'user',
+                content
+              }),
+              storage.getMessagesByConversation(conversationId).then(msgs => 
+                msgs.slice(-8).map(msg => ({
+                  role: msg.role,
+                  content: msg.content
+                }))
+              ),
+              storage.getMemoriesByUser(1).then(mems => 
+                mems.slice(0, 3).map(memory => ({
+                  content: memory.content,
+                  context: memory.context || undefined
+                }))
+              )
+            ]);
+          }
 
           // Generate AI response with enhanced emotion context
           const aiResponse = await lumenAI.generateResponse(
             content,
             messages,
             memories,
-            enhancedEmotionContext
+            enhancedEmotionContext,
+            isVoiceMode
           );
 
           // Send response back to client immediately

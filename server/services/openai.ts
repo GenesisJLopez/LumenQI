@@ -49,23 +49,32 @@ export class LumenAI {
     userMessage: string,
     conversationContext: Array<{ role: string; content: string }> = [],
     memories: Array<{ content: string; context?: string }> = [],
-    emotionContext?: string
+    emotionContext?: string,
+    isVoiceMode: boolean = false
   ): Promise<string> {
     try {
-      // Build system prompt with personality and memories
-      const systemPrompt = this.buildSystemPrompt(memories, emotionContext);
+      // Build system prompt optimized for voice mode
+      let systemPrompt;
+      if (isVoiceMode) {
+        // Ultra-fast voice mode: minimal system prompt
+        const identity = identityStorage.getIdentity();
+        systemPrompt = `You are Lumen QI, ${identity.coreIdentity.split('.')[0]}. ${identity.communicationStyle} Keep responses concise and conversational for voice chat. Respond naturally and quickly.`;
+      } else {
+        // Normal mode: full system prompt
+        systemPrompt = this.buildSystemPrompt(memories, emotionContext);
+      }
       
       // Prepare messages for OpenAI
       const messages = [
         { role: "system", content: systemPrompt },
-        ...conversationContext.slice(-8), // Keep last 8 messages for context
+        ...conversationContext.slice(isVoiceMode ? -4 : -8), // Less context for voice mode
         { role: "user", content: userMessage }
       ];
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // Use full model for best quality
+        model: isVoiceMode ? "gpt-4o-mini" : "gpt-4o", // Use faster model for voice mode
         messages: messages as any,
-        max_tokens: 500, // Restored for comprehensive responses
+        max_tokens: isVoiceMode ? 100 : 500, // Shorter responses for voice mode
         temperature: 0.7,
         presence_penalty: 0.1,
         frequency_penalty: 0.1,
