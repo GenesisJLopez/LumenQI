@@ -14,6 +14,8 @@ import { PersonalityEvolution } from '@/components/personality-evolution';
 import { VoiceSettings } from '@/components/voice-settings';
 import { MemoryManager } from '@/components/memory-manager';
 import { CodeGenerator } from '@/components/code-generator';
+import { MotionDetector } from '@/components/motion-detector';
+import { SmartDetectionPanel } from '@/components/smart-detection-panel';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -778,29 +780,21 @@ export default function Home() {
                       <div className="space-y-6">
                         <VoiceSettings />
                         
-                        <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
-                          <h4 className="text-sm font-medium text-orange-900 dark:text-orange-300 mb-3">
-                            Motion Detection
-                          </h4>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Enable Motion Detection</span>
-                              <input type="checkbox" className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" />
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Sensitivity</span>
-                              <select className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800">
-                                <option>Low</option>
-                                <option>Medium</option>
-                                <option>High</option>
-                              </select>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Auto-Wake on Motion</span>
-                              <input type="checkbox" className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" />
-                            </div>
-                          </div>
-                        </div>
+                        <SmartDetectionPanel />
+                        
+                        <MotionDetector 
+                          onMotionDetected={(motionData) => {
+                            console.log('Motion detected:', motionData);
+                            // Handle motion detection for Lumen's responses
+                          }}
+                          onAutoWake={(motionData) => {
+                            console.log('Auto-wake triggered:', motionData);
+                            // Auto-activate voice mode when motion is detected
+                            if (!isVoiceMode) {
+                              handleVoiceModeToggle();
+                            }
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
