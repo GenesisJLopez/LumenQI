@@ -513,11 +513,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Text is required" });
       }
 
-      // Clean text: remove emojis and problematic Unicode characters
+      // Simple text cleaning - only remove emojis
       const cleanText = text
         .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
-        .replace(/[\u{FE00}-\u{FE0F}]|[\u{200D}]/gu, '')
-        .replace(/[^\x00-\x7F]/g, '')
         .trim();
 
       if (!cleanText) {
