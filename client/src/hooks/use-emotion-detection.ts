@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { emotionDetector, type EmotionData } from '@/lib/emotion-detector';
 import { enhancedEmotionDetector } from '@/lib/enhanced-emotion-detector';
+import { AdvancedEmotionDetector, type EmotionResult } from '@/lib/advanced-emotion-detector';
 
 interface EmotionDetectionState {
   currentEmotion: EmotionData | null;
@@ -29,40 +30,67 @@ export function useEmotionDetection() {
     error: null
   });
 
+  const [advancedDetector] = useState(() => new AdvancedEmotionDetector());
+  const [isVoiceModeActive, setIsVoiceModeActive] = useState(false);
+
+  // Auto-start emotion detection when voice mode is active
+  useEffect(() => {
+    if (isVoiceModeActive && !state.isAnalyzing) {
+      startDetection();
+    } else if (!isVoiceModeActive && state.isAnalyzing) {
+      stopDetection();
+    }
+  }, [isVoiceModeActive]);
+
+  // Listen for voice mode changes
+  useEffect(() => {
+    const handleVoiceModeChange = (event: CustomEvent) => {
+      setIsVoiceModeActive(event.detail.active);
+    };
+
+    window.addEventListener('voiceModeChanged', handleVoiceModeChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('voiceModeChanged', handleVoiceModeChange as EventListener);
+    };
+  }, []);
+
   const startDetection = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, error: null }));
       
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
-        } 
-      });
-      
-      await emotionDetector.startAnalyzing(stream);
-      setState(prev => ({ ...prev, isAnalyzing: true }));
-      
-      // Start emotion monitoring loop
-      const interval = setInterval(() => {
-        const currentEmotion = emotionDetector.getCurrentEmotion();
-        const emotionTrend = emotionDetector.getEmotionTrend();
-        const emotionSummary = emotionDetector.getEmotionSummary();
+      // Use advanced detector for better accuracy
+      await advancedDetector.startDetection((emotionResult: EmotionResult) => {
+        const emotionData: EmotionData = {
+          emotion: emotionResult.emotion,
+          confidence: emotionResult.confidence,
+          valence: emotionResult.features.arousal > 0.6 ? 
+            (emotionResult.features.valence > 0.6 ? 0.8 : 0.4) : 0.5,
+          arousal: emotionResult.features.arousal,
+          pitch: emotionResult.features.pitch,
+          energy: emotionResult.features.energy,
+          speechRate: emotionResult.features.speechRate,
+          spectralCharacteristics: emotionResult.features.mfcc
+        };
         
         setState(prev => ({
           ...prev,
-          currentEmotion,
-          emotionTrend,
-          emotionSummary
+          currentEmotion: emotionData,
+          emotionSummary: {
+            ...prev.emotionSummary,
+            dominant: emotionResult.emotion,
+            confidence: emotionResult.confidence
+          }
         }));
-      }, 1000);
+        
+        // Send high-confidence emotions to server for adaptation
+        if (emotionResult.confidence > 0.6) {
+          sendEmotionToServer(emotionData);
+        }
+      });
       
-      return () => {
-        clearInterval(interval);
-        stream.getTracks().forEach(track => track.stop());
-      };
+      setState(prev => ({ ...prev, isAnalyzing: true }));
+      console.log('Advanced emotion detection started for voice mode');
       
     } catch (error) {
       setState(prev => ({ 
@@ -72,11 +100,37 @@ export function useEmotionDetection() {
       }));
       throw error;
     }
-  }, []);
+  }, [advancedDetector]);
 
   const stopDetection = useCallback(() => {
+    advancedDetector.stopDetection();
     emotionDetector.stopAnalyzing();
-    setState(prev => ({ ...prev, isAnalyzing: false }));
+    setState(prev => ({ ...prev, isAnalyzing: false, currentEmotion: null }));
+    console.log('Advanced emotion detection stopped');
+  }, [advancedDetector]);
+
+  const sendEmotionToServer = useCallback((emotionData: EmotionData) => {
+    try {
+      // Create a custom event to send emotion data to the chat system
+      const emotionEvent = new CustomEvent('emotionDetected', {
+        detail: {
+          emotion: emotionData.emotion,
+          confidence: emotionData.confidence,
+          features: {
+            pitch: emotionData.pitch,
+            energy: emotionData.energy,
+            speechRate: emotionData.speechRate,
+            arousal: emotionData.arousal,
+            valence: emotionData.valence
+          },
+          timestamp: Date.now()
+        }
+      });
+      
+      window.dispatchEvent(emotionEvent);
+    } catch (error) {
+      console.error('Failed to send emotion data:', error);
+    }
   }, []);
 
   const getEmotionBasedPrompt = useCallback((): string => {
@@ -155,9 +209,10 @@ export function useEmotionDetection() {
   // Clean up on unmount
   useEffect(() => {
     return () => {
+      advancedDetector.stopDetection();
       emotionDetector.stopAnalyzing();
     };
-  }, []);
+  }, [advancedDetector]);
 
   return {
     ...state,
@@ -165,6 +220,8 @@ export function useEmotionDetection() {
     stopDetection,
     getEmotionBasedPrompt,
     getResponseAdaptation,
-    detectEmotionFromText
+    detectEmotionFromText,
+    isVoiceModeActive,
+    setIsVoiceModeActive
   };
 }
