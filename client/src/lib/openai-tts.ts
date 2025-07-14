@@ -105,22 +105,22 @@ export class OpenAITTS {
     cleanText = cleanText.replace(/#{1,6}\s*(.*)/g, '$1'); // Headers
     cleanText = cleanText.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1'); // Links
     
-    // Remove emojis but keep the text flowing naturally
-    cleanText = cleanText.replace(/[\\u{1F600}-\\u{1F64F}]/gu, '');
-    cleanText = cleanText.replace(/[\\u{1F300}-\u{1F5FF}]/gu, '');
-    cleanText = cleanText.replace(/[\u{1F680}-\\u{1F6FF}]/gu, '');
-    cleanText = cleanText.replace(/[\\u{1F1E0}-\u{1F1FF}]/gu, '');
-    cleanText = cleanText.replace(/[\\u{2600}-\\u{26FF}]/gu, '');
-    cleanText = cleanText.replace(/[\\u{2700}-\u{27BF}]/gu, '');
-    cleanText = cleanText.replace(/[\\u{1F900}-\u{1F9FF}]/gu, '');
-    cleanText = cleanText.replace(/[\u{1FA70}-\u{1FAFF}]/gu, '');
-    cleanText = cleanText.replace(/[\u{2190}-\\u{21FF}]/gu, '');
+    // Remove emojis and special characters
+    cleanText = cleanText.replace(/[\u{1F600}-\u{1F64F}]/gu, ''); // Emoticons
+    cleanText = cleanText.replace(/[\u{1F300}-\u{1F5FF}]/gu, ''); // Misc symbols
+    cleanText = cleanText.replace(/[\u{1F680}-\u{1F6FF}]/gu, ''); // Transport
+    cleanText = cleanText.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, ''); // Flags
+    cleanText = cleanText.replace(/[\u{2600}-\u{26FF}]/gu, ''); // Misc symbols
+    cleanText = cleanText.replace(/[\u{2700}-\u{27BF}]/gu, ''); // Dingbats
+    cleanText = cleanText.replace(/[\u{1F900}-\u{1F9FF}]/gu, ''); // Supplemental
+    cleanText = cleanText.replace(/[\u{1FA70}-\u{1FAFF}]/gu, ''); // Extended
+    cleanText = cleanText.replace(/[\u{2190}-\u{21FF}]/gu, ''); // Arrows
     
     // Normalize whitespace
     cleanText = cleanText.replace(/\s+/g, ' ').trim();
     
     return cleanText;
-  }
+  
 
   stop(): void {
     if (this.currentAudio) {
