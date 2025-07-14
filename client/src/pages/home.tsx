@@ -261,17 +261,30 @@ export default function Home() {
       }
     }
 
-    // Detect emotion from text and send message via WebSocket
-    const textEmotion = detectEmotionFromText(content);
-    const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
+    // Optimize for voice mode - skip emotion processing for speed
+    if (isVoiceMode) {
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        isVoiceMode: true,
+        // Skip emotion processing in voice mode for instant response
+        emotion: undefined,
+        emotionContext: undefined,
+      });
+    } else {
+      // Normal mode with full emotion processing
+      const textEmotion = detectEmotionFromText(content);
+      const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
 
-    sendMessage({
-      type: 'chat_message',
-      content,
-      conversationId,
-      emotion: textEmotion,
-      emotionContext,
-    });
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        emotion: textEmotion,
+        emotionContext,
+      });
+    }
   };
 
   // Process incoming WebSocket messages
@@ -291,22 +304,14 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use async function to handle TTS with saved settings
+          // Use async function to handle TTS with cached settings for speed
           const speakResponse = async () => {
             try {
-              // Get saved voice settings
-              const settingsResponse = await fetch('/api/voice-settings');
-              const settings = settingsResponse.ok ? await settingsResponse.json() : {
-                voice: 'nova',
-                model: 'tts-1',
-                speed: 1.0
-              };
-
               const { openAITTS } = await import('@/lib/openai-tts');
               await openAITTS.speak(lastMessage.content, {
-                voice: settings.voice,
-                model: settings.model,
-                speed: settings.speed,
+                voice: 'nova', // Use default for speed in voice mode
+                model: 'tts-1',
+                speed: 1.0,
                 onStart: () => {
                   console.log('Voice mode: Started speaking');
                   setIsSpeaking(true);
@@ -318,7 +323,7 @@ export default function Home() {
                   if (isSupported) {
                     setTimeout(() => {
                       startListening();
-                    }, 500);
+                    }, 200); // Reduced delay for faster turnaround
                   }
                 },
                 onError: (error) => {
@@ -335,9 +340,11 @@ export default function Home() {
           speakResponse();
         }
         
-        // Invalidate queries to refresh the UI
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+        // Skip UI refresh in voice mode for speed
+        if (!isVoiceMode) {
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+        }
       }
       
       if (lastMessage.type === 'error') {
@@ -362,14 +369,14 @@ export default function Home() {
     fetchCurrentIdentity();
   }, []);
 
-  // Listen for emotion detection events
+  // Listen for emotion detection events (disabled in voice mode for speed)
   useEffect(() => {
     const handleEmotionDetected = (event: CustomEvent) => {
       const { emotion, confidence, features, timestamp } = event.detail;
       
-      // Only process high-confidence emotions in voice mode
-      if (isVoiceMode && confidence > 0.6) {
-        console.log('Emotion detected in voice mode:', emotion, confidence);
+      // Skip emotion processing in voice mode for instant responses
+      if (!isVoiceMode && confidence > 0.6) {
+        console.log('Emotion detected:', emotion, confidence);
         
         // Send emotion data to server for conversation adaptation
         if (sendMessage && currentConversationId) {
