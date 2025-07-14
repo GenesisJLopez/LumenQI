@@ -15,6 +15,7 @@ import { VoiceSettings } from '@/components/voice-settings';
 import { MemoryManager } from '@/components/memory-manager';
 import { CodeGenerator } from '@/components/code-generator';
 import { EmotionDisplay } from '@/components/emotion-display';
+import { EmotionAdaptationDisplay } from '@/components/emotion-adaptation-display';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -785,6 +786,8 @@ export default function Home() {
                             // Handle emotion detection for Lumen's responses
                           }}
                         />
+                        
+                        <EmotionAdaptationDisplay />
                       </div>
                     </div>
                   </div>
