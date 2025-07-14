@@ -122,6 +122,36 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
     }
   };
 
+  const deleteAllConversations = useMutation({
+    mutationFn: async () => {
+      const deletePromises = conversations.map(conversation => 
+        fetch(`/api/conversations/${conversation.id}`, {
+          method: 'DELETE',
+        })
+      );
+      await Promise.all(deletePromises);
+    },
+    onSuccess: () => {
+      onNewConversation();
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      toast({ title: "All chats deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete all chats", variant: "destructive" });
+    },
+  });
+
+  const handleDeleteAllConversations = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (!window.confirm('Are you sure you want to delete ALL conversations? This action cannot be undone.')) {
+      return;
+    }
+    
+    deleteAllConversations.mutate();
+  };
+
   const formatTimeAgo = (date: string | Date) => {
     const now = new Date();
     const messageDate = new Date(date);
@@ -140,15 +170,27 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Lumen</h1>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800" 
-            title="Settings"
-            onClick={() => window.dispatchEvent(new CustomEvent('openSettings'))}
-          >
-            <Database className="h-4 w-4 text-gray-500" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800" 
+              title="Delete All Chats"
+              onClick={handleDeleteAllConversations}
+              disabled={conversations.length === 0}
+            >
+              <Trash2 className="h-4 w-4 text-gray-400" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800" 
+              title="Settings"
+              onClick={() => window.dispatchEvent(new CustomEvent('openSettings'))}
+            >
+              <Database className="h-4 w-4 text-gray-500" />
+            </Button>
+          </div>
         </div>
         
         <Button 
@@ -216,17 +258,17 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => handleEditConversation(conversation.id, conversation.title, e)}
-                      className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center transition-colors"
+                      className="w-8 h-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md flex items-center justify-center transition-colors"
                       title="Edit conversation"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     </button>
                     <button
                       onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                      className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-colors"
+                      className="w-8 h-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md flex items-center justify-center transition-colors"
                       title="Delete conversation"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     </button>
                   </div>
                 </div>

@@ -31,7 +31,7 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'settings'>('quantum');
+  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'settings'>('quantum');
   const [identityData, setIdentityData] = useState({
     coreIdentity: "I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance.",
     communicationStyle: "I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive.",
@@ -523,6 +523,17 @@ export default function Home() {
                       Evolution
                     </button>
                     <button
+                      onClick={() => setActiveTab('voice')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'voice' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Settings className="w-4 h-4 mr-2 inline" />
+                      Voice Settings
+                    </button>
+                    <button
                       onClick={() => setActiveTab('settings')}
                       className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
                         activeTab === 'settings' 
@@ -744,6 +755,49 @@ export default function Home() {
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600 dark:text-gray-400">Last Evolution</span>
                               <span className="text-sm font-medium text-green-600 dark:text-green-400">2 hours ago</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'voice' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Voice Settings
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Configure Lumen's voice, speech settings, and motion detection
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        <VoiceSettings />
+                        
+                        <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-orange-900 dark:text-orange-300 mb-3">
+                            Motion Detection
+                          </h4>
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Enable Motion Detection</span>
+                              <input type="checkbox" className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Sensitivity</span>
+                              <select className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800">
+                                <option>Low</option>
+                                <option>Medium</option>
+                                <option>High</option>
+                              </select>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Auto-Wake on Motion</span>
+                              <input type="checkbox" className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" />
                             </div>
                           </div>
                         </div>

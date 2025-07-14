@@ -55,21 +55,20 @@ export class LumenAI {
       // Build system prompt with personality and memories
       const systemPrompt = this.buildSystemPrompt(memories, emotionContext);
       
-      // Prepare messages for OpenAI - reduced context for faster processing
+      // Prepare messages for OpenAI
       const messages = [
         { role: "system", content: systemPrompt },
-        ...conversationContext.slice(-6), // Keep last 6 messages for context (faster processing)
+        ...conversationContext.slice(-8), // Keep last 8 messages for context
         { role: "user", content: userMessage }
       ];
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini", // Use mini model for faster response times
+        model: "gpt-4o", // Use full model for best quality
         messages: messages as any,
-        max_tokens: 300, // Reduced for faster generation
-        temperature: 0.8, // Slightly higher for more natural responses
+        max_tokens: 500, // Restored for comprehensive responses
+        temperature: 0.7,
         presence_penalty: 0.1,
         frequency_penalty: 0.1,
-        stream: false, // Ensure we get complete response quickly
       });
 
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't process that request.";
