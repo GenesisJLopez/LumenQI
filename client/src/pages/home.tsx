@@ -780,13 +780,6 @@ export default function Home() {
                       <div className="space-y-6">
                         <VoiceSettings />
                         
-                        <EmotionDisplay 
-                          onEmotionChange={(emotion, adaptation) => {
-                            console.log('Emotion detected:', emotion, adaptation);
-                            // Handle emotion detection for Lumen's responses
-                          }}
-                        />
-                        
                         <EmotionAdaptationDisplay />
                       </div>
                     </div>
