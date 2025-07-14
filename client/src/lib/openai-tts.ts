@@ -38,8 +38,8 @@ export class OpenAITTS {
         body: JSON.stringify({
           text: cleanText,
           voice: options.voice || 'nova', // Nova is young, vibrant, and fun
-          model: options.model || 'tts-1-hd', // Higher quality
-          speed: options.speed || 1.0,
+          model: options.model || 'tts-1', // Faster model for voice mode
+          speed: options.speed || 1.2, // Slightly faster speech
           response_format: options.response_format || 'mp3'
         }),
       });

@@ -279,6 +279,35 @@ export default function Home() {
       
       if (lastMessage.type === 'ai_response') {
         setIsTyping(false);
+        
+        // Auto-speak AI response in voice mode
+        if (isVoiceMode && lastMessage.content) {
+          setIsSpeaking(true);
+          import('@/lib/openai-tts').then(({ openAITTS }) => {
+            openAITTS.speak(lastMessage.content, {
+              voice: 'nova',
+              model: 'tts-1',
+              speed: 1.2,
+              onStart: () => {
+                setIsSpeaking(true);
+              },
+              onEnd: () => {
+                setIsSpeaking(false);
+                // Restart listening after speaking
+                if (isSupported) {
+                  setTimeout(() => {
+                    startListening();
+                  }, 500);
+                }
+              },
+              onError: (error) => {
+                console.error('Voice synthesis error:', error);
+                setIsSpeaking(false);
+              }
+            });
+          });
+        }
+        
         // Invalidate queries to refresh the UI
         queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
         queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });

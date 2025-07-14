@@ -452,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OpenAI TTS endpoint
   app.post("/api/tts", async (req, res) => {
     try {
-      const { text, voice = 'nova', model = 'tts-1-hd', speed = 1.0, response_format = 'mp3' } = req.body;
+      const { text, voice = 'nova', model = 'tts-1', speed = 1.2, response_format = 'mp3' } = req.body;
       
       if (!text) {
         return res.status(400).json({ error: "Text is required" });

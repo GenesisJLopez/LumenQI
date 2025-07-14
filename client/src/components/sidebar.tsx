@@ -197,10 +197,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                       console.log('Edit button clicked for conversation:', conversation.id);
                       handleEditConversation(conversation.id, conversation.title, e);
                     }}
-                    className="p-1.5 h-auto hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                    className="p-2 h-8 w-8 hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 border border-gray-300 dark:border-gray-600"
                     title="Edit conversation"
                   >
-                    <Edit2 className="h-3 w-3" />
+                    <Edit2 className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -210,10 +210,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                       console.log('Delete button clicked for conversation:', conversation.id);
                       handleDeleteConversation(conversation.id, e);
                     }}
-                    className="p-1.5 h-auto hover:bg-red-100 dark:hover:bg-red-900 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+                    className="p-2 h-8 w-8 hover:bg-red-100 dark:hover:bg-red-900 text-gray-600 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 border border-gray-300 dark:border-gray-600"
                     title="Delete conversation"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
