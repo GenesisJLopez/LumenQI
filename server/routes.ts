@@ -7,6 +7,7 @@ import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
 import { emotionAdaptationService } from "./services/emotion-adaptation";
+import { voicePersonalityService } from "./services/voice-personality";
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
@@ -725,6 +726,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('error', (error) => {
       console.error('WebSocket error:', error);
     });
+  });
+
+  // Voice personality endpoints
+  app.get("/api/voice-personality", (_req, res) => {
+    try {
+      const personality = voicePersonalityService.getPersonality();
+      res.json(personality);
+    } catch (error) {
+      console.error('Failed to get voice personality:', error);
+      res.status(500).json({ error: 'Failed to get voice personality' });
+    }
+  });
+
+  app.post("/api/voice-personality", (req, res) => {
+    try {
+      const personalityData = req.body;
+      const updatedPersonality = voicePersonalityService.updatePersonality(personalityData);
+      res.json(updatedPersonality);
+    } catch (error) {
+      console.error('Failed to update voice personality:', error);
+      res.status(500).json({ error: 'Failed to update voice personality' });
+    }
+  });
+
+  app.post("/api/voice-personality/reset", (_req, res) => {
+    try {
+      const resetPersonality = voicePersonalityService.resetToDefault();
+      res.json(resetPersonality);
+    } catch (error) {
+      console.error('Failed to reset voice personality:', error);
+      res.status(500).json({ error: 'Failed to reset voice personality' });
+    }
   });
 
   return httpServer;

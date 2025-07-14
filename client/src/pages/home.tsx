@@ -12,6 +12,7 @@ import { VoiceControls } from '@/components/voice-controls';
 import { QuantumInterface } from '@/components/quantum-interface';
 import { PersonalityEvolution } from '@/components/personality-evolution';
 import { VoiceSettings } from '@/components/voice-settings';
+import { VoicePersonalityWizard } from '@/components/voice-personality-wizard';
 import { MemoryManager } from '@/components/memory-manager';
 import { CodeGenerator } from '@/components/code-generator';
 import { EmotionDisplay } from '@/components/emotion-display';
@@ -42,6 +43,7 @@ export default function Home() {
   });
   const [isIdentitySaving, setIsIdentitySaving] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showVoicePersonalityWizard, setShowVoicePersonalityWizard] = useState(false);
   const { toast } = useToast();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
   const { 
@@ -180,6 +182,24 @@ export default function Home() {
       toast({ title: "Identity reset to default successfully!" });
     } catch (error) {
       toast({ title: "Failed to reset identity", variant: "destructive" });
+    }
+  };
+
+  // Voice personality wizard handlers
+  const handleVoicePersonalitySave = async (personality: any) => {
+    try {
+      const response = await fetch('/api/voice-personality', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(personality),
+      });
+
+      if (!response.ok) throw new Error('Failed to save voice personality');
+
+      toast({ title: "Voice personality saved successfully!" });
+      setShowVoicePersonalityWizard(false);
+    } catch (error) {
+      toast({ title: "Failed to save voice personality", variant: "destructive" });
     }
   };
 
@@ -818,6 +838,27 @@ export default function Home() {
                       <div className="space-y-6">
                         <VoiceSettings />
                         
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Sparkles className="w-5 h-5" />
+                              Voice Personality Customization
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                              Create a unique voice personality for Lumen with custom traits, speaking style, and expressions.
+                            </p>
+                            <Button
+                              onClick={() => setShowVoicePersonalityWizard(true)}
+                              className="w-full"
+                            >
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Open Voice Personality Wizard
+                            </Button>
+                          </CardContent>
+                        </Card>
+                        
                         <EmotionAdaptationDisplay />
                       </div>
                     </div>
@@ -889,6 +930,14 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Voice Personality Wizard */}
+      {showVoicePersonalityWizard && (
+        <VoicePersonalityWizard
+          onSave={handleVoicePersonalitySave}
+          onClose={() => setShowVoicePersonalityWizard(false)}
+        />
       )}
     </div>
   );
