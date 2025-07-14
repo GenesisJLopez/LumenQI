@@ -6,6 +6,7 @@ import { lumenAI } from "./services/openai";
 import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
+import { emotionAdaptationService } from "./services/emotion-adaptation";
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
@@ -305,6 +306,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Emotion analysis endpoint
+  app.get("/api/emotion/analysis", async (req, res) => {
+    try {
+      const userId = 1; // Default user
+      const memories = await storage.getMemoriesByUser(userId);
+      
+      // Extract emotion data from memories
+      const emotionMemories = memories.filter(memory => 
+        memory.context && memory.context.includes('Emotion:')
+      );
+      
+      if (emotionMemories.length === 0) {
+        return res.json({
+          dominantEmotion: 'neutral',
+          emotionTrajectory: 'stable',
+          recommendedApproach: 'Maintain balanced, supportive conversation',
+          recentEmotions: [],
+          emotionHistory: []
+        });
+      }
+      
+      // Parse recent emotions from memory data
+      const recentEmotions = emotionMemories.slice(-10).map(memory => {
+        const emotionMatch = memory.context?.match(/Emotion: (\w+) \((\d+)%\)/);
+        if (emotionMatch) {
+          return {
+            emotion: emotionMatch[1],
+            confidence: parseInt(emotionMatch[2]) / 100,
+            timestamp: memory.createdAt,
+            context: memory.content
+          };
+        }
+        return null;
+      }).filter(Boolean);
+      
+      // Analyze trends
+      const analysis = emotionAdaptationService.analyzeEmotionTrends(recentEmotions);
+      
+      res.json({
+        ...analysis,
+        recentEmotions: recentEmotions.slice(-5), // Last 5 emotions
+        emotionHistory: emotionMemories.map(memory => ({
+          emotion: memory.context?.match(/Emotion: (\w+)/)?.[1] || 'unknown',
+          timestamp: memory.createdAt,
+          context: memory.content
+        }))
+      });
+    } catch (error) {
+      console.error('Emotion analysis error:', error);
+      res.status(500).json({ error: "Failed to analyze emotions" });
+    }
+  });
+
   // Get current identity
   app.get("/api/identity", async (req, res) => {
     try {
@@ -520,11 +574,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Received WebSocket message:', message);
         
         if (message.type === 'chat_message') {
-          const { content, conversationId, emotionContext } = message;
+          const { content, conversationId, emotion, emotionContext } = message;
           
           // Validate that conversationId is provided
           if (!conversationId) {
             throw new Error('Conversation ID is required');
+          }
+          
+          // Enhanced emotion processing
+          let enhancedEmotionContext = emotionContext;
+          if (emotion) {
+            // Generate comprehensive emotion context using the adaptation service
+            enhancedEmotionContext = emotionAdaptationService.generateEmotionContext(emotion);
+            
+            // Create emotional memory for better context retention
+            const emotionalMemory = emotionAdaptationService.generateEmotionalMemory(emotion, content);
+            
+            // Store emotional memory in background
+            storage.createMemory({
+              userId: 1,
+              content: emotionalMemory,
+              context: `Emotion: ${emotion.emotion} (${Math.round(emotion.confidence * 100)}%)`,
+              importance: 3 // High importance for emotional context
+            }).catch(error => {
+              console.error('Error storing emotional memory:', error);
+            });
           }
           
           // Parallel operations for better performance
@@ -551,12 +625,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             )
           ]);
 
-          // Generate AI response with emotion context (this is the main bottleneck)
+          // Generate AI response with enhanced emotion context
           const aiResponse = await lumenAI.generateResponse(
             content,
             messages,
             memories,
-            emotionContext
+            enhancedEmotionContext
           );
 
           // Send response back to client immediately
@@ -576,12 +650,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               role: 'assistant',
               content: aiResponse
             }),
-            // Process personality evolution in background
+            // Process personality evolution in background with enhanced emotion data
             personalityEvolution.processInteraction({
               userId: 1,
               messageContent: content,
-              emotion: emotionContext?.emotion,
-              emotionConfidence: emotionContext?.confidence,
+              emotion: emotion?.emotion || emotionContext?.emotion,
+              emotionConfidence: emotion?.confidence || emotionContext?.confidence,
               timestamp: new Date()
             }),
             // Create memory if significant (in background)
