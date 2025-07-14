@@ -305,13 +305,13 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use async function to handle TTS with cached settings for speed
+          // Use Llama 3 TTS for voice mode
           const speakResponse = async () => {
             try {
-              const { openAITTS } = await import('@/lib/openai-tts');
-              await openAITTS.speak(lastMessage.content, {
-                voice: 'lumen', // Use Lumen's custom voice
-                model: 'lumen-custom',
+              const { llamaTTS } = await import('@/lib/llama-tts');
+              await llamaTTS.speak(lastMessage.content, {
+                voice: 'nova', // Use Nova voice
+                model: 'llama3-8b',
                 speed: 1.0,
                 onStart: () => {
                   console.log('Voice mode: Started speaking');
@@ -333,7 +333,7 @@ export default function Home() {
                 }
               });
             } catch (error) {
-              console.error('Failed to import or use OpenAI TTS:', error);
+              console.error('Failed to import or use Llama TTS:', error);
               setIsSpeaking(false);
             }
           };

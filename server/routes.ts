@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { lumenAI } from "./services/openai";
+import { LocalAI } from "./services/local-ai";
 import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";

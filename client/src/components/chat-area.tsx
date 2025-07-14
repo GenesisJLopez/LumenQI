@@ -72,56 +72,63 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     setIsSpeakingMessage(messageId);
     
     try {
-      // Get saved voice settings
-      const settingsResponse = await fetch('/api/voice-settings');
-      const settings = settingsResponse.ok ? await settingsResponse.json() : {
-        voice: 'nova',
-        model: 'tts-1',
-        speed: 1.0
-      };
-
-      // Clean text for TTS
-      const cleanText = text
-        .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
-        .trim();
-      
+      // Use Llama 3 TTS for speech synthesis
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: cleanText,
-          voice: settings.voice,
-          model: settings.model,
-          speed: settings.speed
-        })
+          text: text,
+          voice: 'nova',
+          model: 'llama3-8b',
+          speed: 1.0,
+        }),
       });
 
       if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        
-        audio.onended = () => {
-          setIsSpeakingMessage(null);
-          URL.revokeObjectURL(audioUrl);
-        };
-        
-        audio.onerror = () => {
-          setIsSpeakingMessage(null);
-          URL.revokeObjectURL(audioUrl);
-          console.error('Audio playback failed');
-        };
-        
-        await audio.play();
-      } else {
-        console.error('OpenAI TTS failed, response:', response.status);
-        throw new Error('TTS API failed');
+        const voiceData = await response.json();
+        if (voiceData.success && voiceData.audioData) {
+          // Convert base64 to blob and play
+          const audioBlob = base64ToBlob(voiceData.audioData);
+          const audioUrl = URL.createObjectURL(audioBlob);
+          
+          const audio = new Audio(audioUrl);
+          audio.volume = 0.8;
+          
+          audio.onended = () => {
+            setIsSpeakingMessage(null);
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          audio.onerror = () => {
+            setIsSpeakingMessage(null);
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          await audio.play();
+        }
       }
     } catch (error) {
-      console.error('Speech error:', error);
+      console.error('Speech synthesis failed:', error);
       setIsSpeakingMessage(null);
+    }
+  };
+
+  const base64ToBlob = (base64: string): Blob => {
+    try {
+      const base64Data = base64.replace(/^data:audio\/[^;]+;base64,/, '');
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      return new Blob([bytes], { type: 'audio/wav' });
+    } catch (error) {
+      console.error('Base64 to blob conversion error:', error);
+      throw new Error('Invalid audio data format');
     }
   };
 

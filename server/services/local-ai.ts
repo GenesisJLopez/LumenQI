@@ -145,15 +145,8 @@ export class LocalAI {
     emotionContext?: string,
     isVoiceMode: boolean = false
   ): Promise<LocalAIResponse> {
-    // Fallback to OpenAI if configured
-    const { lumenAI } = await import('./openai');
-    const content = await lumenAI.generateResponse(userMessage, conversationContext, memories, emotionContext, isVoiceMode);
-    
-    return {
-      content,
-      model: 'gpt-4o',
-      provider: 'openai'
-    };
+    // Fallback disabled - OpenAI removed from system
+    throw new Error('OpenAI provider has been removed from the system');
   }
 
   private async generateWithLocalPython(
@@ -262,7 +255,7 @@ IMPORTANT GUIDELINES:
           return { status: 'healthy', provider: 'ollama', model: this.config.model };
         
         case 'openai':
-          return { status: 'healthy', provider: 'openai', model: this.config.model };
+          return { status: 'disabled', provider: 'openai', model: this.config.model };
         
         case 'local-python':
           const pyResponse = await fetch('http://localhost:8000/health');
