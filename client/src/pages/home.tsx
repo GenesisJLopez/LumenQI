@@ -282,6 +282,7 @@ export default function Home() {
         
         // Auto-speak AI response in voice mode
         if (isVoiceMode && lastMessage.content) {
+          console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           import('@/lib/openai-tts').then(({ openAITTS }) => {
             openAITTS.speak(lastMessage.content, {
@@ -289,9 +290,11 @@ export default function Home() {
               model: 'tts-1',
               speed: 1.2,
               onStart: () => {
+                console.log('Voice mode: Started speaking');
                 setIsSpeaking(true);
               },
               onEnd: () => {
+                console.log('Voice mode: Finished speaking, restarting listening');
                 setIsSpeaking(false);
                 // Restart listening after speaking
                 if (isSupported) {
@@ -305,6 +308,9 @@ export default function Home() {
                 setIsSpeaking(false);
               }
             });
+          }).catch(error => {
+            console.error('Failed to import OpenAI TTS:', error);
+            setIsSpeaking(false);
           });
         }
         
