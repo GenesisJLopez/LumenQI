@@ -72,11 +72,17 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     setIsSpeakingMessage(messageId);
     
     try {
-      // Always use OpenAI TTS API first with text cleaning
+      // Get saved voice settings
+      const settingsResponse = await fetch('/api/voice-settings');
+      const settings = settingsResponse.ok ? await settingsResponse.json() : {
+        voice: 'nova',
+        model: 'tts-1',
+        speed: 1.0
+      };
+
+      // Clean text for TTS
       const cleanText = text
         .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
-        .replace(/[\u{FE00}-\u{FE0F}]|[\u{200D}]/gu, '')
-        .replace(/[^\x00-\x7F]/g, '')
         .trim();
       
       const response = await fetch('/api/tts', {
@@ -86,9 +92,9 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         },
         body: JSON.stringify({
           text: cleanText,
-          voice: 'nova',
-          model: 'tts-1-hd',
-          speed: 1.0
+          voice: settings.voice,
+          model: settings.model,
+          speed: settings.speed
         })
       });
 

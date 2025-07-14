@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Volume2, Settings, Play } from 'lucide-react';
+import { Volume2, Settings, Play, Save, RotateCcw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface VoiceOption {
   id: string;
@@ -32,8 +33,11 @@ interface VoiceSettingsProps {
 export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: VoiceSettingsProps) {
   const [selectedVoice, setSelectedVoice] = useState<VoiceOption>(openaiVoices[0]); // Default to Nova
   const [speed, setSpeed] = useState(1.0);
-  const [model, setModel] = useState('tts-1-hd');
+  const [model, setModel] = useState('tts-1');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   const handleVoiceChange = (voiceId: string) => {
     const voice = openaiVoices.find(v => v.id === voiceId);
@@ -52,6 +56,76 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
   const handleModelChange = (newModel: string) => {
     setModel(newModel);
     onModelChange?.(newModel);
+  };
+
+  // Load voice settings on component mount
+  useEffect(() => {
+    const loadVoiceSettings = async () => {
+      try {
+        const response = await fetch('/api/voice-settings');
+        if (response.ok) {
+          const settings = await response.json();
+          
+          // Find the voice option
+          const voice = openaiVoices.find(v => v.id === settings.voice);
+          if (voice) {
+            setSelectedVoice(voice);
+            onVoiceChange?.(voice);
+          }
+          
+          setSpeed(settings.speed);
+          setModel(settings.model);
+          
+          onSpeedChange?.(settings.speed);
+          onModelChange?.(settings.model);
+        }
+      } catch (error) {
+        console.error('Failed to load voice settings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadVoiceSettings();
+  }, []);
+
+  const saveVoiceSettings = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/voice-settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          voice: selectedVoice.id,
+          speed: speed,
+          model: model
+        })
+      });
+
+      if (response.ok) {
+        toast({ title: "Voice settings saved successfully!" });
+      } else {
+        throw new Error('Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Failed to save voice settings:', error);
+      toast({ title: "Failed to save voice settings", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const resetToDefaults = () => {
+    const defaultVoice = openaiVoices[0]; // Nova
+    setSelectedVoice(defaultVoice);
+    setSpeed(1.0);
+    setModel('tts-1');
+    
+    onVoiceChange?.(defaultVoice);
+    onSpeedChange?.(1.0);
+    onModelChange?.('tts-1');
   };
 
   const testVoice = async () => {
@@ -92,6 +166,25 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
       setIsPlaying(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Voice Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+            <p className="text-sm text-gray-500 mt-2">Loading voice settings...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -185,6 +278,36 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
             </>
           )}
         </Button>
+
+        {/* Save and Reset Buttons */}
+        <div className="flex gap-2">
+          <Button 
+            onClick={saveVoiceSettings}
+            disabled={isSaving}
+            className="flex-1"
+          >
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Settings
+              </>
+            )}
+          </Button>
+          
+          <Button 
+            onClick={resetToDefaults}
+            variant="outline"
+            className="flex-1"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Reset
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
