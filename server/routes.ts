@@ -527,52 +527,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
             throw new Error('Conversation ID is required');
           }
           
-          // Save user message
-          await storage.createMessage({
-            conversationId,
-            role: 'user',
-            content
-          });
+          // Parallel operations for better performance
+          const [userMessage, messages, memories] = await Promise.all([
+            // Save user message
+            storage.createMessage({
+              conversationId,
+              role: 'user',
+              content
+            }),
+            // Get conversation context (limit to last 8 messages for faster processing)
+            storage.getMessagesByConversation(conversationId).then(msgs => 
+              msgs.slice(-8).map(msg => ({
+                role: msg.role,
+                content: msg.content
+              }))
+            ),
+            // Get only 3 most recent memories for faster processing
+            storage.getMemoriesByUser(1).then(mems => 
+              mems.slice(0, 3).map(memory => ({
+                content: memory.content,
+                context: memory.context || undefined
+              }))
+            )
+          ]);
 
-          // Get conversation context
-          const messages = await storage.getMessagesByConversation(conversationId);
-          const conversationContext = messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }));
-
-          // Get relevant memories
-          const memories = await storage.getMemoriesByUser(1); // Demo user ID
-          const relevantMemories = memories.slice(0, 5).map(memory => ({
-            content: memory.content,
-            context: memory.context || undefined
-          })); // Use recent memories
-
-          // Process interaction for personality evolution
-          await personalityEvolution.processInteraction({
-            userId: 1,
-            messageContent: content,
-            emotion: emotionContext?.emotion,
-            emotionConfidence: emotionContext?.confidence,
-            timestamp: new Date()
-          });
-
-          // Generate AI response with emotion context
+          // Generate AI response with emotion context (this is the main bottleneck)
           const aiResponse = await lumenAI.generateResponse(
             content,
-            conversationContext,
-            relevantMemories,
+            messages,
+            memories,
             emotionContext
           );
 
-          // Save AI response
-          await storage.createMessage({
-            conversationId,
-            role: 'assistant',
-            content: aiResponse
-          });
-
-          // Send response back to client
+          // Send response back to client immediately
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
               type: 'ai_response',
@@ -581,15 +568,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }));
           }
 
-          // Create memory if the conversation seems significant
-          if (content.length > 50 || aiResponse.length > 100) {
-            await storage.createMemory({
+          // Background operations (don't await these to improve response time)
+          Promise.all([
+            // Save AI response
+            storage.createMessage({
+              conversationId,
+              role: 'assistant',
+              content: aiResponse
+            }),
+            // Process personality evolution in background
+            personalityEvolution.processInteraction({
               userId: 1,
-              content: `User discussed: ${content.substring(0, 100)}...`,
-              context: `Conversation ${conversationId}`,
-              importance: 2
-            });
-          }
+              messageContent: content,
+              emotion: emotionContext?.emotion,
+              emotionConfidence: emotionContext?.confidence,
+              timestamp: new Date()
+            }),
+            // Create memory if significant (in background)
+            (content.length > 50 || aiResponse.length > 100) ?
+              storage.createMemory({
+                userId: 1,
+                content: `User discussed: ${content.substring(0, 100)}...`,
+                context: `Conversation ${conversationId}`,
+                importance: 2
+              }) : Promise.resolve()
+          ]).catch(error => {
+            console.error('Background operation error:', error);
+            // Don't throw - these are background operations
+          });
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
