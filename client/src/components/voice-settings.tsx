@@ -15,12 +15,12 @@ interface VoiceOption {
 }
 
 const openaiVoices: VoiceOption[] = [
-  { id: 'shimmer', name: 'Shimmer', description: 'Soft, natural female voice (recommended)', gender: 'female', accent: 'American' },
   { id: 'nova', name: 'Nova', description: 'Balanced, clear female voice', gender: 'female', accent: 'American' },
   { id: 'alloy', name: 'Alloy', description: 'Neutral, versatile voice', gender: 'male', accent: 'American' },
   { id: 'echo', name: 'Echo', description: 'Warm, friendly male voice', gender: 'male', accent: 'American' },
   { id: 'fable', name: 'Fable', description: 'Expressive, storytelling voice', gender: 'male', accent: 'British' },
-  { id: 'onyx', name: 'Onyx', description: 'Deep, authoritative male voice', gender: 'male', accent: 'American' }
+  { id: 'onyx', name: 'Onyx', description: 'Deep, authoritative male voice', gender: 'male', accent: 'American' },
+  { id: 'shimmer', name: 'Shimmer', description: 'Bright, energetic female voice', gender: 'female', accent: 'American' }
 ];
 
 interface VoiceSettingsProps {
