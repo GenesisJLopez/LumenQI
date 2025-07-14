@@ -46,7 +46,7 @@ export class OpenAITTS {
       options.onStart?.();
       this.isPlaying = true;
 
-      // Get Lumen's voice configuration from server
+      // Get Lumen's voice from server (Llama TTS or fallback)
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
@@ -54,28 +54,36 @@ export class OpenAITTS {
         },
         body: JSON.stringify({
           text: cleanText,
-          voice: options.voice || 'lumen',
-          model: options.model || 'lumen-custom',
+          voice: options.voice || 'nova',
+          model: options.model || 'llasa-3b',
           speed: options.speed || 1.0,
-          response_format: options.response_format || 'lumen'
+          response_format: options.response_format || 'audio'
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Lumen Voice Engine request failed:', response.status, errorText);
-        throw new Error(`Lumen Voice Engine request failed: ${response.status} - ${errorText}`);
+        console.error('Lumen TTS request failed:', response.status, errorText);
+        throw new Error(`Lumen TTS request failed: ${response.status} - ${errorText}`);
       }
 
       const voiceData = await response.json();
-      console.log('🎙️ Using Lumen Custom Voice Engine');
+      console.log('🦙 Using Lumen TTS Service');
       
       if (!voiceData.success) {
-        throw new Error('Lumen voice configuration failed');
+        throw new Error('Lumen voice generation failed');
       }
 
-      // Synthesize with Lumen's custom voice engine
-      await this.synthesizeWithLumenVoice(voiceData.lumenVoiceConfig, options);
+      // Check if we got Llama TTS audio data or fallback config
+      if (voiceData.audioData) {
+        // Play Llama TTS generated audio
+        await this.playLlamaAudio(voiceData.audioData, voiceData, options);
+      } else if (voiceData.lumenVoiceConfig) {
+        // Use enhanced synthesis fallback
+        await this.synthesizeWithLumenVoice(voiceData.lumenVoiceConfig, options);
+      } else {
+        throw new Error('Invalid voice response from server');
+      }
 
     } catch (error) {
       this.isPlaying = false;
@@ -84,11 +92,62 @@ export class OpenAITTS {
     }
   }
 
+  private async playLlamaAudio(audioBase64: string, voiceData: any, options: OpenAITTSOptions): Promise<void> {
+    console.log('🦙 Playing Llama TTS generated audio...');
+    
+    try {
+      // Convert base64 to audio buffer
+      const audioBuffer = this.base64ToArrayBuffer(audioBase64);
+      
+      // Create audio context
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Decode audio data
+      const decodedAudio = await audioContext.decodeAudioData(audioBuffer);
+      
+      // Create audio source
+      const source = audioContext.createBufferSource();
+      source.buffer = decodedAudio;
+      source.connect(audioContext.destination);
+      
+      // Set up event handlers
+      source.onended = () => {
+        console.log('✨ Llama TTS playback completed');
+        this.isPlaying = false;
+        options.onEnd?.();
+      };
+      
+      // Start playback
+      console.log('🎤 Starting Llama TTS playback...');
+      this.isPlaying = true;
+      options.onStart?.();
+      source.start();
+      
+    } catch (error) {
+      console.error('Llama TTS playback failed:', error);
+      // Fall back to enhanced speech synthesis
+      await this.fallbackToEnhancedSpeech({ 
+        text: voiceData.text || 'Audio playback failed',
+        emotionalTone: 'natural'
+      }, options);
+    }
+  }
+
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = window.atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    return bytes.buffer;
+  }
+
   private async synthesizeWithLumenVoice(config: any, options: OpenAITTSOptions): Promise<void> {
     console.log(`🎙️ Synthesizing with Lumen's ${config.emotionalTone} voice...`);
     
-    // For now, use enhanced speech synthesis with Lumen's characteristics
-    // The Web Audio API approach needs more sophisticated phoneme processing
+    // Use enhanced speech synthesis with Lumen's characteristics
     await this.fallbackToEnhancedSpeech(config, options);
   }
 
@@ -361,15 +420,15 @@ export class OpenAITTS {
     return this.isPlaying;
   }
 
-  // Get available voices (Lumen Custom Voice Engine)
+  // Get available voices (Llama 3 TTS - Nova Quality)
   getVoices(): Array<{name: string, description: string}> {
     return [
-      { name: 'lumen', description: 'Lumen\'s signature voice - warm, caring, and uniquely hers' },
-      { name: 'lumen-warm', description: 'Lumen\'s warm, nurturing voice for supportive conversations' },
-      { name: 'lumen-excited', description: 'Lumen\'s enthusiastic voice for energetic moments' },
-      { name: 'lumen-supportive', description: 'Lumen\'s gentle, understanding voice for emotional support' },
-      { name: 'lumen-playful', description: 'Lumen\'s fun, flirtatious voice for playful interactions' },
-      { name: 'lumen-cosmic', description: 'Lumen\'s mystical voice channeling cosmic wisdom' }
+      { name: 'nova', description: 'Nova-quality voice using Llama 3 TTS - natural, warm, and vibrant' },
+      { name: 'alloy', description: 'Balanced, professional voice with Llama 3 synthesis' },
+      { name: 'echo', description: 'Clear, articulate voice with natural intonation' },
+      { name: 'fable', description: 'Storytelling voice with expressive emotional range' },
+      { name: 'onyx', description: 'Deep, resonant voice with authority and warmth' },
+      { name: 'shimmer', description: 'Gentle, soothing voice with ethereal quality' }
     ];
   }
 }
