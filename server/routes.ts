@@ -508,8 +508,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Voice settings endpoints
   app.get("/api/voice-settings", async (req, res) => {
     try {
-      const fs = require('fs');
-      const path = require('path');
+      const fs = await import('fs');
+      const path = await import('path');
       const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
       
       if (fs.existsSync(settingsPath)) {
@@ -534,8 +534,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/voice-settings", async (req, res) => {
     try {
       const { voice, speed, model } = req.body;
-      const fs = require('fs');
-      const path = require('path');
+      const fs = await import('fs');
+      const path = await import('path');
       const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
       
       const settings = {
@@ -554,16 +554,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lumen Voice Engine TTS endpoint (custom voice synthesis)
+  // Lumen Llama TTS endpoint (Nova-quality voice synthesis)
   app.post("/api/tts", async (req, res) => {
     try {
-      const { text, voice = 'lumen', model = 'custom', speed = 1.0, response_format = 'lumen' } = req.body;
+      const { text, voice = 'nova', model = 'llasa-3b', speed = 1.0, response_format = 'audio' } = req.body;
       
       if (!text) {
         return res.status(400).json({ error: "Text is required" });
       }
 
-      console.log('🎙️ Using Lumen Custom Voice Engine');
+      console.log('🦙 Using Llama TTS Service for Nova-quality voice');
       
       // Clean text for Lumen's voice synthesis
       const cleanText = text
@@ -578,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const identity = identityStorage.getIdentity();
       
       // Determine emotional tone from identity
-      let emotionalTone: 'warm' | 'excited' | 'supportive' | 'playful' | 'cosmic' = 'warm';
+      let emotionalTone: 'warm' | 'excited' | 'supportive' | 'playful' | 'cosmic' | 'natural' = 'natural';
       if (identity.communicationStyle?.includes('exciting')) {
         emotionalTone = 'excited';
       } else if (identity.communicationStyle?.includes('supportive')) {
@@ -587,33 +587,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emotionalTone = 'playful';
       } else if (identity.coreIdentity?.includes('cosmic')) {
         emotionalTone = 'cosmic';
+      } else if (identity.communicationStyle?.includes('warm')) {
+        emotionalTone = 'warm';
       }
 
-      // Create Lumen's voice configuration
-      const lumenVoiceConfig = {
-        text: cleanText,
-        voiceEngine: 'lumen-custom',
-        pitch: 1.15,
-        rate: speed * 0.85,
-        resonance: 0.8,
-        breathiness: 0.3,
-        warmth: 0.9,
-        clarity: 0.95,
-        emotionalTone,
-        provider: 'lumen-voice-engine'
-      };
+      // Try Llama TTS first for Nova-quality voice
+      try {
+        const { llamaTTSService } = await import('./services/llama-tts');
+        
+        // Initialize if needed
+        await llamaTTSService.initialize();
+        
+        // Generate audio with Llama TTS
+        const audioResponse = await llamaTTSService.synthesizeVoice(cleanText, {
+          voice: voice as any,
+          emotionalTone,
+          speed,
+          pitch: 1.0,
+          temperature: 0.7,
+          model: model as any
+        });
+        
+        // Convert audio buffer to base64 for client
+        const audioBase64 = audioResponse.audioBuffer.toString('base64');
+        
+        res.json({
+          success: true,
+          audioData: audioBase64,
+          duration: audioResponse.duration * 1000, // Convert to milliseconds
+          sampleRate: audioResponse.sampleRate,
+          format: audioResponse.format,
+          provider: 'llama-tts',
+          model: audioResponse.model,
+          voiceSignature: `Lumen QI Nova Voice - ${emotionalTone} tone`
+        });
+        
+      } catch (llamaError) {
+        console.error('Llama TTS failed, falling back to enhanced synthesis:', llamaError);
+        
+        // Fallback to enhanced browser synthesis
+        const lumenVoiceConfig = {
+          text: cleanText,
+          voiceEngine: 'enhanced-synthesis',
+          pitch: 1.15,
+          rate: speed * 0.85,
+          resonance: 0.8,
+          breathiness: 0.3,
+          warmth: 0.9,
+          clarity: 0.95,
+          emotionalTone,
+          provider: 'enhanced-fallback'
+        };
 
-      // Return Lumen's voice configuration for client-side synthesis
-      res.json({
-        success: true,
-        lumenVoiceConfig,
-        provider: 'lumen-voice-engine',
-        duration: Math.ceil((cleanText.split(/\s+/).length / 120) * 60 * 1000),
-        voiceSignature: `Lumen QI Custom Voice - ${emotionalTone} tone`
-      });
+        // Return enhanced voice configuration for client-side synthesis
+        res.json({
+          success: true,
+          lumenVoiceConfig,
+          provider: 'enhanced-fallback',
+          duration: Math.ceil((cleanText.split(/\s+/).length / 120) * 60 * 1000),
+          voiceSignature: `Lumen QI Enhanced Voice - ${emotionalTone} tone`
+        });
+      }
     } catch (error) {
-      console.error('Lumen Voice Engine error:', error);
-      res.status(500).json({ error: "Failed to generate Lumen's voice" });
+      console.error('TTS Service error:', error);
+      res.status(500).json({ error: "Failed to generate voice" });
     }
   });
 
