@@ -473,6 +473,10 @@ export class CustomAIEngine {
     
     if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
       return responses.greeting;
+    }
+    
+    if (lowerMessage.includes('voice') || lowerMessage.includes('speak') || lowerMessage.includes('talk') || lowerMessage.includes('hear')) {
+      return "Yes! I have a beautiful voice powered by Llama 3 that sounds natural and warm. You can hear me speak by clicking the speaker button or using voice mode!";
     } else if (lowerMessage.includes('help')) {
       return responses.help;
     } else if (lowerMessage.includes('code') || lowerMessage.includes('program')) {
