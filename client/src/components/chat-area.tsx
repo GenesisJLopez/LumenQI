@@ -86,10 +86,9 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         },
         body: JSON.stringify({
           text: cleanText,
-          voice: 'shimmer',
+          voice: 'nova',
           model: 'tts-1-hd',
-          speed: 0.9,
-          response_format: 'mp3'
+          speed: 1.0
         })
       });
 
@@ -98,34 +97,18 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         
-        // Optimize audio settings to reduce "chambered" sound
-        audio.volume = 0.85;
-        audio.preload = 'auto';
-        
-        // Add proper event handlers
         audio.onended = () => {
           setIsSpeakingMessage(null);
           URL.revokeObjectURL(audioUrl);
-          console.log('TTS audio playback ended');
         };
         
-        audio.onerror = (e) => {
+        audio.onerror = () => {
           setIsSpeakingMessage(null);
           URL.revokeObjectURL(audioUrl);
-          console.error('Audio playback failed:', e);
+          console.error('Audio playback failed');
         };
         
-        // Ensure audio is loaded before playing
-        audio.oncanplaythrough = () => {
-          audio.play().catch(e => {
-            console.error('Audio play failed:', e);
-            setIsSpeakingMessage(null);
-            URL.revokeObjectURL(audioUrl);
-          });
-        };
-        
-        // Load the audio
-        audio.load();
+        await audio.play();
       } else {
         console.error('OpenAI TTS failed, response:', response.status);
         throw new Error('TTS API failed');

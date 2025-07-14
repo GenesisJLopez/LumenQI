@@ -506,19 +506,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OpenAI TTS endpoint
   app.post("/api/tts", async (req, res) => {
     try {
-      const { text, voice = 'shimmer', model = 'tts-1-hd', speed = 0.9, response_format = 'mp3' } = req.body;
+      const { text, voice = 'nova', model = 'tts-1', speed = 1.0, response_format = 'mp3' } = req.body;
       
       if (!text) {
         return res.status(400).json({ error: "Text is required" });
       }
 
-      // Clean text: remove emojis and problematic Unicode characters that can cause audio distortion
+      // Clean text: remove emojis and problematic Unicode characters
       const cleanText = text
         .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
         .replace(/[\u{FE00}-\u{FE0F}]|[\u{200D}]/gu, '')
         .replace(/[^\x00-\x7F]/g, '')
-        .replace(/\s+/g, ' ')  // Normalize whitespace
-        .replace(/[""'']/g, '"')  // Normalize quotes
         .trim();
 
       if (!cleanText) {
