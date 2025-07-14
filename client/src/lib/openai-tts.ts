@@ -39,7 +39,7 @@ export class OpenAITTS {
           text: cleanText,
           voice: options.voice || 'nova', // Nova is young, vibrant, and fun
           model: options.model || 'tts-1', // Faster model for voice mode
-          speed: options.speed || 1.2, // Slightly faster speech
+          speed: options.speed || 1.0, // Normal speech speed
           response_format: options.response_format || 'mp3'
         }),
       });
