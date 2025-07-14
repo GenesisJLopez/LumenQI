@@ -554,16 +554,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // OpenAI TTS endpoint
+  // Natural Speech TTS endpoint (no external APIs)
   app.post("/api/tts", async (req, res) => {
     try {
-      const { text, voice = 'nova', model = 'tts-1', speed = 1.0, response_format = 'mp3' } = req.body;
+      const { text, voice = 'nova', model = 'natural', speed = 1.0, response_format = 'mp3' } = req.body;
       
       if (!text) {
         return res.status(400).json({ error: "Text is required" });
       }
 
-      // Simple text cleaning - only remove emojis
+      console.log('🎤 Using Custom Natural Speech Service');
+      
+      // Create natural speech instructions for client-side synthesis
       const cleanText = text
         .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
         .trim();
@@ -572,43 +574,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No valid text after cleaning" });
       }
 
-      const openaiResponse = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          input: cleanText,
-          voice,
-          speed,
-          response_format
-        }),
-      });
+      // Map voice names to optimal browser voices
+      const voiceMap: { [key: string]: string } = {
+        'nova': 'Samantha',
+        'alloy': 'Alex',
+        'echo': 'Fiona',
+        'fable': 'Karen',
+        'onyx': 'Daniel',
+        'shimmer': 'Victoria'
+      };
 
-      if (!openaiResponse.ok) {
-        const errorText = await openaiResponse.text();
-        console.error('OpenAI TTS API error:', {
-          status: openaiResponse.status,
-          statusText: openaiResponse.statusText,
-          body: errorText,
-          request: { model, input: cleanText, voice, speed, response_format }
-        });
-        throw new Error(`OpenAI TTS API error: ${openaiResponse.status} - ${errorText}`);
-      }
+      // Create natural speech configuration
+      const speechConfig = {
+        text: cleanText,
+        voice: voiceMap[voice] || 'Samantha',
+        rate: speed * 0.75, // Slower for more natural speech
+        pitch: voice === 'nova' ? 1.1 : 1.0, // Slightly higher pitch for Nova
+        volume: 0.9,
+        naturalness: 0.95,
+        emotionalTone: 'warm'
+      };
 
-      // Stream the audio response
-      const audioBuffer = await openaiResponse.arrayBuffer();
-      
-      res.set({
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBuffer.byteLength.toString(),
+      // Return speech configuration as JSON (client will handle synthesis)
+      res.json({
+        success: true,
+        speechConfig,
+        provider: 'natural-speech',
+        duration: Math.ceil((cleanText.split(/\s+/).length / 150) * 60 * 1000)
       });
-      
-      res.send(Buffer.from(audioBuffer));
     } catch (error) {
-      console.error('TTS error:', error);
+      console.error('Natural TTS error:', error);
       res.status(500).json({ error: "Failed to generate speech" });
     }
   });
