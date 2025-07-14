@@ -14,8 +14,7 @@ import { PersonalityEvolution } from '@/components/personality-evolution';
 import { VoiceSettings } from '@/components/voice-settings';
 import { MemoryManager } from '@/components/memory-manager';
 import { CodeGenerator } from '@/components/code-generator';
-import { MotionDetector } from '@/components/motion-detector';
-import { SmartDetectionPanel } from '@/components/smart-detection-panel';
+import { EmotionDisplay } from '@/components/emotion-display';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -773,26 +772,17 @@ export default function Home() {
                           Voice Settings
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                          Configure Lumen's voice, speech settings, and motion detection
+                          Configure Lumen's voice, speech settings, and emotion detection
                         </p>
                       </div>
                       
                       <div className="space-y-6">
                         <VoiceSettings />
                         
-                        <SmartDetectionPanel />
-                        
-                        <MotionDetector 
-                          onMotionDetected={(motionData) => {
-                            console.log('Motion detected:', motionData);
-                            // Handle motion detection for Lumen's responses
-                          }}
-                          onAutoWake={(motionData) => {
-                            console.log('Auto-wake triggered:', motionData);
-                            // Auto-activate voice mode when motion is detected
-                            if (!isVoiceMode) {
-                              handleVoiceModeToggle();
-                            }
+                        <EmotionDisplay 
+                          onEmotionChange={(emotion, adaptation) => {
+                            console.log('Emotion detected:', emotion, adaptation);
+                            // Handle emotion detection for Lumen's responses
                           }}
                         />
                       </div>
