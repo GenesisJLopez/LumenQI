@@ -7,7 +7,7 @@ import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
 import { emotionAdaptationService } from "./services/emotion-adaptation";
-import { voicePersonalityService } from "./services/voice-personality";
+
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
@@ -501,6 +501,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "All memories cleared successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to clear memories" });
+    }
+  });
+
+  // Voice settings endpoints
+  app.get("/api/voice-settings", async (req, res) => {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
+      
+      if (fs.existsSync(settingsPath)) {
+        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+        res.json(settings);
+      } else {
+        // Default settings
+        const defaultSettings = {
+          voice: 'nova',
+          speed: 1.0,
+          model: 'tts-1',
+          updatedAt: new Date().toISOString()
+        };
+        res.json(defaultSettings);
+      }
+    } catch (error) {
+      console.error('Failed to get voice settings:', error);
+      res.status(500).json({ error: 'Failed to get voice settings' });
+    }
+  });
+
+  app.post("/api/voice-settings", async (req, res) => {
+    try {
+      const { voice, speed, model } = req.body;
+      const fs = require('fs');
+      const path = require('path');
+      const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
+      
+      const settings = {
+        voice,
+        speed,
+        model,
+        updatedAt: new Date().toISOString()
+      };
+      
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+      console.log('✓ Voice settings saved successfully');
+      res.json({ success: true, settings });
+    } catch (error) {
+      console.error('Failed to save voice settings:', error);
+      res.status(500).json({ error: 'Failed to save voice settings' });
     }
   });
 
