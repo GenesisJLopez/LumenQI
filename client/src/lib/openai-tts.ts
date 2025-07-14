@@ -37,9 +37,9 @@ export class OpenAITTS {
         },
         body: JSON.stringify({
           text: cleanText,
-          voice: options.voice || 'nova', // Nova is young, vibrant, and fun
-          model: options.model || 'tts-1', // Faster model for voice mode
-          speed: options.speed || 1.2, // Slightly faster speech
+          voice: options.voice || 'shimmer', // Shimmer is softer and more natural
+          model: options.model || 'tts-1-hd', // HD model for better quality
+          speed: options.speed || 0.9, // Slightly slower for more natural speech
           response_format: options.response_format || 'mp3'
         }),
       });
@@ -60,8 +60,12 @@ export class OpenAITTS {
       
       const audioUrl = URL.createObjectURL(audioBlob);
 
-      // Create and play audio
+      // Create and configure audio with optimal settings
       this.currentAudio = new Audio(audioUrl);
+      
+      // Optimize audio settings to reduce "chambered" sound
+      this.currentAudio.volume = 0.85;
+      this.currentAudio.preload = 'auto';
       
       this.currentAudio.onplay = () => {
         console.log('TTS audio playback started');
@@ -87,8 +91,19 @@ export class OpenAITTS {
         options.onError?.('Audio playback failed');
       };
 
-      console.log('Starting TTS audio playback');
-      await this.currentAudio.play();
+      // Ensure audio is properly loaded before playing
+      this.currentAudio.oncanplaythrough = () => {
+        console.log('TTS audio can play through, starting playback');
+        this.currentAudio.play().catch(e => {
+          console.error('Audio play failed:', e);
+          this.isPlaying = false;
+          URL.revokeObjectURL(audioUrl);
+          options.onError?.('Audio playback failed');
+        });
+      };
+
+      console.log('Loading TTS audio for playback');
+      this.currentAudio.load();
 
     } catch (error) {
       this.isPlaying = false;
