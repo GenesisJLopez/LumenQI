@@ -72,8 +72,12 @@ export class OpenAITTS {
       this.currentAudio.onended = () => {
         console.log('TTS audio playback ended');
         this.isPlaying = false;
-        URL.revokeObjectURL(audioUrl);
-        options.onEnd?.();
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+        if (options.onEnd) {
+          options.onEnd();
+        }
       };
 
       this.currentAudio.onerror = (error) => {
