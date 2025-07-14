@@ -1,0 +1,45 @@
+{
+  "model_type": "llama3-native",
+  "version": "1.0.0",
+  "voice_variants": [
+    "nova",
+    "alloy",
+    "echo",
+    "fable",
+    "onyx",
+    "shimmer"
+  ],
+  "emotional_tones": [
+    "warm",
+    "excited",
+    "supportive",
+    "playful",
+    "cosmic",
+    "natural"
+  ],
+  "sample_rate": 22050,
+  "models": {
+    "llama3-8b": {
+      "size": "8B",
+      "description": "Efficient 8B parameter model for real-time processing",
+      "memory_required": "8GB",
+      "quality": "high",
+      "speed": "fast"
+    },
+    "llama3-70b": {
+      "size": "70B",
+      "description": "High-quality 70B parameter model for maximum fidelity",
+      "memory_required": "48GB",
+      "quality": "ultra",
+      "speed": "slow"
+    },
+    "llama3-lite": {
+      "size": "1B",
+      "description": "Lightweight model for mobile and embedded use",
+      "memory_required": "2GB",
+      "quality": "good",
+      "speed": "very_fast"
+    }
+  },
+  "initialized": true
+}
