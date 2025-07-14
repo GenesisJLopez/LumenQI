@@ -39,6 +39,12 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  const llamaModels = [
+    { id: 'llama3-8b', name: 'Llama 3 8B', description: 'Fast, efficient model for standard conversations' },
+    { id: 'llama3-70b', name: 'Llama 3 70B', description: 'High-quality model for complex conversations (requires high-end hardware)' },
+    { id: 'llama3-lite', name: 'Llama 3 Lite', description: 'Lightweight model for basic conversations' }
+  ];
+
   const handleVoiceChange = (voiceId: string) => {
     const voice = lumenVoices.find(v => v.id === voiceId);
     if (voice) {
@@ -145,25 +151,48 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
       });
 
       if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        
-        audio.onended = () => {
-          setIsPlaying(false);
-          URL.revokeObjectURL(audioUrl);
-        };
-        
-        audio.onerror = () => {
-          setIsPlaying(false);
-          URL.revokeObjectURL(audioUrl);
-        };
-        
-        await audio.play();
+        const voiceData = await response.json();
+        if (voiceData.success && voiceData.audioData) {
+          // Convert base64 to blob and play
+          const audioBlob = base64ToBlob(voiceData.audioData);
+          const audioUrl = URL.createObjectURL(audioBlob);
+          
+          const audio = new Audio(audioUrl);
+          audio.volume = 0.8;
+          
+          audio.onended = () => {
+            setIsPlaying(false);
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          audio.onerror = () => {
+            setIsPlaying(false);
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          await audio.play();
+        }
       }
     } catch (error) {
       console.error('Voice test failed:', error);
       setIsPlaying(false);
+    }
+  };
+
+  const base64ToBlob = (base64: string): Blob => {
+    try {
+      const base64Data = base64.replace(/^data:audio\/[^;]+;base64,/, '');
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      return new Blob([bytes], { type: 'audio/wav' });
+    } catch (error) {
+      console.error('Base64 to blob conversion error:', error);
+      throw new Error('Invalid audio data format');
     }
   };
 
@@ -271,70 +300,18 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
           </div>
         </div>
 
-        {/* Model Selection */}
-        <div className="space-y-2">
-          <Label htmlFor="model-select">Quality</Label>
-          <Select value={model} onValueChange={handleModelChange}>
-            <SelectTrigger id="model-select">
-              <SelectValue placeholder="Select quality" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="tts-1-hd">
-                <div className="flex flex-col">
-                  <span className="font-medium">High Quality</span>
-                  <span className="text-xs text-gray-500">Better quality, slower generation</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="tts-1">
-                <div className="flex flex-col">
-                  <span className="font-medium">Standard Quality</span>
-                  <span className="text-xs text-gray-500">Good quality, faster generation</span>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Test Button */}
-        <Button 
-          onClick={testVoice}
-          disabled={isPlaying}
-          className="w-full"
-        >
-          {isPlaying ? (
-            <>
-              <Volume2 className="w-4 h-4 mr-2 animate-pulse" />
-              Playing...
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4 mr-2" />
-              Test Voice
-            </>
-          )}
-        </Button>
-
-        {/* Save and Reset Buttons */}
-        <div className="flex gap-2">
-          <Button 
-            onClick={saveVoiceSettings}
-            disabled={isSaving}
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-4">
+          <Button
+            onClick={testVoice}
+            disabled={isPlaying}
+            variant="outline"
             className="flex-1"
           >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Settings
-              </>
-            )}
+            <Play className="w-4 h-4 mr-2" />
+            {isPlaying ? 'Testing...' : 'Test Voice'}
           </Button>
-          
-          <Button 
+          <Button
             onClick={resetToDefaults}
             variant="outline"
             className="flex-1"
@@ -343,6 +320,15 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
             Reset
           </Button>
         </div>
+
+        <Button
+          onClick={saveVoiceSettings}
+          disabled={isSaving}
+          className="w-full"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          {isSaving ? 'Saving...' : 'Save Settings'}
+        </Button>
       </CardContent>
     </Card>
   );

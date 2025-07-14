@@ -1,4 +1,4 @@
-import { lumenAI } from './openai';
+import { LocalAI } from './local-ai';
 import { storage } from '../storage';
 
 export interface PersonalityTrait {
