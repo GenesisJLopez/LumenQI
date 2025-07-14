@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
+import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { 
   Brain, 
   TrendingUp, 
@@ -15,7 +16,11 @@ import {
   Target,
   Shield,
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Mic,
+  MicOff,
+  Play,
+  Square
 } from 'lucide-react';
 
 interface EmotionData {
@@ -37,6 +42,13 @@ export function EmotionAdaptationDisplay() {
   const [analysis, setAnalysis] = useState<EmotionAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { 
+    isAnalyzing, 
+    currentEmotion, 
+    error: emotionError,
+    startDetection, 
+    stopDetection 
+  } = useEmotionDetection();
 
   const fetchEmotionAnalysis = async () => {
     try {
@@ -54,6 +66,18 @@ export function EmotionAdaptationDisplay() {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleDetection = async () => {
+    if (isAnalyzing) {
+      stopDetection();
+    } else {
+      try {
+        await startDetection();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to start emotion detection');
+      }
     }
   };
 
@@ -202,6 +226,70 @@ export function EmotionAdaptationDisplay() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Emotion Detection Controls */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Real-Time Detection</span>
+            <div className="flex items-center gap-2">
+              <Badge variant={isAnalyzing ? "default" : "secondary"}>
+                <div className="flex items-center gap-1">
+                  {isAnalyzing ? <Mic className="w-3 h-3" /> : <MicOff className="w-3 h-3" />}
+                  <span className="text-xs">
+                    {isAnalyzing ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </Badge>
+              <Button 
+                onClick={handleToggleDetection}
+                variant={isAnalyzing ? "destructive" : "default"}
+                size="sm"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <Square className="w-4 h-4 mr-2" />
+                    Stop
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Start
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+          
+          {/* Current Emotion (live) */}
+          {isAnalyzing && currentEmotion && (
+            <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Current Emotion:</span>
+                  <Badge className={getEmotionColor(currentEmotion.emotion)}>
+                    <div className="flex items-center gap-1">
+                      {getEmotionIcon(currentEmotion.emotion)}
+                      <span className="capitalize">{currentEmotion.emotion}</span>
+                    </div>
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Progress value={currentEmotion.confidence * 100} className="w-12 h-2" />
+                  <span className="text-xs text-gray-500">
+                    {Math.round(currentEmotion.confidence * 100)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Detection Error */}
+          {emotionError && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <p className="text-sm text-red-800 dark:text-red-200">{emotionError}</p>
+            </div>
+          )}
+        </div>
+
         {/* Dominant Emotion */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
