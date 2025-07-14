@@ -7,6 +7,7 @@ import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
 import { emotionAdaptationService } from "./services/emotion-adaptation";
+import { aiConfigManager } from "./services/ai-config";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -828,6 +829,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to reset voice personality:', error);
       res.status(500).json({ error: 'Failed to reset voice personality' });
+    }
+  });
+
+  // AI Configuration endpoints
+  app.get("/api/ai-config", async (req, res) => {
+    try {
+      const settings = aiConfigManager.getSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get AI configuration" });
+    }
+  });
+
+  app.post("/api/ai-config", async (req, res) => {
+    try {
+      const newSettings = req.body;
+      aiConfigManager.updateSettings(newSettings);
+      res.json({ success: true, settings: aiConfigManager.getSettings() });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update AI configuration" });
+    }
+  });
+
+  app.get("/api/ai-config/status", async (req, res) => {
+    try {
+      const statuses = await aiConfigManager.getProviderStatus();
+      res.json(statuses);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get AI provider status" });
+    }
+  });
+
+  app.post("/api/ai-config/switch", async (req, res) => {
+    try {
+      const { provider } = req.body;
+      const success = await aiConfigManager.switchProvider(provider);
+      res.json({ success, provider });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to switch AI provider" });
+    }
+  });
+
+  app.get("/api/ai-config/models/:provider", async (req, res) => {
+    try {
+      const provider = req.params.provider as 'ollama' | 'openai' | 'local-python';
+      const activeAI = await aiConfigManager.getActiveAI();
+      
+      if (activeAI.getConfig().provider === provider) {
+        const models = await activeAI.getAvailableModels();
+        res.json({ models });
+      } else {
+        res.json({ models: [] });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get available models" });
     }
   });
 
