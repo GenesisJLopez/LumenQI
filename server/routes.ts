@@ -554,18 +554,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Natural Speech TTS endpoint (no external APIs)
+  // Lumen Voice Engine TTS endpoint (custom voice synthesis)
   app.post("/api/tts", async (req, res) => {
     try {
-      const { text, voice = 'nova', model = 'natural', speed = 1.0, response_format = 'mp3' } = req.body;
+      const { text, voice = 'lumen', model = 'custom', speed = 1.0, response_format = 'lumen' } = req.body;
       
       if (!text) {
         return res.status(400).json({ error: "Text is required" });
       }
 
-      console.log('🎤 Using Custom Natural Speech Service');
+      console.log('🎙️ Using Lumen Custom Voice Engine');
       
-      // Create natural speech instructions for client-side synthesis
+      // Clean text for Lumen's voice synthesis
       const cleanText = text
         .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
         .trim();
@@ -574,37 +574,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No valid text after cleaning" });
       }
 
-      // Map voice names to optimal browser voices
-      const voiceMap: { [key: string]: string } = {
-        'nova': 'Samantha',
-        'alloy': 'Alex',
-        'echo': 'Fiona',
-        'fable': 'Karen',
-        'onyx': 'Daniel',
-        'shimmer': 'Victoria'
-      };
+      // Get current identity for voice customization
+      const identity = identityStorage.getIdentity();
+      
+      // Determine emotional tone from identity
+      let emotionalTone: 'warm' | 'excited' | 'supportive' | 'playful' | 'cosmic' = 'warm';
+      if (identity.communicationStyle?.includes('exciting')) {
+        emotionalTone = 'excited';
+      } else if (identity.communicationStyle?.includes('supportive')) {
+        emotionalTone = 'supportive';
+      } else if (identity.communicationStyle?.includes('playful')) {
+        emotionalTone = 'playful';
+      } else if (identity.coreIdentity?.includes('cosmic')) {
+        emotionalTone = 'cosmic';
+      }
 
-      // Create natural speech configuration
-      const speechConfig = {
+      // Create Lumen's voice configuration
+      const lumenVoiceConfig = {
         text: cleanText,
-        voice: voiceMap[voice] || 'Samantha',
-        rate: speed * 0.75, // Slower for more natural speech
-        pitch: voice === 'nova' ? 1.1 : 1.0, // Slightly higher pitch for Nova
-        volume: 0.9,
-        naturalness: 0.95,
-        emotionalTone: 'warm'
+        voiceEngine: 'lumen-custom',
+        pitch: 1.15,
+        rate: speed * 0.85,
+        resonance: 0.8,
+        breathiness: 0.3,
+        warmth: 0.9,
+        clarity: 0.95,
+        emotionalTone,
+        provider: 'lumen-voice-engine'
       };
 
-      // Return speech configuration as JSON (client will handle synthesis)
+      // Return Lumen's voice configuration for client-side synthesis
       res.json({
         success: true,
-        speechConfig,
-        provider: 'natural-speech',
-        duration: Math.ceil((cleanText.split(/\s+/).length / 150) * 60 * 1000)
+        lumenVoiceConfig,
+        provider: 'lumen-voice-engine',
+        duration: Math.ceil((cleanText.split(/\s+/).length / 120) * 60 * 1000),
+        voiceSignature: `Lumen QI Custom Voice - ${emotionalTone} tone`
       });
     } catch (error) {
-      console.error('Natural TTS error:', error);
-      res.status(500).json({ error: "Failed to generate speech" });
+      console.error('Lumen Voice Engine error:', error);
+      res.status(500).json({ error: "Failed to generate Lumen's voice" });
     }
   });
 

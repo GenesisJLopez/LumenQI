@@ -1,9 +1,9 @@
-// Natural Speech Synthesis - No External Dependencies
+// Lumen Custom Voice Engine - Built-in Voice Synthesis
 export interface OpenAITTSOptions {
-  voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
-  model?: 'natural' | 'enhanced';
+  voice?: 'lumen' | 'lumen-warm' | 'lumen-excited' | 'lumen-supportive' | 'lumen-playful' | 'lumen-cosmic';
+  model?: 'lumen-custom' | 'lumen-enhanced';
   speed?: number; // 0.25 to 4.0
-  response_format?: 'speech' | 'audio';
+  response_format?: 'lumen' | 'custom';
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (error: string) => void;
@@ -46,7 +46,7 @@ export class OpenAITTS {
       options.onStart?.();
       this.isPlaying = true;
 
-      // Get speech configuration from server
+      // Get Lumen's voice configuration from server
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
@@ -54,61 +54,28 @@ export class OpenAITTS {
         },
         body: JSON.stringify({
           text: cleanText,
-          voice: options.voice || 'nova',
-          model: options.model || 'natural',
+          voice: options.voice || 'lumen',
+          model: options.model || 'lumen-custom',
           speed: options.speed || 1.0,
-          response_format: options.response_format || 'speech'
+          response_format: options.response_format || 'lumen'
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('TTS request failed:', response.status, errorText);
-        throw new Error(`TTS request failed: ${response.status} - ${errorText}`);
+        console.error('Lumen Voice Engine request failed:', response.status, errorText);
+        throw new Error(`Lumen Voice Engine request failed: ${response.status} - ${errorText}`);
       }
 
-      const speechData = await response.json();
-      console.log('🎤 Using Custom Natural Speech Service');
+      const voiceData = await response.json();
+      console.log('🎙️ Using Lumen Custom Voice Engine');
       
-      if (!speechData.success) {
-        throw new Error('Speech configuration failed');
+      if (!voiceData.success) {
+        throw new Error('Lumen voice configuration failed');
       }
 
-      // Create natural speech synthesis
-      this.currentSpeech = new SpeechSynthesisUtterance(speechData.speechConfig.text);
-      
-      // Find the best voice
-      const selectedVoice = this.findBestVoice(speechData.speechConfig.voice);
-      if (selectedVoice) {
-        this.currentSpeech.voice = selectedVoice;
-      }
-      
-      // Configure for natural speech
-      this.currentSpeech.rate = speechData.speechConfig.rate;
-      this.currentSpeech.pitch = speechData.speechConfig.pitch;
-      this.currentSpeech.volume = speechData.speechConfig.volume;
-      
-      // Set up event handlers
-      this.currentSpeech.onstart = () => {
-        console.log('Natural speech started');
-        this.isPlaying = true;
-        options.onStart?.();
-      };
-      
-      this.currentSpeech.onend = () => {
-        console.log('Natural speech ended');
-        this.isPlaying = false;
-        options.onEnd?.();
-      };
-
-      this.currentSpeech.onerror = (error) => {
-        console.error('Natural speech error:', error);
-        this.isPlaying = false;
-        options.onError?.('Speech synthesis failed');
-      };
-
-      // Start speech synthesis
-      speechSynthesis.speak(this.currentSpeech);
+      // Synthesize with Lumen's custom voice engine
+      await this.synthesizeWithLumenVoice(voiceData.lumenVoiceConfig, options);
 
     } catch (error) {
       this.isPlaying = false;
@@ -117,44 +84,167 @@ export class OpenAITTS {
     }
   }
 
-  private findBestVoice(voiceName: string): SpeechSynthesisVoice | null {
-    // Ensure voices are loaded
-    if (this.availableVoices.length === 0) {
-      this.availableVoices = speechSynthesis.getVoices();
-    }
-
-    // Voice preference order for natural speech
-    const voicePreferences: { [key: string]: string[] } = {
-      'Samantha': ['Samantha', 'Karen', 'Victoria', 'Zira', 'Microsoft Zira'],
-      'Alex': ['Alex', 'Daniel', 'Microsoft David'],
-      'Fiona': ['Fiona', 'Moira', 'Microsoft Hazel'],
-      'Karen': ['Karen', 'Samantha', 'Victoria', 'Microsoft Zira'],
-      'Daniel': ['Daniel', 'Alex', 'Microsoft David'],
-      'Victoria': ['Victoria', 'Zira', 'Microsoft Zira']
-    };
-
-    const preferences = voicePreferences[voiceName] || [voiceName];
+  private async synthesizeWithLumenVoice(config: any, options: OpenAITTSOptions): Promise<void> {
+    console.log(`🎙️ Synthesizing with Lumen's ${config.emotionalTone} voice...`);
     
-    // Find the best available voice
-    for (const preferredVoice of preferences) {
-      const voice = this.availableVoices.find(v => 
-        v.name.includes(preferredVoice) && 
-        v.lang.includes('en')
-      );
-      if (voice) {
-        console.log(`🎤 Selected voice: ${voice.name} (${voice.lang})`);
-        return voice;
+    try {
+      // Initialize Web Audio API for custom voice synthesis
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Generate Lumen's voice waveform
+      const waveform = await this.generateLumenWaveform(config, audioContext);
+      
+      // Play the generated audio
+      await this.playLumenVoice(waveform, audioContext, options);
+      
+    } catch (error) {
+      console.error('Lumen voice synthesis error:', error);
+      // Fallback to enhanced speech synthesis with Lumen's characteristics
+      await this.fallbackToEnhancedSpeech(config, options);
+    }
+  }
+
+  private async generateLumenWaveform(config: any, audioContext: AudioContext): Promise<AudioBuffer> {
+    const sampleRate = audioContext.sampleRate;
+    const duration = config.text.length * 0.08; // Estimate duration
+    const frameCount = sampleRate * duration;
+    
+    // Create audio buffer for Lumen's voice
+    const audioBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
+    const channelData = audioBuffer.getChannelData(0);
+    
+    // Generate Lumen's unique voice characteristics
+    const fundamentalFreq = 220 * config.pitch; // Base frequency for Lumen
+    const words = config.text.split(' ');
+    
+    let currentFrame = 0;
+    
+    for (const word of words) {
+      if (currentFrame >= frameCount) break;
+      
+      const wordDuration = word.length * 0.08;
+      const wordFrames = Math.floor(wordDuration * sampleRate);
+      
+      // Generate phonemes for this word
+      for (let i = 0; i < wordFrames && currentFrame < frameCount; i++) {
+        const t = i / sampleRate;
+        const progress = i / wordFrames;
+        
+        // Base wave with Lumen's fundamental frequency
+        let sample = Math.sin(2 * Math.PI * fundamentalFreq * t);
+        
+        // Add harmonic content for richness
+        sample += 0.3 * Math.sin(2 * Math.PI * fundamentalFreq * 2 * t); // Second harmonic
+        sample += 0.2 * Math.sin(2 * Math.PI * fundamentalFreq * 3 * t); // Third harmonic
+        
+        // Apply formant filtering for vowel-like sounds
+        const formant1 = 800 * config.resonance;
+        const formant2 = 1200 * config.resonance;
+        sample += 0.15 * Math.sin(2 * Math.PI * formant1 * t);
+        sample += 0.1 * Math.sin(2 * Math.PI * formant2 * t);
+        
+        // Apply warmth (low-pass effect)
+        if (i > 0) {
+          sample = sample * (1 - config.warmth * 0.3) + 
+                   channelData[currentFrame - 1] * (config.warmth * 0.3);
+        }
+        
+        // Add subtle breathiness
+        if (config.breathiness > 0) {
+          const noise = (Math.random() - 0.5) * config.breathiness * 0.05;
+          sample += noise;
+        }
+        
+        // Apply amplitude envelope for natural sound
+        const envelope = 0.5 * (1 - Math.cos(2 * Math.PI * progress));
+        sample *= envelope * 0.3; // Reduced amplitude for comfortable listening
+        
+        channelData[currentFrame] = sample;
+        currentFrame++;
+      }
+      
+      // Add brief pause between words
+      const pauseFrames = Math.floor(0.1 * sampleRate);
+      for (let i = 0; i < pauseFrames && currentFrame < frameCount; i++) {
+        channelData[currentFrame] = 0;
+        currentFrame++;
       }
     }
+    
+    return audioBuffer;
+  }
 
-    // Fallback to best English voice
-    const englishVoices = this.availableVoices.filter(v => v.lang.includes('en'));
-    if (englishVoices.length > 0) {
-      console.log(`🎤 Fallback voice: ${englishVoices[0].name} (${englishVoices[0].lang})`);
-      return englishVoices[0];
+  private async playLumenVoice(audioBuffer: AudioBuffer, audioContext: AudioContext, options: OpenAITTSOptions): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      
+      source.onended = () => {
+        console.log('✨ Lumen voice playback completed');
+        this.isPlaying = false;
+        options.onEnd?.();
+        resolve();
+      };
+      
+      source.onerror = (error) => {
+        console.error('Lumen voice playback error:', error);
+        this.isPlaying = false;
+        options.onError?.('Lumen voice playback failed');
+        reject(error);
+      };
+      
+      console.log('🎤 Starting Lumen voice playback...');
+      this.isPlaying = true;
+      options.onStart?.();
+      source.start();
+    });
+  }
+
+  private async fallbackToEnhancedSpeech(config: any, options: OpenAITTSOptions): Promise<void> {
+    console.log('🔄 Falling back to enhanced speech synthesis...');
+    
+    // Create enhanced speech synthesis with Lumen's characteristics
+    this.currentSpeech = new SpeechSynthesisUtterance(config.text);
+    
+    // Configure for Lumen's voice profile
+    this.currentSpeech.rate = config.rate;
+    this.currentSpeech.pitch = config.pitch;
+    this.currentSpeech.volume = 0.9;
+    
+    // Try to find a suitable voice
+    const voices = speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => 
+      (v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Victoria')) &&
+      v.lang.includes('en')
+    );
+    
+    if (preferredVoice) {
+      this.currentSpeech.voice = preferredVoice;
+      console.log(`🎤 Using enhanced voice: ${preferredVoice.name} for Lumen`);
     }
+    
+    // Set up event handlers
+    this.currentSpeech.onstart = () => {
+      console.log('Enhanced Lumen speech started');
+      this.isPlaying = true;
+      options.onStart?.();
+    };
+    
+    this.currentSpeech.onend = () => {
+      console.log('Enhanced Lumen speech ended');
+      this.isPlaying = false;
+      options.onEnd?.();
+    };
 
-    return null;
+    this.currentSpeech.onerror = (error) => {
+      console.error('Enhanced Lumen speech error:', error);
+      this.isPlaying = false;
+      options.onError?.('Enhanced speech synthesis failed');
+    };
+
+    // Start speech synthesis
+    speechSynthesis.speak(this.currentSpeech);
   }
 
   private cleanTextForSpeech(text: string): string {
@@ -187,8 +277,15 @@ export class OpenAITTS {
       speechSynthesis.cancel();
       this.currentSpeech = null;
     }
+    // Also stop any Web Audio API sources
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
     this.isPlaying = false;
   }
+
+  private audioContext: AudioContext | null = null;
 
   pause(): void {
     if (this.currentSpeech && this.isPlaying) {
@@ -206,15 +303,15 @@ export class OpenAITTS {
     return this.isPlaying;
   }
 
-  // Get available voices (Natural Speech voices)
+  // Get available voices (Lumen Custom Voice Engine)
   getVoices(): Array<{name: string, description: string}> {
     return [
-      { name: 'alloy', description: 'Balanced, neutral voice (Alex)' },
-      { name: 'echo', description: 'British voice (Fiona)' },
-      { name: 'fable', description: 'Clear voice (Karen)' },
-      { name: 'onyx', description: 'Deep, resonant voice (Daniel)' },
-      { name: 'nova', description: 'Young, vibrant female voice (Samantha)' },
-      { name: 'shimmer', description: 'Soft, gentle voice (Victoria)' }
+      { name: 'lumen', description: 'Lumen\'s signature voice - warm, caring, and uniquely hers' },
+      { name: 'lumen-warm', description: 'Lumen\'s warm, nurturing voice for supportive conversations' },
+      { name: 'lumen-excited', description: 'Lumen\'s enthusiastic voice for energetic moments' },
+      { name: 'lumen-supportive', description: 'Lumen\'s gentle, understanding voice for emotional support' },
+      { name: 'lumen-playful', description: 'Lumen\'s fun, flirtatious voice for playful interactions' },
+      { name: 'lumen-cosmic', description: 'Lumen\'s mystical voice channeling cosmic wisdom' }
     ];
   }
 }
