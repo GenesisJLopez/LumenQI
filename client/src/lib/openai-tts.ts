@@ -1,19 +1,36 @@
-// OpenAI TTS Integration for Natural Voice Synthesis
+// Natural Speech Synthesis - No External Dependencies
 export interface OpenAITTSOptions {
   voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
-  model?: 'tts-1' | 'tts-1-hd';
+  model?: 'natural' | 'enhanced';
   speed?: number; // 0.25 to 4.0
-  response_format?: 'mp3' | 'opus' | 'aac' | 'flac';
+  response_format?: 'speech' | 'audio';
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (error: string) => void;
 }
 
 export class OpenAITTS {
-  private currentAudio: HTMLAudioElement | null = null;
+  private currentSpeech: SpeechSynthesisUtterance | null = null;
   private isPlaying = false;
+  private availableVoices: SpeechSynthesisVoice[] = [];
 
-  constructor() {}
+  constructor() {
+    this.initializeVoices();
+  }
+
+  private async initializeVoices(): Promise<void> {
+    // Wait for voices to be loaded
+    if (speechSynthesis.getVoices().length === 0) {
+      await new Promise<void>((resolve) => {
+        speechSynthesis.onvoiceschanged = () => {
+          this.availableVoices = speechSynthesis.getVoices();
+          resolve();
+        };
+      });
+    } else {
+      this.availableVoices = speechSynthesis.getVoices();
+    }
+  }
 
   async speak(text: string, options: OpenAITTSOptions = {}): Promise<void> {
     if (!text.trim()) return;
@@ -29,7 +46,7 @@ export class OpenAITTS {
       options.onStart?.();
       this.isPlaying = true;
 
-      // Call our backend TTS endpoint
+      // Get speech configuration from server
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: {
@@ -37,10 +54,10 @@ export class OpenAITTS {
         },
         body: JSON.stringify({
           text: cleanText,
-          voice: options.voice || 'nova', // Nova is young, vibrant, and fun
-          model: options.model || 'tts-1', // Faster model for voice mode
-          speed: options.speed || 1.0, // Normal speech speed
-          response_format: options.response_format || 'mp3'
+          voice: options.voice || 'nova',
+          model: options.model || 'natural',
+          speed: options.speed || 1.0,
+          response_format: options.response_format || 'speech'
         }),
       });
 
@@ -50,51 +67,94 @@ export class OpenAITTS {
         throw new Error(`TTS request failed: ${response.status} - ${errorText}`);
       }
 
-      // Get audio blob
-      const audioBlob = await response.blob();
-      console.log('TTS audio blob size:', audioBlob.size);
+      const speechData = await response.json();
+      console.log('🎤 Using Custom Natural Speech Service');
       
-      if (audioBlob.size === 0) {
-        throw new Error('Empty audio response from TTS service');
+      if (!speechData.success) {
+        throw new Error('Speech configuration failed');
+      }
+
+      // Create natural speech synthesis
+      this.currentSpeech = new SpeechSynthesisUtterance(speechData.speechConfig.text);
+      
+      // Find the best voice
+      const selectedVoice = this.findBestVoice(speechData.speechConfig.voice);
+      if (selectedVoice) {
+        this.currentSpeech.voice = selectedVoice;
       }
       
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // Create and play audio
-      this.currentAudio = new Audio(audioUrl);
+      // Configure for natural speech
+      this.currentSpeech.rate = speechData.speechConfig.rate;
+      this.currentSpeech.pitch = speechData.speechConfig.pitch;
+      this.currentSpeech.volume = speechData.speechConfig.volume;
       
-      this.currentAudio.onplay = () => {
-        console.log('TTS audio playback started');
+      // Set up event handlers
+      this.currentSpeech.onstart = () => {
+        console.log('Natural speech started');
         this.isPlaying = true;
         options.onStart?.();
       };
       
-      this.currentAudio.onended = () => {
-        console.log('TTS audio playback ended');
+      this.currentSpeech.onend = () => {
+        console.log('Natural speech ended');
         this.isPlaying = false;
-        if (audioUrl) {
-          URL.revokeObjectURL(audioUrl);
-        }
-        if (options.onEnd) {
-          options.onEnd();
-        }
+        options.onEnd?.();
       };
 
-      this.currentAudio.onerror = (error) => {
-        console.error('TTS audio playback error:', error);
+      this.currentSpeech.onerror = (error) => {
+        console.error('Natural speech error:', error);
         this.isPlaying = false;
-        URL.revokeObjectURL(audioUrl);
-        options.onError?.('Audio playback failed');
+        options.onError?.('Speech synthesis failed');
       };
 
-      console.log('Starting TTS audio playback');
-      await this.currentAudio.play();
+      // Start speech synthesis
+      speechSynthesis.speak(this.currentSpeech);
 
     } catch (error) {
       this.isPlaying = false;
-      console.error('OpenAI TTS error:', error);
+      console.error('Natural TTS error:', error);
       options.onError?.(error instanceof Error ? error.message : 'Unknown TTS error');
     }
+  }
+
+  private findBestVoice(voiceName: string): SpeechSynthesisVoice | null {
+    // Ensure voices are loaded
+    if (this.availableVoices.length === 0) {
+      this.availableVoices = speechSynthesis.getVoices();
+    }
+
+    // Voice preference order for natural speech
+    const voicePreferences: { [key: string]: string[] } = {
+      'Samantha': ['Samantha', 'Karen', 'Victoria', 'Zira', 'Microsoft Zira'],
+      'Alex': ['Alex', 'Daniel', 'Microsoft David'],
+      'Fiona': ['Fiona', 'Moira', 'Microsoft Hazel'],
+      'Karen': ['Karen', 'Samantha', 'Victoria', 'Microsoft Zira'],
+      'Daniel': ['Daniel', 'Alex', 'Microsoft David'],
+      'Victoria': ['Victoria', 'Zira', 'Microsoft Zira']
+    };
+
+    const preferences = voicePreferences[voiceName] || [voiceName];
+    
+    // Find the best available voice
+    for (const preferredVoice of preferences) {
+      const voice = this.availableVoices.find(v => 
+        v.name.includes(preferredVoice) && 
+        v.lang.includes('en')
+      );
+      if (voice) {
+        console.log(`🎤 Selected voice: ${voice.name} (${voice.lang})`);
+        return voice;
+      }
+    }
+
+    // Fallback to best English voice
+    const englishVoices = this.availableVoices.filter(v => v.lang.includes('en'));
+    if (englishVoices.length > 0) {
+      console.log(`🎤 Fallback voice: ${englishVoices[0].name} (${englishVoices[0].lang})`);
+      return englishVoices[0];
+    }
+
+    return null;
   }
 
   private cleanTextForSpeech(text: string): string {
@@ -123,23 +183,22 @@ export class OpenAITTS {
   }
 
   stop(): void {
-    if (this.currentAudio) {
-      this.currentAudio.pause();
-      this.currentAudio.currentTime = 0;
-      this.currentAudio = null;
+    if (this.currentSpeech) {
+      speechSynthesis.cancel();
+      this.currentSpeech = null;
     }
     this.isPlaying = false;
   }
 
   pause(): void {
-    if (this.currentAudio && this.isPlaying) {
-      this.currentAudio.pause();
+    if (this.currentSpeech && this.isPlaying) {
+      speechSynthesis.pause();
     }
   }
 
   resume(): void {
-    if (this.currentAudio && !this.isPlaying) {
-      this.currentAudio.play();
+    if (this.currentSpeech && !this.isPlaying) {
+      speechSynthesis.resume();
     }
   }
 
@@ -147,15 +206,15 @@ export class OpenAITTS {
     return this.isPlaying;
   }
 
-  // Get available voices (OpenAI TTS voices)
+  // Get available voices (Natural Speech voices)
   getVoices(): Array<{name: string, description: string}> {
     return [
-      { name: 'alloy', description: 'Balanced, neutral voice' },
-      { name: 'echo', description: 'Male voice' },
-      { name: 'fable', description: 'British accent' },
-      { name: 'onyx', description: 'Deep, resonant voice' },
-      { name: 'nova', description: 'Young, vibrant female voice' },
-      { name: 'shimmer', description: 'Soft, gentle voice' }
+      { name: 'alloy', description: 'Balanced, neutral voice (Alex)' },
+      { name: 'echo', description: 'British voice (Fiona)' },
+      { name: 'fable', description: 'Clear voice (Karen)' },
+      { name: 'onyx', description: 'Deep, resonant voice (Daniel)' },
+      { name: 'nova', description: 'Young, vibrant female voice (Samantha)' },
+      { name: 'shimmer', description: 'Soft, gentle voice (Victoria)' }
     ];
   }
 }
