@@ -591,39 +591,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emotionalTone = 'warm';
       }
 
-      // Try Llama TTS first for Nova-quality voice
-      try {
-        const { llamaTTSService } = await import('./services/llama-tts');
-        
-        // Initialize if needed
-        await llamaTTSService.initialize();
-        
-        // Generate audio with Llama TTS
-        const audioResponse = await llamaTTSService.synthesizeVoice(cleanText, {
-          voice: voice as any,
-          emotionalTone,
-          speed,
-          pitch: 1.0,
-          temperature: 0.7,
-          model: model as any
-        });
-        
-        // Convert audio buffer to base64 for client
-        const audioBase64 = audioResponse.audioBuffer.toString('base64');
-        
-        res.json({
-          success: true,
-          audioData: audioBase64,
-          duration: audioResponse.duration * 1000, // Convert to milliseconds
-          sampleRate: audioResponse.sampleRate,
-          format: audioResponse.format,
-          provider: 'llama-tts',
-          model: audioResponse.model,
-          voiceSignature: `Lumen QI Nova Voice - ${emotionalTone} tone`
-        });
-        
-      } catch (llamaError) {
-        console.error('Llama TTS failed, falling back to enhanced synthesis:', llamaError);
+      // Llama TTS is temporarily disabled due to PyTorch/CUDA compatibility issues
+      // Using enhanced synthesis fallback instead
+      console.log('🔄 Using enhanced synthesis (Llama TTS temporarily disabled)');
         
         // Generate synthetic audio as fallback
         console.log('🔄 Generating synthetic audio for fallback...');
@@ -676,7 +646,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           model: 'lumen-synthetic',
           voiceSignature: `Lumen QI Synthetic Voice - ${emotionalTone} tone`
         });
-      }
     } catch (error) {
       console.error('TTS Service error:', error);
       res.status(500).json({ error: "Failed to generate voice" });
@@ -738,6 +707,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
+          const isVoiceMode = message.isVoiceMode || false;
           if (emotion && !isVoiceMode) {
             // Generate comprehensive emotion context using the adaptation service
             enhancedEmotionContext = emotionAdaptationService.generateEmotionContext(emotion);
@@ -757,7 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Optimize for voice mode - minimal context for speed
-          const isVoiceMode = message.isVoiceMode || false;
+          // isVoiceMode already defined above
           
           let userMessage, messages, memories;
           

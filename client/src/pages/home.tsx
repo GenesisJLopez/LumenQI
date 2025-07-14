@@ -24,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, Sparkles } from 'lucide-react';
+import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
