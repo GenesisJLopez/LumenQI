@@ -87,21 +87,9 @@ export class OpenAITTS {
   private async synthesizeWithLumenVoice(config: any, options: OpenAITTSOptions): Promise<void> {
     console.log(`🎙️ Synthesizing with Lumen's ${config.emotionalTone} voice...`);
     
-    try {
-      // Initialize Web Audio API for custom voice synthesis
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      // Generate Lumen's voice waveform
-      const waveform = await this.generateLumenWaveform(config, audioContext);
-      
-      // Play the generated audio
-      await this.playLumenVoice(waveform, audioContext, options);
-      
-    } catch (error) {
-      console.error('Lumen voice synthesis error:', error);
-      // Fallback to enhanced speech synthesis with Lumen's characteristics
-      await this.fallbackToEnhancedSpeech(config, options);
-    }
+    // For now, use enhanced speech synthesis with Lumen's characteristics
+    // The Web Audio API approach needs more sophisticated phoneme processing
+    await this.fallbackToEnhancedSpeech(config, options);
   }
 
   private async generateLumenWaveform(config: any, audioContext: AudioContext): Promise<AudioBuffer> {
@@ -202,49 +190,119 @@ export class OpenAITTS {
   }
 
   private async fallbackToEnhancedSpeech(config: any, options: OpenAITTSOptions): Promise<void> {
-    console.log('🔄 Falling back to enhanced speech synthesis...');
+    console.log('🎤 Using Lumen\'s enhanced voice synthesis...');
+    
+    // Wait for voices to load
+    await this.waitForVoices();
     
     // Create enhanced speech synthesis with Lumen's characteristics
     this.currentSpeech = new SpeechSynthesisUtterance(config.text);
     
-    // Configure for Lumen's voice profile
-    this.currentSpeech.rate = config.rate;
-    this.currentSpeech.pitch = config.pitch;
-    this.currentSpeech.volume = 0.9;
+    // Configure for Lumen's voice profile based on emotional tone
+    const emotionalConfigs = {
+      warm: { rate: 0.8, pitch: 1.1, volume: 0.9 },
+      excited: { rate: 0.9, pitch: 1.3, volume: 0.95 },
+      supportive: { rate: 0.75, pitch: 1.0, volume: 0.85 },
+      playful: { rate: 0.85, pitch: 1.2, volume: 0.9 },
+      cosmic: { rate: 0.7, pitch: 1.15, volume: 0.9 }
+    };
     
-    // Try to find a suitable voice
+    const emotionalConfig = emotionalConfigs[config.emotionalTone] || emotionalConfigs.warm;
+    
+    this.currentSpeech.rate = emotionalConfig.rate;
+    this.currentSpeech.pitch = emotionalConfig.pitch;
+    this.currentSpeech.volume = emotionalConfig.volume;
+    
+    // Find the best voice for Lumen
     const voices = speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => 
-      (v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Victoria')) &&
-      v.lang.includes('en')
-    );
+    const lumenVoice = this.findBestLumenVoice(voices);
     
-    if (preferredVoice) {
-      this.currentSpeech.voice = preferredVoice;
-      console.log(`🎤 Using enhanced voice: ${preferredVoice.name} for Lumen`);
+    if (lumenVoice) {
+      this.currentSpeech.voice = lumenVoice;
+      console.log(`🎤 Lumen speaking with: ${lumenVoice.name} (${config.emotionalTone} tone)`);
     }
     
     // Set up event handlers
     this.currentSpeech.onstart = () => {
-      console.log('Enhanced Lumen speech started');
+      console.log('✨ Lumen started speaking');
       this.isPlaying = true;
       options.onStart?.();
     };
     
     this.currentSpeech.onend = () => {
-      console.log('Enhanced Lumen speech ended');
+      console.log('✨ Lumen finished speaking');
       this.isPlaying = false;
       options.onEnd?.();
     };
 
     this.currentSpeech.onerror = (error) => {
-      console.error('Enhanced Lumen speech error:', error);
+      console.error('Lumen speech error:', error);
       this.isPlaying = false;
-      options.onError?.('Enhanced speech synthesis failed');
+      options.onError?.('Lumen speech synthesis failed');
     };
 
     // Start speech synthesis
     speechSynthesis.speak(this.currentSpeech);
+  }
+
+  private async waitForVoices(): Promise<void> {
+    return new Promise((resolve) => {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        resolve();
+        return;
+      }
+      
+      const voicesChanged = () => {
+        speechSynthesis.removeEventListener('voiceschanged', voicesChanged);
+        resolve();
+      };
+      
+      speechSynthesis.addEventListener('voiceschanged', voicesChanged);
+    });
+  }
+
+  private findBestLumenVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+    // Voice preferences for Lumen (in order of preference)
+    const lumenVoicePreferences = [
+      'Samantha',     // macOS - warm, natural female voice
+      'Karen',        // Windows - clear, pleasant female voice
+      'Victoria',     // Windows - gentle female voice
+      'Zira',         // Windows - Microsoft's female voice
+      'Fiona',        // macOS - Scottish accent, unique
+      'Moira',        // macOS - Irish accent, warm
+      'Alex',         // macOS - clear, neutral (if no female voices)
+      'Google US English Female',
+      'Microsoft Zira - English (United States)',
+      'Microsoft Hazel - English (Great Britain)'
+    ];
+    
+    // Find the best available voice
+    for (const preferredName of lumenVoicePreferences) {
+      const voice = voices.find(v => 
+        v.name.includes(preferredName) && 
+        v.lang.includes('en')
+      );
+      if (voice) {
+        return voice;
+      }
+    }
+    
+    // Fallback to any English female voice
+    const femaleVoice = voices.find(v => 
+      v.lang.includes('en') && 
+      (v.name.toLowerCase().includes('female') || 
+       v.name.toLowerCase().includes('woman') ||
+       v.name.toLowerCase().includes('girl'))
+    );
+    
+    if (femaleVoice) {
+      return femaleVoice;
+    }
+    
+    // Final fallback to any English voice
+    const englishVoice = voices.find(v => v.lang.includes('en'));
+    return englishVoice || null;
   }
 
   private cleanTextForSpeech(text: string): string {

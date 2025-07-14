@@ -310,8 +310,8 @@ export default function Home() {
             try {
               const { openAITTS } = await import('@/lib/openai-tts');
               await openAITTS.speak(lastMessage.content, {
-                voice: 'nova', // Use default for speed in voice mode
-                model: 'tts-1',
+                voice: 'lumen', // Use Lumen's custom voice
+                model: 'lumen-custom',
                 speed: 1.0,
                 onStart: () => {
                   console.log('Voice mode: Started speaking');
@@ -341,11 +341,9 @@ export default function Home() {
           speakResponse();
         }
         
-        // Skip UI refresh in voice mode for speed
-        if (!isVoiceMode) {
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
-        }
+        // Always refresh UI to show messages (even in voice mode)
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
       }
       
       if (lastMessage.type === 'error') {

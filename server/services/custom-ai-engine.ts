@@ -311,6 +311,8 @@ export class CustomAIEngine {
       
       const processingTime = Date.now() - startTime;
       
+      console.log(`🧠 Custom AI response generated in ${processingTime}ms: "${response}"`);
+      
       return {
         content: response,
         confidence: 0.95, // High confidence for our custom model
@@ -323,6 +325,8 @@ export class CustomAIEngine {
       
       // Fallback to rule-based response
       const fallbackResponse = this.generateFallbackResponse(userMessage, isVoiceMode);
+      
+      console.log(`🔄 Using fallback response: "${fallbackResponse}"`);
       
       return {
         content: fallbackResponse,
