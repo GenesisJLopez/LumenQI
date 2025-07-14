@@ -165,61 +165,77 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
         <div className="space-y-1">
           {conversations
             .filter(conversation => !conversation.title.startsWith('[DELETED]'))
-            .map((conversation) => {
-              console.log('Rendering conversation:', conversation.id, conversation.title);
-              return (
+            .map((conversation) => (
             <div
               key={conversation.id}
               className={cn(
-                "p-3 cursor-pointer transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group relative border border-transparent hover:border-gray-200 dark:hover:border-gray-700",
-                currentConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600" : ""
+                "p-3 rounded-lg border transition-all duration-200 group relative",
+                currentConversationId === conversation.id 
+                  ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700" 
+                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
               )}
             >
-              <div className="flex items-center justify-between w-full">
-                <div 
-                  className="flex-1 min-w-0 mr-2"
-                  onClick={() => editingConversationId !== conversation.id && onConversationSelect(conversation.id)}
-                >
-                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                    {conversation.title}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {formatTimeAgo(conversation.updatedAt)}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2 flex-shrink-0">
+              {editingConversationId === conversation.id ? (
+                // Edit mode
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, conversation.id)}
+                    className="flex-1 text-sm"
+                    autoFocus
+                  />
                   <Button
-                    variant="outline"
                     size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('Edit button clicked for conversation:', conversation.id);
-                      handleEditConversation(conversation.id, conversation.title, e);
-                    }}
-                    className="p-2 h-9 w-9 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 shadow-sm"
-                    title="Edit conversation"
+                    onClick={(e) => handleSaveEdit(conversation.id, e)}
+                    className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white"
                   >
-                    <Edit2 className="h-4 w-4" />
+                    <Check className="h-3 w-3" />
                   </Button>
                   <Button
-                    variant="outline"
                     size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('Delete button clicked for conversation:', conversation.id);
-                      handleDeleteConversation(conversation.id, e);
-                    }}
-                    className="p-2 h-9 w-9 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 shadow-sm"
-                    title="Delete conversation"
+                    variant="ghost"
+                    onClick={handleCancelEdit}
+                    className="px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-600"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
-              </div>
+              ) : (
+                // View mode
+                <div className="flex items-center justify-between">
+                  <div 
+                    className="flex-1 cursor-pointer"
+                    onClick={() => onConversationSelect(conversation.id)}
+                  >
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                      {conversation.title}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {formatTimeAgo(conversation.updatedAt)}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-1 ml-2">
+                    <button
+                      onClick={(e) => handleEditConversation(conversation.id, conversation.title, e)}
+                      className="p-1 w-8 h-8 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 transition-colors"
+                      title="Edit conversation"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                      className="p-1 w-8 h-8 rounded bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-600 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 transition-colors"
+                      title="Delete conversation"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          );
-            })}
+          ))}
           
           {conversations.filter(c => !c.title.startsWith('[DELETED]')).length === 0 && (
             <div className="text-sm text-gray-500 text-center py-8">
