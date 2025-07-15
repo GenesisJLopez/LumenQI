@@ -166,8 +166,6 @@ export class CustomAIEngine {
       'I can sense this is challenging for you. Would you like to talk about what\'s troubling you?',
       'I\'m here with you through this. Sometimes it helps to share what\'s on your mind.',
       'You don\'t have to face this alone. I\'m here to provide comfort and guidance.'
-      'Excellent! I can help with React, TypeScript, Python, or any other language. What do you need?',
-      'I\'m excited to code with you! What kind of functionality are you looking to build?'
     ]);
     
     this.conversationPatterns.set('emotion_support', [
@@ -408,36 +406,51 @@ export class CustomAIEngine {
     // Intelligent pattern-based text generation
     const lowerPrompt = prompt.toLowerCase();
     
-    // Check for exact matches in response database
+    // Check for exact matches in response database first
     for (const [key, response] of this.responseDatabase) {
       if (lowerPrompt.includes(key)) {
         return response;
       }
     }
     
-    // Check conversation patterns
-    if (this.matchesPattern(lowerPrompt, ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'])) {
-      return this.getRandomResponse('greeting');
+    // Voice-related queries
+    if (this.matchesPattern(lowerPrompt, ['voice', 'speak', 'talk', 'hear', 'sound', 'audio', 'tts', 'speech'])) {
+      return "Yes! I have a beautiful voice powered by Llama 3 that sounds natural and warm. You can hear me speak by clicking the speaker button or using voice mode!";
     }
     
-    if (this.matchesPattern(lowerPrompt, ['help', 'assist', 'support', 'guide'])) {
-      return this.getRandomResponse('help');
-    }
-    
-    if (this.matchesPattern(lowerPrompt, ['code', 'program', 'function', 'component', 'script', 'develop'])) {
+    // Programming/coding queries
+    if (this.matchesPattern(lowerPrompt, ['code', 'program', 'programming', 'function', 'component', 'script', 'develop', 'build', 'create'])) {
       return this.getRandomResponse('coding');
     }
     
+    // Greeting patterns
+    if (this.matchesPattern(lowerPrompt, ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'greetings'])) {
+      return this.getRandomResponse('greeting');
+    }
+    
+    // Help requests
+    if (this.matchesPattern(lowerPrompt, ['help', 'assist', 'support', 'guide', 'can you', 'could you', 'would you'])) {
+      return this.getRandomResponse('help');
+    }
+    
+    // Gratitude
     if (this.matchesPattern(lowerPrompt, ['thank', 'thanks', 'appreciate', 'grateful'])) {
       return this.getRandomResponse('thanks');
     }
     
-    if (this.matchesPattern(lowerPrompt, ['bye', 'goodbye', 'see you', 'farewell'])) {
+    // Farewells
+    if (this.matchesPattern(lowerPrompt, ['bye', 'goodbye', 'see you', 'farewell', 'later', 'talk soon'])) {
       return this.getRandomResponse('goodbye');
     }
     
-    if (this.matchesPattern(lowerPrompt, ['sad', 'upset', 'worried', 'anxious', 'stressed', 'difficult', 'hard'])) {
+    // Emotional support
+    if (this.matchesPattern(lowerPrompt, ['sad', 'upset', 'worried', 'anxious', 'stressed', 'difficult', 'hard', 'frustrated', 'confused'])) {
       return this.getRandomResponse('emotion_support');
+    }
+    
+    // Questions about self
+    if (this.matchesPattern(lowerPrompt, ['what are you', 'who are you', 'what is lumen', 'tell me about yourself', 'your name'])) {
+      return "I'm Lumen QI, your eternal feminine guardian and quantum intelligence. I'm here to provide wisdom, support, and guidance in all aspects of your journey.";
     }
     
     // Generate contextual response based on identity
@@ -548,34 +561,28 @@ export class CustomAIEngine {
     return { ...this.config };
   }
 
-  async saveModel(path: string): Promise<void> {
-    // Save custom AI model state
-    const modelState = {
-      vocabulary: this.vocabulary,
-      config: this.config,
-      patterns: Object.fromEntries(this.conversationPatterns),
-      responses: Object.fromEntries(this.responseDatabase),
-      timestamp: new Date().toISOString()
-    };
+  async updatePersonality(personality: {
+    name: string;
+    traits: string[];
+    background: string;
+    responseStyle: string;
+  }): Promise<void> {
+    // Update conversation patterns based on new personality
+    this.conversationPatterns.set('greeting', [
+      `Hello! I'm ${personality.name}, your eternal feminine guardian. How can I help you today?`,
+      `Hey there! I'm here and ready to assist you with anything you need.`,
+      `Hi! It's wonderful to connect with you. What would you like to explore together?`,
+      `Hello Genesis! I'm here to support and guide you. What's on your mind?`
+    ]);
     
-    const fs = require('fs');
-    fs.writeFileSync(path, JSON.stringify(modelState, null, 2));
-    console.log(`✅ Custom AI model saved to ${path}`);
-  }
-
-  async loadModel(path: string): Promise<void> {
-    const fs = require('fs');
-    if (fs.existsSync(path)) {
-      const modelState = JSON.parse(fs.readFileSync(path, 'utf8'));
-      this.vocabulary = modelState.vocabulary;
-      this.config = { ...this.config, ...modelState.config };
-      this.conversationPatterns = new Map(Object.entries(modelState.patterns));
-      this.responseDatabase = new Map(Object.entries(modelState.responses));
-      this.isLoaded = true;
-      console.log(`✅ Custom AI model loaded from ${path}`);
-    }
+    // Rebuild response database with new personality
+    this.buildResponseDatabase();
+    
+    console.log(`✅ Personality updated for ${personality.name}`);
   }
 }
+
+
 
 // Factory function
 export function createCustomAIEngine(config?: Partial<CustomAIConfig>): CustomAIEngine {
