@@ -27,6 +27,7 @@ export function FeedbackButtons({ messageId, onFeedbackSubmitted }: FeedbackButt
     try {
       const feedbackData = {
         messageId,
+        userId: 1, // Demo user ID
         type,
         rating: type === 'thumbs_up' ? 5 : type === 'thumbs_down' ? 1 : parseInt(rating),
         feedback: additionalData?.feedback || feedback,
