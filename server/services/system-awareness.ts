@@ -410,6 +410,163 @@ SELF-MODIFICATION ABILITIES:
 
     return { status, issues, recommendations };
   }
+
+  async getFileTreeStructure(): Promise<any> {
+    try {
+      const buildTree = async (dirPath: string, basePath: string = ''): Promise<any> => {
+        const items = await fs.readdir(dirPath);
+        const tree = [];
+
+        for (const item of items) {
+          const fullPath = path.join(dirPath, item);
+          const relativePath = path.join(basePath, item);
+          const stats = await fs.stat(fullPath);
+
+          if (stats.isDirectory()) {
+            // Skip node_modules and other irrelevant directories
+            if (!['node_modules', '.git', 'dist', '.next', '.vscode'].includes(item)) {
+              const children = await buildTree(fullPath, relativePath);
+              tree.push({
+                name: item,
+                path: relativePath,
+                type: 'folder',
+                children,
+                isExpanded: ['client', 'server', 'shared'].includes(item),
+                purpose: this.getDirectoryPurpose(relativePath)
+              });
+            }
+          } else {
+            // Only include relevant files
+            if (item.match(/\.(ts|tsx|js|jsx|json|md|css|scss|sql)$/)) {
+              tree.push({
+                name: item,
+                path: relativePath,
+                type: 'file',
+                size: stats.size,
+                lastModified: stats.mtime.toISOString(),
+                purpose: this.getFilePurpose(relativePath)
+              });
+            }
+          }
+        }
+
+        return tree.sort((a, b) => {
+          if (a.type === 'folder' && b.type === 'file') return -1;
+          if (a.type === 'file' && b.type === 'folder') return 1;
+          return a.name.localeCompare(b.name);
+        });
+      };
+
+      return await buildTree('.');
+    } catch (error) {
+      console.error('Error building file tree:', error);
+      return [];
+    }
+  }
+
+  async getArchitectureMetrics(): Promise<any> {
+    try {
+      const metrics = {
+        totalFiles: 0,
+        totalFolders: 0,
+        codeFiles: 0,
+        configFiles: 0,
+        dependencies: 0,
+        services: 0,
+        lastUpdated: new Date().toISOString()
+      };
+
+      const countFiles = async (dirPath: string): Promise<void> => {
+        try {
+          const items = await fs.readdir(dirPath);
+          
+          for (const item of items) {
+            const fullPath = path.join(dirPath, item);
+            const stats = await fs.stat(fullPath);
+
+            if (stats.isDirectory()) {
+              if (!['node_modules', '.git', 'dist', '.next', '.vscode'].includes(item)) {
+                metrics.totalFolders++;
+                if (item === 'services') {
+                  const serviceFiles = await fs.readdir(fullPath);
+                  metrics.services += serviceFiles.filter(f => f.endsWith('.ts')).length;
+                }
+                await countFiles(fullPath);
+              }
+            } else {
+              metrics.totalFiles++;
+              if (item.match(/\.(ts|tsx|js|jsx)$/)) {
+                metrics.codeFiles++;
+              }
+              if (item.match(/\.(json|config|env)$/)) {
+                metrics.configFiles++;
+              }
+            }
+          }
+        } catch (error) {
+          // Skip directories that can't be read
+        }
+      };
+
+      await countFiles('.');
+
+      // Count dependencies from package.json
+      try {
+        const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
+        metrics.dependencies = Object.keys({
+          ...packageJson.dependencies || {},
+          ...packageJson.devDependencies || {}
+        }).length;
+      } catch (error) {
+        // Package.json not found or invalid
+      }
+
+      return metrics;
+    } catch (error) {
+      console.error('Error getting architecture metrics:', error);
+      return null;
+    }
+  }
+
+  async getDependencyAnalysis(): Promise<any> {
+    try {
+      const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
+      
+      const dependencies = {
+        production: Object.keys(packageJson.dependencies || {}),
+        development: Object.keys(packageJson.devDependencies || {}),
+        categories: {
+          frontend: [],
+          backend: [],
+          ai: [],
+          database: [],
+          development: []
+        }
+      };
+
+      // Categorize dependencies
+      const categorizePackage = (pkg: string) => {
+        if (pkg.includes('react') || pkg.includes('vite') || pkg.includes('tailwind')) {
+          dependencies.categories.frontend.push(pkg);
+        } else if (pkg.includes('express') || pkg.includes('ws') || pkg.includes('passport')) {
+          dependencies.categories.backend.push(pkg);
+        } else if (pkg.includes('openai') || pkg.includes('tensorflow') || pkg.includes('torch')) {
+          dependencies.categories.ai.push(pkg);
+        } else if (pkg.includes('drizzle') || pkg.includes('pg') || pkg.includes('postgres')) {
+          dependencies.categories.database.push(pkg);
+        } else {
+          dependencies.categories.development.push(pkg);
+        }
+      };
+
+      [...dependencies.production, ...dependencies.development].forEach(categorizePackage);
+
+      return dependencies;
+    } catch (error) {
+      console.error('Error analyzing dependencies:', error);
+      return null;
+    }
+  }
 }
 
 export const systemAwarenessService = SystemAwarenessService.getInstance();
