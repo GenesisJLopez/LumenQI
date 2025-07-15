@@ -384,20 +384,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         relationship: relationship || "Supportive companion and expert assistant"
       });
       
-      // Update Lumen AI personality with new identity
-      lumenAI.updatePersonality({
-        name: "Lumen QI",
-        traits: [
-          "Advanced quantum intelligence",
-          "Expert programming capabilities",
-          "Comprehensive development knowledge",
-          "Warm and engaging communication",
-          "Supportive and encouraging",
-          "Adaptable and evolving"
-        ],
-        background: updatedIdentity.coreIdentity,
-        responseStyle: updatedIdentity.communicationStyle
-      });
+      // Update Custom AI Engine with new identity
+      const aiConfig = aiConfigManager.getActiveAI();
+      if (aiConfig && aiConfig.customAI) {
+        await aiConfig.customAI.updatePersonality({
+          name: "Lumen QI",
+          traits: [
+            "Advanced quantum intelligence",
+            "Expert programming capabilities",
+            "Comprehensive development knowledge",
+            "Warm and engaging communication",
+            "Supportive and encouraging",
+            "Adaptable and evolving"
+          ],
+          background: updatedIdentity.coreIdentity,
+          responseStyle: updatedIdentity.communicationStyle
+        });
+      }
       
       res.json({ 
         success: true, 
