@@ -235,11 +235,11 @@ export class WebSearchService {
 
       return {
         location: data.nearest_area[0].areaName[0].value,
-        temperature: `${current.temp_C}°C (${current.temp_F}°F)`,
+        temperature: `${current.temp_F}°F`,
         condition: current.weatherDesc[0].value,
-        forecast: tomorrow ? `Tomorrow: ${tomorrow.maxtempC}°C/${tomorrow.mintempC}°C, ${tomorrow.hourly[0].weatherDesc[0].value}` : 'No forecast available',
+        forecast: tomorrow ? `Tomorrow: High ${Math.round(tomorrow.maxtempF)}°F, Low ${Math.round(tomorrow.mintempF)}°F, ${tomorrow.hourly[0].weatherDesc[0].value}` : 'No forecast available',
         humidity: `${current.humidity}%`,
-        windSpeed: `${current.windspeedKmph} km/h`
+        windSpeed: `${Math.round(current.windspeedMiles)} mph`
       };
     } catch (error) {
       console.error('Weather fetch error:', error);

@@ -75,20 +75,32 @@ export class OpenAITTS {
         if (audioUrl) {
           URL.revokeObjectURL(audioUrl);
         }
-        try {
-          if (options.onEnd) {
-            options.onEnd();
-          }
-        } catch (error) {
-          console.error('Error in onEnd callback:', error);
+        if (options.onEnd) {
+          setTimeout(() => {
+            try {
+              options.onEnd();
+            } catch (error) {
+              console.error('Error in onEnd callback:', error);
+            }
+          }, 50);
         }
       };
 
       this.currentAudio.onerror = (error) => {
         console.error('TTS audio playback error:', error);
         this.isPlaying = false;
-        URL.revokeObjectURL(audioUrl);
-        options.onError?.('Audio playback failed');
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+        if (options.onError) {
+          setTimeout(() => {
+            try {
+              options.onError('Audio playback failed');
+            } catch (e) {
+              console.error('Error in onError callback:', e);
+            }
+          }, 50);
+        }
       };
 
       console.log('Starting TTS audio playback');
