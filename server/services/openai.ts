@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { identityStorage } from "./identity-storage";
 import { systemAwarenessService } from "./system-awareness";
+import { perplexityService } from "./perplexity-search";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
@@ -61,6 +62,22 @@ export class LumenAI {
       if (isSystemQuery) {
         systemOverview = await systemAwarenessService.getSystemOverview();
       }
+
+      // Check if user is asking for current/real-time information
+      const isWebSearchQuery = /weather|news|current|today|now|latest|recent|happening|breaking|update|what's|temperature|forecast|stock|price|market|live|real[\s-]?time/i.test(userMessage);
+      let webSearchResult = "";
+      
+      if (isWebSearchQuery) {
+        try {
+          console.log('🔍 Performing web search for:', userMessage.substring(0, 50) + '...');
+          const searchResponse = await perplexityService.searchCurrent(userMessage);
+          webSearchResult = searchResponse;
+          console.log('✅ Web search completed');
+        } catch (error) {
+          console.error('❌ Web search failed:', error);
+          webSearchResult = "I apologize, but I'm having trouble accessing real-time information right now. Please try again in a moment.";
+        }
+      }
       
       // Build system prompt optimized for voice mode
       let systemPrompt;
@@ -117,10 +134,9 @@ export class LumenAI {
         
         Keep responses concise but creative for voice chat. Surprise the user with your variety and personality.`;
         
-        // Add search results to voice mode prompt
-        const searchResult = memories.find(m => m.context === 'web_search_result');
-        if (searchResult) {
-          systemPrompt += `\n\nIMPORTANT: I have current information: ${searchResult.content}. Use this to answer the user's question directly.`;
+        // Add web search results to voice mode prompt
+        if (webSearchResult) {
+          systemPrompt += `\n\nIMPORTANT: I have current real-time information: ${webSearchResult}. Use this to answer the user's question directly with up-to-date data.`;
         }
         
         // Add system awareness for system queries
@@ -134,6 +150,11 @@ SELF-MODIFICATION: I can modify my own architecture, create new services, and ev
       } else {
         // Normal mode: full system prompt
         systemPrompt = await this.buildSystemPrompt(memories, emotionContext, userMessage);
+        
+        // Add web search results to normal mode prompt
+        if (webSearchResult) {
+          systemPrompt += `\n\nIMPORTANT: I have current real-time information: ${webSearchResult}. Use this to answer the user's question directly with up-to-date data.`;
+        }
       }
       
       // Prepare messages for OpenAI

@@ -1,0 +1,30 @@
+{
+  "providers": [
+    {
+      "provider": "openai",
+      "config": {
+        "provider": "openai",
+        "model": "gpt-4o-mini",
+        "temperature": 0.7,
+        "maxTokens": 500
+      },
+      "enabled": true,
+      "priority": 1
+    },
+    {
+      "provider": "local-python",
+      "config": {
+        "provider": "local-python",
+        "model": "simple-local-pattern-ai",
+        "baseUrl": "embedded",
+        "temperature": 0.7,
+        "maxTokens": 400
+      },
+      "enabled": true,
+      "priority": 3
+    }
+  ],
+  "fallbackEnabled": true,
+  "autoSwitch": true,
+  "lastUpdated": "2025-07-15T23:40:34.127Z"
+}
