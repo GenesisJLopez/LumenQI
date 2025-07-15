@@ -42,18 +42,6 @@ const DEFAULT_AI_SETTINGS: AISettings = {
       },
       enabled: true,
       priority: 2 // Self-contained local AI (no external dependencies)
-    },
-    {
-      provider: 'ollama',
-      config: {
-        provider: 'ollama',
-        model: 'llama3.2:1b',
-        baseUrl: 'http://localhost:11434',
-        temperature: 0.7,
-        maxTokens: 500
-      },
-      enabled: false,
-      priority: 3 // Optional external Ollama (requires setup)
     }
   ],
   fallbackEnabled: true,
