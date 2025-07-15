@@ -219,7 +219,7 @@ export class LumenBrain {
     emotionContext?: string
   ): Promise<{ response: string; source: 'online' | 'offline' | 'hybrid' }> {
     // Check if we should use offline or online AI
-    const useOffline = !navigator.onLine && this.offlineAI;
+    const useOffline = false && this.offlineAI; // Server-side always uses online
     
     let response: string;
     let source: 'online' | 'offline' | 'hybrid';
