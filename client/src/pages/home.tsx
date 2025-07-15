@@ -331,48 +331,58 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use OpenAI TTS for voice mode (same as regular speaker button)
+          // Use faster TTS approach with immediate fallback
           const speakResponse = async () => {
             try {
-              const { openAITTS } = await import('@/lib/openai-tts');
-              console.log('Voice mode: Using OpenAI TTS');
-              await openAITTS.speak(lastMessage.content, {
-                voice: 'nova',
-                model: 'tts-1-hd',
-                speed: 1.0,
-                onStart: () => {
-                  console.log('Voice mode: OpenAI TTS started speaking');
+              // Try direct TTS API call first
+              const response = await fetch('/api/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  text: lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim(),
+                  voice: 'nova',
+                  model: 'tts-1',
+                  speed: 1.0
+                })
+              });
+
+              if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                audio.onplay = () => {
                   setIsSpeaking(true);
-                },
-                onEnd: () => {
-                  console.log('Voice mode: OpenAI TTS finished speaking, restarting listening');
+                };
+                
+                audio.onended = () => {
                   setIsSpeaking(false);
-                  // Restart listening after speaking
+                  URL.revokeObjectURL(audioUrl);
+                  // Restart listening immediately
                   if (isSupported) {
-                    setTimeout(() => {
-                      startListening();
-                    }, 100); // Faster restart for better conversation flow
+                    setTimeout(() => startListening(), 50);
                   }
-                },
-                onError: (error) => {
-                  console.error('OpenAI TTS error in voice mode:', error);
+                };
+                
+                audio.onerror = () => {
                   setIsSpeaking(false);
+                  URL.revokeObjectURL(audioUrl);
                   // Restart listening even on error
                   if (isSupported) {
-                    setTimeout(() => {
-                      startListening();
-                    }, 100);
+                    setTimeout(() => startListening(), 50);
                   }
-                }
-              });
+                };
+                
+                await audio.play();
+              } else {
+                throw new Error('TTS API failed');
+              }
             } catch (error) {
-              console.error('Failed to load OpenAI TTS in voice mode:', error);
+              console.error('TTS failed, restarting listening:', error);
               setIsSpeaking(false);
-              // Restart listening even on error
+              // Always restart listening
               if (isSupported) {
-                setTimeout(() => {
-                  startListening();
-                }, 100);
+                setTimeout(() => startListening(), 50);
               }
             }
           };
