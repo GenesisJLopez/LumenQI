@@ -17,7 +17,7 @@
       "config": {
         "provider": "openai",
         "model": "gpt-4o-mini",
-        "temperature": 0.7,
+        "temperature": 1,
         "maxTokens": 500
       },
       "enabled": true,
@@ -38,5 +38,5 @@
   ],
   "fallbackEnabled": true,
   "autoSwitch": true,
-  "lastUpdated": "2025-07-15T09:25:18.332Z"
+  "lastUpdated": "2025-07-15T10:25:01.905Z"
 }
