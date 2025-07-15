@@ -3,7 +3,7 @@ import path from 'path';
 import { LocalAI, LocalAIConfig, createLocalAI } from './local-ai';
 
 interface AIProviderConfig {
-  provider: 'custom' | 'ollama' | 'openai' | 'local-python';
+  provider: 'ollama' | 'openai' | 'local-python';
   config: LocalAIConfig;
   enabled: boolean;
   priority: number;
@@ -21,17 +21,6 @@ const CONFIG_FILE = path.join(process.cwd(), 'ai-config.json');
 const DEFAULT_AI_SETTINGS: AISettings = {
   providers: [
     {
-      provider: 'custom',
-      config: {
-        provider: 'custom',
-        model: 'lumen-qi-custom',
-        temperature: 0.7,
-        maxTokens: 500
-      },
-      enabled: true,
-      priority: 1
-    },
-    {
       provider: 'ollama',
       config: {
         provider: 'ollama',
@@ -40,8 +29,8 @@ const DEFAULT_AI_SETTINGS: AISettings = {
         temperature: 0.7,
         maxTokens: 500
       },
-      enabled: false,
-      priority: 2
+      enabled: true,
+      priority: 1
     },
     {
       provider: 'openai',
@@ -51,8 +40,8 @@ const DEFAULT_AI_SETTINGS: AISettings = {
         temperature: 0.7,
         maxTokens: 500
       },
-      enabled: false,
-      priority: 3
+      enabled: true,
+      priority: 2
     },
     {
       provider: 'local-python',
@@ -64,7 +53,7 @@ const DEFAULT_AI_SETTINGS: AISettings = {
         maxTokens: 500
       },
       enabled: false,
-      priority: 4
+      priority: 3
     }
   ],
   fallbackEnabled: true,
@@ -152,7 +141,7 @@ export class AIConfigManager {
     return this.activeAI;
   }
 
-  async switchProvider(provider: 'custom' | 'ollama' | 'openai' | 'local-python'): Promise<boolean> {
+  async switchProvider(provider: 'ollama' | 'openai' | 'local-python'): Promise<boolean> {
     const providerConfig = this.settings.providers.find(p => p.provider === provider);
     
     if (!providerConfig || !providerConfig.enabled) {
@@ -221,7 +210,7 @@ export class AIConfigManager {
     }
   }
 
-  updateProvider(provider: 'custom' | 'ollama' | 'openai' | 'local-python', config: Partial<LocalAIConfig>): void {
+  updateProvider(provider: 'ollama' | 'openai' | 'local-python', config: Partial<LocalAIConfig>): void {
     const providerIndex = this.settings.providers.findIndex(p => p.provider === provider);
     
     if (providerIndex !== -1) {
@@ -233,7 +222,7 @@ export class AIConfigManager {
     }
   }
 
-  enableProvider(provider: 'custom' | 'ollama' | 'openai' | 'local-python', enabled: boolean): void {
+  enableProvider(provider: 'ollama' | 'openai' | 'local-python', enabled: boolean): void {
     const providerConfig = this.settings.providers.find(p => p.provider === provider);
     
     if (providerConfig) {

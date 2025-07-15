@@ -15,13 +15,13 @@ interface VoiceOption {
   accent: string;
 }
 
-const lumenVoices: VoiceOption[] = [
-  { id: 'nova', name: 'Nova', description: 'Lumen\'s signature balanced, clear voice', gender: 'female', accent: 'Cosmic' },
-  { id: 'alloy', name: 'Alloy', description: 'Neutral, versatile voice for technical discussions', gender: 'female', accent: 'Cosmic' },
-  { id: 'echo', name: 'Echo', description: 'Warm, friendly voice for supportive conversations', gender: 'female', accent: 'Cosmic' },
-  { id: 'fable', name: 'Fable', description: 'Expressive, storytelling voice for creative tasks', gender: 'female', accent: 'Cosmic' },
-  { id: 'onyx', name: 'Onyx', description: 'Deep, authoritative voice for serious topics', gender: 'female', accent: 'Cosmic' },
-  { id: 'shimmer', name: 'Shimmer', description: 'Bright, energetic voice for playful interactions', gender: 'female', accent: 'Cosmic' }
+const openaiVoices: VoiceOption[] = [
+  { id: 'nova', name: 'Nova', description: 'Balanced, clear female voice', gender: 'female', accent: 'American' },
+  { id: 'alloy', name: 'Alloy', description: 'Neutral, versatile voice', gender: 'male', accent: 'American' },
+  { id: 'echo', name: 'Echo', description: 'Warm, friendly male voice', gender: 'male', accent: 'American' },
+  { id: 'fable', name: 'Fable', description: 'Expressive, storytelling voice', gender: 'male', accent: 'British' },
+  { id: 'onyx', name: 'Onyx', description: 'Deep, authoritative male voice', gender: 'male', accent: 'American' },
+  { id: 'shimmer', name: 'Shimmer', description: 'Bright, energetic female voice', gender: 'female', accent: 'American' }
 ];
 
 interface VoiceSettingsProps {
@@ -31,22 +31,16 @@ interface VoiceSettingsProps {
 }
 
 export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: VoiceSettingsProps) {
-  const [selectedVoice, setSelectedVoice] = useState<VoiceOption>(lumenVoices[0]); // Default to Nova
+  const [selectedVoice, setSelectedVoice] = useState<VoiceOption>(openaiVoices[0]); // Default to Nova
   const [speed, setSpeed] = useState(1.0);
-  const [model, setModel] = useState('llama3-8b');
+  const [model, setModel] = useState('tts-1');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const llamaModels = [
-    { id: 'llama3-8b', name: 'Llama 3 8B', description: 'Fast, efficient model for standard conversations' },
-    { id: 'llama3-70b', name: 'Llama 3 70B', description: 'High-quality model for complex conversations (requires high-end hardware)' },
-    { id: 'llama3-lite', name: 'Llama 3 Lite', description: 'Lightweight model for basic conversations' }
-  ];
-
   const handleVoiceChange = (voiceId: string) => {
-    const voice = lumenVoices.find(v => v.id === voiceId);
+    const voice = openaiVoices.find(v => v.id === voiceId);
     if (voice) {
       setSelectedVoice(voice);
       onVoiceChange?.(voice);
@@ -73,7 +67,7 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
           const settings = await response.json();
           
           // Find the voice option
-          const voice = lumenVoices.find(v => v.id === settings.voice);
+          const voice = openaiVoices.find(v => v.id === settings.voice);
           if (voice) {
             setSelectedVoice(voice);
             onVoiceChange?.(voice);
@@ -124,14 +118,14 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
   };
 
   const resetToDefaults = () => {
-    const defaultVoice = lumenVoices[0]; // Nova
+    const defaultVoice = openaiVoices[0]; // Nova
     setSelectedVoice(defaultVoice);
     setSpeed(1.0);
-    setModel('llama3-8b');
+    setModel('tts-1');
     
     onVoiceChange?.(defaultVoice);
     onSpeedChange?.(1.0);
-    onModelChange?.('llama3-8b');
+    onModelChange?.('tts-1');
   };
 
   const testVoice = async () => {
@@ -151,48 +145,25 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
       });
 
       if (response.ok) {
-        const voiceData = await response.json();
-        if (voiceData.success && voiceData.audioData) {
-          // Convert base64 to blob and play
-          const audioBlob = base64ToBlob(voiceData.audioData);
-          const audioUrl = URL.createObjectURL(audioBlob);
-          
-          const audio = new Audio(audioUrl);
-          audio.volume = 0.8;
-          
-          audio.onended = () => {
-            setIsPlaying(false);
-            URL.revokeObjectURL(audioUrl);
-          };
-          
-          audio.onerror = () => {
-            setIsPlaying(false);
-            URL.revokeObjectURL(audioUrl);
-          };
-          
-          await audio.play();
-        }
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        audio.onended = () => {
+          setIsPlaying(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audio.onerror = () => {
+          setIsPlaying(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        await audio.play();
       }
     } catch (error) {
       console.error('Voice test failed:', error);
       setIsPlaying(false);
-    }
-  };
-
-  const base64ToBlob = (base64: string): Blob => {
-    try {
-      const base64Data = base64.replace(/^data:audio\/[^;]+;base64,/, '');
-      const binaryString = atob(base64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      return new Blob([bytes], { type: 'audio/wav' });
-    } catch (error) {
-      console.error('Base64 to blob conversion error:', error);
-      throw new Error('Invalid audio data format');
     }
   };
 
@@ -232,7 +203,7 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
               <SelectValue placeholder="Select a voice" />
             </SelectTrigger>
             <SelectContent>
-              {lumenVoices.map((voice) => (
+              {openaiVoices.map((voice) => (
                 <SelectItem key={voice.id} value={voice.id}>
                   <div className="flex flex-col">
                     <span className="font-medium">{voice.name}</span>
@@ -244,41 +215,6 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
           </Select>
           <p className="text-xs text-gray-500">
             {selectedVoice.description} • {selectedVoice.accent} {selectedVoice.gender}
-          </p>
-        </div>
-
-        {/* Model Selection */}
-        <div className="space-y-2">
-          <Label htmlFor="model-select">AI Model</Label>
-          <Select value={model} onValueChange={handleModelChange}>
-            <SelectTrigger id="model-select">
-              <SelectValue placeholder="Select a model" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="llama3-8b">
-                <div className="flex flex-col">
-                  <span className="font-medium">Llama 3 8B</span>
-                  <span className="text-xs text-gray-500">Efficient, fast processing (~4.5GB)</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="llama3-70b">
-                <div className="flex flex-col">
-                  <span className="font-medium">Llama 3 70B</span>
-                  <span className="text-xs text-gray-500">Ultra-high quality (~35GB)</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="llama3-lite">
-                <div className="flex flex-col">
-                  <span className="font-medium">Llama 3 Lite</span>
-                  <span className="text-xs text-gray-500">Lightweight, mobile-friendly (~800MB)</span>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-gray-500">
-            {model === 'llama3-8b' && 'Balanced performance and quality for most use cases'}
-            {model === 'llama3-70b' && 'Maximum quality for local Apple hardware with high RAM'}
-            {model === 'llama3-lite' && 'Optimized for mobile devices and limited resources'}
           </p>
         </div>
 
@@ -300,18 +236,70 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-4">
-          <Button
-            onClick={testVoice}
-            disabled={isPlaying}
-            variant="outline"
+        {/* Model Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="model-select">Quality</Label>
+          <Select value={model} onValueChange={handleModelChange}>
+            <SelectTrigger id="model-select">
+              <SelectValue placeholder="Select quality" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="tts-1-hd">
+                <div className="flex flex-col">
+                  <span className="font-medium">High Quality</span>
+                  <span className="text-xs text-gray-500">Better quality, slower generation</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="tts-1">
+                <div className="flex flex-col">
+                  <span className="font-medium">Standard Quality</span>
+                  <span className="text-xs text-gray-500">Good quality, faster generation</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Test Button */}
+        <Button 
+          onClick={testVoice}
+          disabled={isPlaying}
+          className="w-full"
+        >
+          {isPlaying ? (
+            <>
+              <Volume2 className="w-4 h-4 mr-2 animate-pulse" />
+              Playing...
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 mr-2" />
+              Test Voice
+            </>
+          )}
+        </Button>
+
+        {/* Save and Reset Buttons */}
+        <div className="flex gap-2">
+          <Button 
+            onClick={saveVoiceSettings}
+            disabled={isSaving}
             className="flex-1"
           >
-            <Play className="w-4 h-4 mr-2" />
-            {isPlaying ? 'Testing...' : 'Test Voice'}
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Settings
+              </>
+            )}
           </Button>
-          <Button
+          
+          <Button 
             onClick={resetToDefaults}
             variant="outline"
             className="flex-1"
@@ -320,15 +308,6 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
             Reset
           </Button>
         </div>
-
-        <Button
-          onClick={saveVoiceSettings}
-          disabled={isSaving}
-          className="w-full"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          {isSaving ? 'Saving...' : 'Save Settings'}
-        </Button>
       </CardContent>
     </Card>
   );

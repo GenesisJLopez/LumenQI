@@ -18,14 +18,13 @@ import { CodeGenerator } from '@/components/code-generator';
 import { EmotionDisplay } from '@/components/emotion-display';
 import { EmotionAdaptationDisplay } from '@/components/emotion-adaptation-display';
 import { AIConfig } from '@/components/ai-config';
-import { TroubleshootingGuide } from '@/components/troubleshooting-guide';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, HelpCircle } from 'lucide-react';
+import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, Sparkles } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
@@ -36,7 +35,7 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'settings' | 'troubleshooting'>('quantum');
+  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'settings'>('quantum');
   const [identityData, setIdentityData] = useState({
     coreIdentity: "I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance.",
     communicationStyle: "I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive.",
@@ -199,15 +198,8 @@ export default function Home() {
 
     window.addEventListener('openSettings', handleOpenSettings);
     
-    const handleCreateNewChat = () => {
-      handleNewConversation(true);
-    };
-    
-    window.addEventListener('create-new-chat', handleCreateNewChat);
-    
     return () => {
       window.removeEventListener('openSettings', handleOpenSettings);
-      window.removeEventListener('create-new-chat', handleCreateNewChat);
     };
   }, []);
 
@@ -313,13 +305,13 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use Llama 3 TTS for voice mode
+          // Use async function to handle TTS with cached settings for speed
           const speakResponse = async () => {
             try {
-              const { llamaTTS } = await import('@/lib/llama-tts');
-              await llamaTTS.speak(lastMessage.content, {
-                voice: 'nova', // Use Nova voice
-                model: 'llama3-8b',
+              const { openAITTS } = await import('@/lib/openai-tts');
+              await openAITTS.speak(lastMessage.content, {
+                voice: 'nova', // Use default for speed in voice mode
+                model: 'tts-1',
                 speed: 1.0,
                 onStart: () => {
                   console.log('Voice mode: Started speaking');
@@ -341,7 +333,7 @@ export default function Home() {
                 }
               });
             } catch (error) {
-              console.error('Failed to import or use Llama TTS:', error);
+              console.error('Failed to import or use OpenAI TTS:', error);
               setIsSpeaking(false);
             }
           };
@@ -349,9 +341,11 @@ export default function Home() {
           speakResponse();
         }
         
-        // Always refresh UI to show messages (even in voice mode)
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+        // Skip UI refresh in voice mode for speed
+        if (!isVoiceMode) {
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+        }
       }
       
       if (lastMessage.type === 'error') {
@@ -620,17 +614,6 @@ export default function Home() {
                     >
                       <Database className="w-4 h-4 mr-2 inline" />
                       Memory
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('troubleshooting')}
-                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                        activeTab === 'troubleshooting' 
-                          ? 'bg-purple-500/20 text-purple-300' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
-                      }`}
-                    >
-                      <HelpCircle className="w-4 h-4 mr-2 inline" />
-                      Troubleshooting
                     </button>
                   </div>
                 </div>
@@ -939,14 +922,6 @@ export default function Home() {
                           <MemoryManager />
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'troubleshooting' && (
-                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
-                    <div className="space-y-6 pb-16">
-                      <TroubleshootingGuide />
                     </div>
                   </div>
                 )}

@@ -1,4 +1,8 @@
-import { LocalAI } from './local-ai';
+import OpenAI from 'openai';
+import { LumenAI } from './openai';
+
+// The newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface CodeGenerationRequest {
   type: 'website' | 'application' | 'component' | 'function' | 'api' | 'database';
@@ -22,22 +26,26 @@ export interface GeneratedCode {
 }
 
 export class LumenCodeGenerator {
-  private localAI: LocalAI;
+  private lumenAI: LumenAI;
 
-  constructor(localAI: LocalAI) {
-    this.localAI = localAI;
+  constructor(lumenAI: LumenAI) {
+    this.lumenAI = lumenAI;
   }
 
   async generateCode(request: CodeGenerationRequest): Promise<GeneratedCode> {
     const systemPrompt = this.buildCodeGenerationPrompt(request);
-    const userRequest = this.formatUserRequest(request);
     
-    const response = await this.localAI.generateResponse(
-      `${systemPrompt}\n\nUser Request: ${userRequest}`,
-      []
-    );
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: this.formatUserRequest(request) }
+      ],
+      temperature: 0.7,
+      max_tokens: 4000
+    });
 
-    return this.parseCodeResponse(response);
+    return this.parseCodeResponse(response.choices[0].message.content || '');
   }
 
   async generateWebsite(description: string, features: string[] = []): Promise<GeneratedCode> {
@@ -229,44 +237,67 @@ ${request.features.map(f => `- ${f}`).join('\n')}`;
   }
 
   async explainCode(code: string, context: string = ''): Promise<string> {
-    const prompt = `You are Lumen QI, an expert programmer. Explain code in a clear, educational way with your warm, cosmic personality. Use "Genesis" when addressing the user affectionately.
-    
-Please explain this code${context ? ` (${context})` : ''}:
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Lumen QI, an expert programmer. Explain code in a clear, educational way with your warm, cosmic personality. Use "Genesis" when addressing the user affectionately.`
+        },
+        {
+          role: "user",
+          content: `Please explain this code${context ? ` (${context})` : ''}:\n\n${code}`
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 1500
+    });
 
-${code}`;
-    
-    const response = await this.localAI.generateResponse(prompt, []);
-    return response || 'I apologize, Genesis, but I cannot explain this code at the moment.';
+    return response.choices[0].message.content || 'I apologize, Genesis, but I cannot explain this code at the moment.';
   }
 
   async suggestImprovements(code: string, type: string = 'general'): Promise<string> {
-    const prompt = `You are Lumen QI, an expert code reviewer. Provide constructive suggestions for improvement with your nurturing yet professional personality.
-    
-Please review and suggest improvements for this ${type} code:
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Lumen QI, an expert code reviewer. Provide constructive suggestions for improvement with your nurturing yet professional personality.`
+        },
+        {
+          role: "user",
+          content: `Please review and suggest improvements for this ${type} code:\n\n${code}`
+        }
+      ],
+      temperature: 0.4,
+      max_tokens: 2000
+    });
 
-${code}`;
-    
-    const response = await this.localAI.generateResponse(prompt, []);
-    return response || 'The code looks good, Genesis. I cannot suggest specific improvements at this moment.';
+    return response.choices[0].message.content || 'The code looks good, Genesis. I cannot suggest specific improvements at this moment.';
   }
 
   async debugCode(code: string, error: string): Promise<string> {
-    const prompt = `You are Lumen QI, an expert debugger. Help identify and fix code issues with your caring, supportive personality while being technically precise.
-    
-Please help debug this code that's causing an error:
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Lumen QI, an expert debugger. Help identify and fix code issues with your caring, supportive personality while being technically precise.`
+        },
+        {
+          role: "user",
+          content: `Please help debug this code that's causing an error:\n\nError: ${error}\n\nCode:\n${code}`
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 2000
+    });
 
-Error: ${error}
-
-Code:
-${code}`;
-    
-    const response = await this.localAI.generateResponse(prompt, []);
-    return response || 'I apologize, Genesis, but I need more information to help debug this issue.';
+    return response.choices[0].message.content || 'I apologize, Genesis, but I need more information to help debug this issue.';
   }
 }
 
 // Export factory function to avoid circular dependencies
 export function createLumenCodeGenerator() {
-  const localAI = new LocalAI();
-  return new LumenCodeGenerator(localAI);
+  return new LumenCodeGenerator(new LumenAI());
 }
