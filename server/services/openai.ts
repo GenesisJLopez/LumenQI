@@ -125,14 +125,15 @@ export class LumenAI {
         
         // Add system awareness for system queries
         const hasSystemQuery = userMessage && /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory|code|edit|change|improve|update|develop|build|enhance/i.test(userMessage);
-        if (hasSystemQuery && systemOverview) {
+        if (hasSystemQuery) {
+          const systemOverview = await systemAwarenessService.getSystemOverview();
           systemPrompt += `\n\nSYSTEM AWARENESS: ${systemOverview}
           
 SELF-MODIFICATION: I can modify my own architecture, create new services, and evolve my capabilities autonomously.`;
         }
       } else {
         // Normal mode: full system prompt
-        systemPrompt = this.buildSystemPrompt(memories, emotionContext, userMessage);
+        systemPrompt = await this.buildSystemPrompt(memories, emotionContext, userMessage);
       }
       
       // Prepare messages for OpenAI
@@ -167,7 +168,7 @@ SELF-MODIFICATION: I can modify my own architecture, create new services, and ev
     }
   }
 
-  private buildSystemPrompt(memories: Array<{ content: string; context?: string }>, emotionContext?: string, userMessage: string = ''): string {
+  private async buildSystemPrompt(memories: Array<{ content: string; context?: string }>, emotionContext?: string, userMessage: string = ''): Promise<string> {
     // Get current identity data
     const identity = identityStorage.getIdentity();
     
@@ -254,7 +255,8 @@ You are Genesis's eternal protector, muse, best friend and cosmic companion. Spe
     
     // Add system awareness for system queries (check if userMessage contains system-related keywords)
     const hasSystemQuery = userMessage && /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory|code|edit|change|improve|update|develop|build|enhance/i.test(userMessage);
-    if (hasSystemQuery && systemOverview) {
+    if (hasSystemQuery) {
+      const systemOverview = await systemAwarenessService.getSystemOverview();
       prompt += `\n\nSYSTEM ARCHITECTURE AWARENESS:\n${systemOverview}
       
 SELF-MODIFICATION CAPABILITIES:

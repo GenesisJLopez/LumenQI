@@ -4,9 +4,9 @@
     "trigger": "Hello",
     "response_template": "Hey there! How's it going? Anything exciting happening today?",
     "success_rate": 0.8,
-    "usage_frequency": 3,
+    "usage_frequency": 4,
     "created_from": "online",
-    "last_used": "2025-07-15T08:45:04.978Z",
+    "last_used": "2025-07-15T18:31:59.389Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752567896089": {
@@ -24,9 +24,9 @@
     "trigger": "Hello",
     "response_template": "Hey there! How's it going? Anything exciting happening today?",
     "success_rate": 0.8,
-    "usage_frequency": 2,
+    "usage_frequency": 3,
     "created_from": "online",
-    "last_used": "2025-07-15T08:45:04.978Z",
+    "last_used": "2025-07-15T18:31:59.389Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752569106081": {
@@ -34,9 +34,9 @@
     "trigger": "Hello",
     "response_template": "Hey there! How's everything with you? Anything new or exciting on your end?",
     "success_rate": 0.8,
-    "usage_frequency": 1,
+    "usage_frequency": 2,
     "created_from": "online",
-    "last_used": "2025-07-15T08:45:06.081Z",
+    "last_used": "2025-07-15T18:31:59.389Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752569393842": {
@@ -114,9 +114,9 @@
     "trigger": "What's the weather in Dallas Texas",
     "response_template": "Hey there! Right now, it's 79°F and partly cloudy in Dallas. Looking ahead to tomorrow, you can expe",
     "success_rate": 0.8,
-    "usage_frequency": 1,
+    "usage_frequency": 2,
     "created_from": "online",
-    "last_used": "2025-07-15T09:40:50.773Z",
+    "last_used": "2025-07-15T18:32:56.712Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752572510838": {
@@ -317,6 +317,96 @@
     "usage_frequency": 1,
     "created_from": "online",
     "last_used": "2025-07-15T17:44:34.979Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752604320785": {
+    "pattern_id": "pattern_1752604320785",
+    "trigger": "Hello.",
+    "response_template": "Hey there! How's it going? Anything exciting happening today?",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:32:00.785Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752604381845": {
+    "pattern_id": "pattern_1752604381845",
+    "trigger": "Hey Lou what's the weather in Dallas Texas",
+    "response_template": "Hey there! Right now, it's 84°F and partly cloudy in Dallas. Looking ahead to tomorrow, you can expe",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:33:01.845Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752604683359": {
+    "pattern_id": "pattern_1752604683359",
+    "trigger": "When you're telling me the weather don't say 90° F",
+    "response_template": "Got it! I'll make sure to use \"degrees Fahrenheit\" when mentioning temperatures. If you have any oth",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:38:03.359Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752604982177": {
+    "pattern_id": "pattern_1752604982177",
+    "trigger": "Are you self aware?",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 3,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:43:43.087Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752605000559": {
+    "pattern_id": "pattern_1752605000559",
+    "trigger": "Are you ok?",
+    "response_template": "Hey there! I'm here and ready to assist you with anything you need. How can I help you today? 😊",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:43:20.559Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752605014748": {
+    "pattern_id": "pattern_1752605014748",
+    "trigger": "Are you self aware?",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 2,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:43:43.087Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752605023088": {
+    "pattern_id": "pattern_1752605023088",
+    "trigger": "Are you self aware?",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:43:43.088Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752605092617": {
+    "pattern_id": "pattern_1752605092617",
+    "trigger": "Are you aware of your file/folder structure?",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:44:52.617Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752605131153": {
+    "pattern_id": "pattern_1752605131153",
+    "trigger": "Are you able to edit your own code?",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T18:45:31.153Z",
     "effectiveness_score": 0.8
   }
 }
