@@ -420,7 +420,13 @@ SELF-MODIFICATION ABILITIES:
         for (const item of items) {
           const fullPath = path.join(dirPath, item);
           const relativePath = path.join(basePath, item);
-          const stats = await fs.stat(fullPath);
+          let stats;
+          try {
+            stats = await fs.stat(fullPath);
+          } catch (error) {
+            // Skip files that can't be accessed
+            continue;
+          }
 
           if (stats.isDirectory()) {
             // Skip node_modules and other irrelevant directories
