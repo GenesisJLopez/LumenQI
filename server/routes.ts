@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
 import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
+import { webSearchService } from "./services/web-search";
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
 import { emotionAdaptationService } from "./services/emotion-adaptation";
@@ -575,6 +576,60 @@ Respond with only the title, no quotes or additional text.`;
       res.json(feedbacks);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch unprocessed feedback" });
+    }
+  });
+
+  // Web search endpoints
+  app.post("/api/search", async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ error: "Query is required" });
+      }
+
+      const result = await webSearchService.smartSearch(query);
+      res.json({ result });
+    } catch (error) {
+      console.error('Web search error:', error);
+      res.status(500).json({ error: "Failed to perform web search" });
+    }
+  });
+
+  app.get("/api/weather/:location", async (req, res) => {
+    try {
+      const { location } = req.params;
+      const weather = await webSearchService.getWeather(location);
+      
+      if (weather) {
+        res.json(weather);
+      } else {
+        res.status(404).json({ error: "Weather information not found" });
+      }
+    } catch (error) {
+      console.error('Weather API error:', error);
+      res.status(500).json({ error: "Failed to get weather information" });
+    }
+  });
+
+  app.get("/api/traffic", async (req, res) => {
+    try {
+      const { from, to } = req.query;
+      
+      if (!from || !to) {
+        return res.status(400).json({ error: "Both 'from' and 'to' parameters are required" });
+      }
+
+      const traffic = await webSearchService.getTraffic(from as string, to as string);
+      
+      if (traffic) {
+        res.json(traffic);
+      } else {
+        res.status(404).json({ error: "Traffic information not found" });
+      }
+    } catch (error) {
+      console.error('Traffic API error:', error);
+      res.status(500).json({ error: "Failed to get traffic information" });
     }
   });
 

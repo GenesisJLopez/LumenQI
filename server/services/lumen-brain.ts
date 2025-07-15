@@ -2,6 +2,7 @@ import { storage } from '../storage';
 import { LumenAI } from './openai';
 import { LocalAI } from './local-ai';
 import { aiConfigManager } from './ai-config';
+import { webSearchService } from './web-search';
 import fs from 'fs';
 import path from 'path';
 
@@ -252,6 +253,25 @@ export class LumenBrain {
     // Apply learned patterns
     const enhancedMessage = this.applyLearningPatterns(userMessage);
 
+    // Check if this is a web search query
+    const searchQuery = this.detectSearchQuery(userMessage);
+    let searchResult = '';
+    
+    if (searchQuery) {
+      try {
+        searchResult = await webSearchService.smartSearch(userMessage);
+        console.log('Web search result:', searchResult);
+      } catch (error) {
+        console.error('Web search failed:', error);
+        searchResult = 'I tried to search for that information but encountered an issue. Could you try rephrasing your question?';
+      }
+    }
+
+    // Include search result in memory context if available
+    if (searchResult) {
+      memoryContext.push({ content: searchResult, context: 'web_search_result' });
+    }
+
     return await this.onlineAI.generateResponse(
       enhancedMessage,
       conversationContext,
@@ -326,6 +346,38 @@ export class LumenBrain {
     });
 
     return enhancedMessage;
+  }
+
+  private detectSearchQuery(userMessage: string): string | null {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Weather patterns
+    if (lowerMessage.includes('weather') || lowerMessage.includes('temperature') || 
+        lowerMessage.includes('forecast') || lowerMessage.includes('rain') || 
+        lowerMessage.includes('sunny') || lowerMessage.includes('cloudy')) {
+      return 'weather';
+    }
+    
+    // Traffic patterns
+    if (lowerMessage.includes('traffic') || lowerMessage.includes('route') || 
+        lowerMessage.includes('drive') || lowerMessage.includes('commute') ||
+        lowerMessage.includes('highway') || lowerMessage.includes('road')) {
+      return 'traffic';
+    }
+    
+    // News patterns
+    if (lowerMessage.includes('news') || lowerMessage.includes('headlines') ||
+        lowerMessage.includes('what happened') || lowerMessage.includes('latest')) {
+      return 'news';
+    }
+    
+    // General search patterns
+    if (lowerMessage.includes('search') || lowerMessage.includes('find') || 
+        lowerMessage.includes('look up') || lowerMessage.includes('tell me about')) {
+      return 'general';
+    }
+    
+    return null;
   }
 
   private async learnFromInteraction(

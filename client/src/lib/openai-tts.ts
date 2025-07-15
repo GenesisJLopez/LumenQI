@@ -75,7 +75,13 @@ export class OpenAITTS {
         if (audioUrl) {
           URL.revokeObjectURL(audioUrl);
         }
-        options.onEnd?.();
+        if (options.onEnd) {
+          try {
+            options.onEnd();
+          } catch (error) {
+            console.error('Error in onEnd callback:', error);
+          }
+        }
       };
 
       this.currentAudio.onerror = (error) => {
