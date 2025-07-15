@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["cairo", "cargo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "lcms2", "libGL", "libGLU", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "qhull", "rustc", "tcl", "tk", "which", "zeromq", "zlib"]
+packages = ["cairo", "cargo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "lcms2", "libGL", "libGLU", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "qhull", "rustc", "tcl", "tk", "which", "zeromq", "zlib", "ollama"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -18,6 +18,10 @@ externalPort = 3000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 11434
+externalPort = 3001
 
 [env]
 PORT = "5000"
