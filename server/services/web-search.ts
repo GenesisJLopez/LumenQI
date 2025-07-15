@@ -26,14 +26,27 @@ interface TrafficData {
 
 export class WebSearchService {
   private userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+  private perplexityApiKey: string | null = null;
 
-  constructor() {}
+  constructor() {
+    this.perplexityApiKey = process.env.PERPLEXITY_API_KEY || null;
+  }
 
-  // Search for general information using multiple free APIs
+  // Search for general information using Perplexity API or fallback to free APIs
   async searchGeneral(query: string): Promise<SearchResult[]> {
     const results: SearchResult[] = [];
     
     try {
+      // Try Perplexity API first if available
+      if (this.perplexityApiKey) {
+        const perplexityResult = await this.searchPerplexity(query);
+        if (perplexityResult) {
+          results.push(perplexityResult);
+          return results;
+        }
+      }
+      
+      // Fallback to free APIs
       // Use DuckDuckGo Instant Answer API (free, no API key needed)
       const duckDuckGoResults = await this.searchDuckDuckGo(query);
       results.push(...duckDuckGoResults);
@@ -333,7 +346,19 @@ export class WebSearchService {
       }
     }
     
-    // General search
+    // Use Perplexity API for general search if available
+    if (this.perplexityApiKey) {
+      try {
+        const perplexityResult = await this.searchPerplexity(query);
+        if (perplexityResult) {
+          return perplexityResult.snippet;
+        }
+      } catch (error) {
+        console.error('Perplexity search failed:', error);
+      }
+    }
+    
+    // Fallback to free APIs
     const results = await this.searchGeneral(query);
     if (results.length > 0) {
       const topResult = results[0];
@@ -360,6 +385,65 @@ export class WebSearchService {
       from: fromMatch ? fromMatch[1].trim() : null,
       to: toMatch ? toMatch[1].trim() : null
     };
+  }
+
+  // Perplexity API search
+  private async searchPerplexity(query: string): Promise<SearchResult | null> {
+    if (!this.perplexityApiKey) {
+      return null;
+    }
+
+    try {
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.perplexityApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [
+            {
+              role: 'system',
+              content: 'Be precise and concise. Provide factual information with sources when possible.'
+            },
+            {
+              role: 'user',
+              content: query
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.2,
+          top_p: 0.9,
+          stream: false,
+          presence_penalty: 0,
+          frequency_penalty: 1
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.choices && data.choices.length > 0) {
+        const content = data.choices[0].message.content;
+        const citations = data.citations || [];
+        
+        return {
+          title: 'Perplexity Search Result',
+          url: citations.length > 0 ? citations[0] : '#',
+          snippet: content,
+          relevance: 0.95
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Perplexity API error:', error);
+      return null;
+    }
   }
 }
 

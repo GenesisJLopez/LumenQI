@@ -813,6 +813,9 @@ Respond with only the title, no quotes or additional text.`;
             throw new Error('Conversation ID is required');
           }
           
+          // Optimize for voice mode - minimal context for speed
+          const isVoiceMode = message.isVoiceMode || false;
+          
           // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
           if (emotion && !isVoiceMode) {
@@ -832,9 +835,6 @@ Respond with only the title, no quotes or additional text.`;
               console.error('Error storing emotional memory:', error);
             });
           }
-          
-          // Optimize for voice mode - minimal context for speed
-          const isVoiceMode = message.isVoiceMode || false;
           
           let userMessage, messages, memories;
           
