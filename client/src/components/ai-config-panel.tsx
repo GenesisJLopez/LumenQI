@@ -99,16 +99,16 @@ export const AIConfigPanel: React.FC = () => {
     switch (provider) {
       case 'openai':
         return status === 'healthy' ? 
-          'Online AI using OpenAI GPT-4o-mini - High quality responses' : 
-          'Online AI - Requires internet connection';
+          'Online AI using OpenAI GPT-4o-mini - High quality intelligent responses' : 
+          'Online AI - Requires internet connection and API key';
       case 'local-python':
         return status === 'healthy' ? 
-          'Embedded Local AI - Self-contained Llama 3.2 equivalent' : 
-          'Embedded Local AI - No external dependencies';
+          'Simple Local AI - Pattern-based responses for offline use' : 
+          'Simple Local AI - Basic fallback system (no external dependencies)';
       case 'ollama':
         return status === 'healthy' ? 
-          'External Ollama - Local Llama 3.2 1B model' : 
-          'External Ollama - Requires manual setup';
+          'External Ollama - Requires manual installation of Llama 3.2' : 
+          'External Ollama - Not installed (requires manual setup)';
       default:
         return 'Unknown provider';
     }
@@ -175,11 +175,20 @@ export const AIConfigPanel: React.FC = () => {
   const switchToProvider = async (provider: string) => {
     try {
       const response = await fetch(`/api/ai-config/switch/${provider}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.ok) {
+        const result = await response.json();
         setActiveProvider(provider);
+        
+        // Show success message
+        console.log(`✓ Switched to ${provider} - Configuration saved and will persist`);
+        
+        // Refresh status after switching
         await fetchAIStatus();
       }
     } catch (error) {
@@ -365,13 +374,19 @@ export const AIConfigPanel: React.FC = () => {
         <CardContent>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
-              <strong>Priority System:</strong> The system automatically uses the highest priority available provider.
+              <strong>Two-Brain AI System:</strong> Lumen uses a dual-brain architecture for optimal performance.
             </p>
             <p>
-              <strong>Online AI (OpenAI):</strong> High-quality responses using GPT-4o-mini when internet is available.
+              <strong>Brain 1 - OpenAI:</strong> Uses GPT-4o-mini for intelligent, context-aware responses. Requires internet connection.
             </p>
             <p>
-              <strong>Embedded Local AI:</strong> Self-contained Llama 3.2 equivalent that works offline with no setup required.
+              <strong>Brain 2 - Simple Local AI:</strong> Pattern-based response system for offline use. No external dependencies.
+            </p>
+            <p>
+              <strong>Consciousness Learning:</strong> Both brains feed into the consciousness system which learns from interactions.
+            </p>
+            <p>
+              <strong>Provider Selection:</strong> Choose your preferred AI provider. Your selection is saved and persists across sessions.
             </p>
             <p>
               <strong>External Ollama:</strong> Optional external Ollama installation for advanced users.
