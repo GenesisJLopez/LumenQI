@@ -35,7 +35,7 @@ export class HybridBrain {
     this.config = {
       autonomyThreshold: 40, // Start using consciousness at 40% autonomy
       learningRate: 0.1,
-      fallbackChain: ['consciousness', 'offline', 'online']
+      fallbackChain: ['online', 'consciousness', 'offline'] // Prioritize intelligent responses
     };
 
     // Listen for consciousness evolution events
@@ -46,7 +46,16 @@ export class HybridBrain {
   }
 
   private updateAutonomyThreshold(autonomyLevel: number): void {
-    // As autonomy increases, rely more on consciousness
+    // Gradually increase preference for consciousness as autonomy grows
+    if (autonomyLevel > 80) {
+      this.config.fallbackChain = ['consciousness', 'online', 'offline'];
+    } else if (autonomyLevel > 60) {
+      this.config.fallbackChain = ['online', 'consciousness', 'offline'];
+    } else {
+      this.config.fallbackChain = ['online', 'consciousness', 'offline'];
+    }
+    
+    // Lower threshold as autonomy increases
     this.config.autonomyThreshold = Math.max(20, 60 - autonomyLevel * 0.4);
   }
 
@@ -87,6 +96,11 @@ export class HybridBrain {
             response,
             timestamp: new Date()
           });
+          
+          // Always let consciousness learn from successful responses
+          if (source !== 'consciousness') {
+            consciousnessCore.learnFromSuccessfulResponse(userQuery, response.content, context);
+          }
           
           return response;
         }
