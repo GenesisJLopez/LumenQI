@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
 import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { webSearchService } from "./services/web-search";
+import { systemAwarenessService } from "./services/system-awareness";
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
 import { emotionAdaptationService } from "./services/emotion-adaptation";
@@ -576,6 +577,82 @@ Respond with only the title, no quotes or additional text.`;
       res.json(feedbacks);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch unprocessed feedback" });
+    }
+  });
+
+  // System awareness endpoints
+  app.get("/api/system/architecture", async (req, res) => {
+    try {
+      const overview = await systemAwarenessService.getSystemOverview();
+      res.json({ overview });
+    } catch (error) {
+      console.error('System architecture error:', error);
+      res.status(500).json({ error: "Failed to get system architecture" });
+    }
+  });
+
+  app.get("/api/system/health", async (req, res) => {
+    try {
+      const health = await systemAwarenessService.analyzeSystemHealth();
+      res.json(health);
+    } catch (error) {
+      console.error('System health error:', error);
+      res.status(500).json({ error: "Failed to analyze system health" });
+    }
+  });
+
+  app.get("/api/system/file/:filePath", async (req, res) => {
+    try {
+      const filePath = req.params.filePath.replace(/~/g, '/');
+      const content = await systemAwarenessService.getFileContent(filePath);
+      if (content) {
+        res.json({ content });
+      } else {
+        res.status(404).json({ error: "File not found" });
+      }
+    } catch (error) {
+      console.error('File read error:', error);
+      res.status(500).json({ error: "Failed to read file" });
+    }
+  });
+
+  app.post("/api/system/modify", async (req, res) => {
+    try {
+      const { filePath, content } = req.body;
+      
+      if (!filePath || !content) {
+        return res.status(400).json({ error: "File path and content are required" });
+      }
+
+      const success = await systemAwarenessService.modifyFile(filePath, content);
+      if (success) {
+        res.json({ success: true, message: "File modified successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to modify file" });
+      }
+    } catch (error) {
+      console.error('File modification error:', error);
+      res.status(500).json({ error: "Failed to modify file" });
+    }
+  });
+
+  app.post("/api/system/create-service", async (req, res) => {
+    try {
+      const { serviceName, purpose, code } = req.body;
+      
+      if (!serviceName || !purpose || !code) {
+        return res.status(400).json({ error: "Service name, purpose, and code are required" });
+      }
+
+      const success = await systemAwarenessService.createNewService(serviceName, purpose, code);
+      if (success) {
+        res.json({ success: true, message: "Service created successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to create service" });
+      }
+    } catch (error) {
+      console.error('Service creation error:', error);
+      res.status(500).json({ error: "Failed to create service" });
     }
   });
 
