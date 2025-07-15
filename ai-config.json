@@ -10,7 +10,7 @@
         "maxTokens": 500
       },
       "enabled": true,
-      "priority": 1
+      "priority": 2
     },
     {
       "provider": "openai",
@@ -33,10 +33,10 @@
         "maxTokens": 500
       },
       "enabled": false,
-      "priority": 1
+      "priority": 3
     }
   ],
   "fallbackEnabled": true,
   "autoSwitch": true,
-  "lastUpdated": "2025-07-15T06:06:54.926Z"
+  "lastUpdated": "2025-07-15T09:25:18.332Z"
 }

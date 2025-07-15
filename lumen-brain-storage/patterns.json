@@ -78,5 +78,15 @@
     "created_from": "online",
     "last_used": "2025-07-15T09:19:19.586Z",
     "effectiveness_score": 0.8
+  },
+  "pattern_1752571472544": {
+    "pattern_id": "pattern_1752571472544",
+    "trigger": "What's the weather in Dallas TX.",
+    "response_template": "Hey there! I don't have direct access to real-time data like weather updates. However, I can guide y",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:24:32.544Z",
+    "effectiveness_score": 0.8
   }
 }
