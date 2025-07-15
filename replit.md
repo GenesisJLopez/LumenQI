@@ -317,6 +317,15 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Implemented emotion trend analysis and emotional journey tracking
 - Voice mode integration ensures emotion detection runs continuously for natural conversation flow
 
+**January 15, 2025**: Natural Speech & AI Configuration Improvements
+- Fixed comma issues in Lumen's speech - now says "hey Genesis" instead of "hey, Genesis"
+- Updated text cleaning for TTS to remove unnatural comma pauses
+- Enhanced AI configuration display with clearer provider descriptions
+- Clarified OpenAI (active), Ollama (requires installation), and Local Python (developer use)
+- Fixed voice settings API endpoint issues for proper configuration saving
+- Added automatic conversation title generation after first AI response
+- Improved conversation title display with proper truncation in sidebar
+
 **January 12, 2025**: Database implementation
 - Migrated from in-memory storage to PostgreSQL database
 - Created DatabaseStorage class implementing IStorage interface

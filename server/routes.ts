@@ -544,8 +544,8 @@ Respond with only the title, no quotes or additional text.`;
   // Voice settings endpoints
   app.get("/api/voice-settings", async (req, res) => {
     try {
-      const fs = require('fs');
-      const path = require('path');
+      const fs = await import('fs');
+      const path = await import('path');
       const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
       
       if (fs.existsSync(settingsPath)) {
@@ -564,6 +564,25 @@ Respond with only the title, no quotes or additional text.`;
     } catch (error) {
       console.error('Failed to get voice settings:', error);
       res.status(500).json({ error: 'Failed to get voice settings' });
+    }
+  });
+
+  app.post("/api/voice-settings", async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
+      
+      const settings = {
+        ...req.body,
+        updatedAt: new Date().toISOString()
+      };
+      
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+      res.json({ success: true, message: 'Voice settings saved successfully' });
+    } catch (error) {
+      console.error('Failed to save voice settings:', error);
+      res.status(500).json({ error: 'Failed to save voice settings' });
     }
   });
 
