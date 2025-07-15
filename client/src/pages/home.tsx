@@ -648,8 +648,8 @@ export default function Home() {
               {/* Settings Content Panels */}
               <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 p-6">
                 {activeTab === 'quantum' && (
-                  <div className="h-full overflow-y-auto">
-                    <div className="space-y-6">
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           Quantum Core System
