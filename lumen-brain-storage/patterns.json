@@ -254,9 +254,9 @@
     "trigger": "Lumen",
     "response_template": "Hey there! I'm right here, ready to dive into whatever you need. What’s on your mind today? 😊",
     "success_rate": 0.8,
-    "usage_frequency": 2,
+    "usage_frequency": 3,
     "created_from": "online",
-    "last_used": "2025-07-15T17:30:31.849Z",
+    "last_used": "2025-07-15T17:39:55.738Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752575144145": {
@@ -297,6 +297,16 @@
     "usage_frequency": 1,
     "created_from": "online",
     "last_used": "2025-07-15T17:30:45.911Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752601195754": {
+    "pattern_id": "pattern_1752601195754",
+    "trigger": "Good afternoon lumen",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T17:39:55.754Z",
     "effectiveness_score": 0.8
   }
 }
