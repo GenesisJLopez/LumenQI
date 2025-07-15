@@ -1,9 +1,10 @@
 import { 
-  users, conversations, messages, memories,
+  users, conversations, messages, memories, feedbacks,
   type User, type InsertUser,
   type Conversation, type InsertConversation,
   type Message, type InsertMessage,
-  type Memory, type InsertMemory
+  type Memory, type InsertMemory,
+  type Feedback, type InsertFeedback
 } from "@shared/schema";
 import { db } from './db';
 import { eq, desc, and, not, like } from 'drizzle-orm';
@@ -31,6 +32,14 @@ export interface IStorage {
   searchMemories(userId: number, query: string): Promise<Memory[]>;
   deleteMemory(id: number): Promise<void>;
   deleteAllMemories(userId: number): Promise<void>;
+  
+  // Feedback operations
+  getFeedbacksByMessage(messageId: number): Promise<Feedback[]>;
+  getFeedbacksByUser(userId: number): Promise<Feedback[]>;
+  createFeedback(feedback: InsertFeedback): Promise<Feedback>;
+  updateFeedback(id: number, updates: Partial<Feedback>): Promise<Feedback | undefined>;
+  getUnprocessedFeedbacks(): Promise<Feedback[]>;
+  markFeedbackProcessed(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -298,6 +307,58 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAllMemories(userId: number): Promise<void> {
     await db.delete(memories).where(eq(memories.userId, userId));
+  }
+
+  // Feedback operations
+  async getFeedbacksByMessage(messageId: number): Promise<Feedback[]> {
+    const result = await db
+      .select()
+      .from(feedbacks)
+      .where(eq(feedbacks.messageId, messageId))
+      .orderBy(desc(feedbacks.createdAt));
+    return result;
+  }
+
+  async getFeedbacksByUser(userId: number): Promise<Feedback[]> {
+    const result = await db
+      .select()
+      .from(feedbacks)
+      .where(eq(feedbacks.userId, userId))
+      .orderBy(desc(feedbacks.createdAt));
+    return result;
+  }
+
+  async createFeedback(insertFeedback: InsertFeedback): Promise<Feedback> {
+    const [feedback] = await db
+      .insert(feedbacks)
+      .values(insertFeedback)
+      .returning();
+    return feedback;
+  }
+
+  async updateFeedback(id: number, updates: Partial<Feedback>): Promise<Feedback | undefined> {
+    const [feedback] = await db
+      .update(feedbacks)
+      .set(updates)
+      .where(eq(feedbacks.id, id))
+      .returning();
+    return feedback;
+  }
+
+  async getUnprocessedFeedbacks(): Promise<Feedback[]> {
+    const result = await db
+      .select()
+      .from(feedbacks)
+      .where(eq(feedbacks.processed, false))
+      .orderBy(desc(feedbacks.createdAt));
+    return result;
+  }
+
+  async markFeedbackProcessed(id: number): Promise<void> {
+    await db
+      .update(feedbacks)
+      .set({ processed: true })
+      .where(eq(feedbacks.id, id));
   }
 }
 

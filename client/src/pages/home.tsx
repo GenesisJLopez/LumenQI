@@ -19,6 +19,8 @@ import { EmotionDisplay } from '@/components/emotion-display';
 import { EmotionAdaptationDisplay } from '@/components/emotion-adaptation-display';
 import { AIConfig } from '@/components/ai-config';
 import { BrainStats } from '@/components/brain-stats';
+import { FeedbackButtons } from '@/components/feedback-buttons';
+import { FeedbackLearningDisplay } from '@/components/feedback-learning-display';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -904,6 +906,13 @@ export default function Home() {
                             Memory & Learning System
                           </h4>
                           <MemoryManager />
+                        </div>
+                        
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                            Feedback Learning System
+                          </h4>
+                          <FeedbackLearningDisplay />
                         </div>
                       </div>
                     </div>

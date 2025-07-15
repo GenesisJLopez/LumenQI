@@ -34,6 +34,18 @@ export const memories = pgTable("memories", {
   metadata: jsonb("metadata"), // Additional structured data
 });
 
+export const feedbacks = pgTable("feedbacks", {
+  id: serial("id").primaryKey(),
+  messageId: integer("message_id").notNull(),
+  userId: integer("user_id"),
+  type: text("type").notNull(), // 'thumbs_up', 'thumbs_down', 'correction', 'preference'
+  rating: integer("rating"), // 1-5 scale for quality rating
+  feedback: text("feedback"), // Optional text feedback
+  suggestion: text("suggestion"), // User's suggested improvement
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  processed: boolean("processed").default(false), // Whether brain has learned from this feedback
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -58,6 +70,15 @@ export const insertMemorySchema = createInsertSchema(memories).pick({
   metadata: true,
 });
 
+export const insertFeedbackSchema = createInsertSchema(feedbacks).pick({
+  messageId: true,
+  userId: true,
+  type: true,
+  rating: true,
+  feedback: true,
+  suggestion: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
@@ -66,3 +87,5 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMemory = z.infer<typeof insertMemorySchema>;
 export type Memory = typeof memories.$inferSelect;
+export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
+export type Feedback = typeof feedbacks.$inferSelect;

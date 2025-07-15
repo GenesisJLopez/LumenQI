@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { Bot, User, Copy, ThumbsUp, ThumbsDown, Volume2, VolumeX } from 'lucide-react';
+import { FeedbackButtons } from './feedback-buttons';
 import { Button } from '@/components/ui/button';
 // Using natural speech system from parent component
 import { cn } from '@/lib/utils';
@@ -209,23 +210,14 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                       )}
                     </Button>
                     
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-                      title="Good response"
-                    >
-                      <ThumbsUp className="w-3 h-3" />
-                    </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-                      title="Bad response"
-                    >
-                      <ThumbsDown className="w-3 h-3" />
-                    </Button>
+                    <div className="flex items-center">
+                      <FeedbackButtons 
+                        messageId={message.id}
+                        onFeedbackSubmitted={() => {
+                          // Could refresh feedback data here if needed
+                        }}
+                      />
+                    </div>
                     </div>
                   </div>
                 )}

@@ -42,12 +42,25 @@ export interface PersonalityEvolution {
   }>;
 }
 
+export interface FeedbackLearning {
+  feedback_id: string;
+  message_id: string;
+  feedback_type: 'thumbs_up' | 'thumbs_down' | 'correction' | 'preference';
+  rating: number;
+  user_feedback: string;
+  suggestion: string;
+  learned_pattern: string;
+  applied_to_memory: boolean;
+  timestamp: Date;
+}
+
 export class LumenBrain {
   private static instance: LumenBrain;
   private brainStorage: string;
   private memories: Map<string, BrainMemory>;
   private learningPatterns: Map<string, LearningPattern>;
   private personalityTraits: Map<string, PersonalityEvolution>;
+  private feedbackLearning: Map<string, FeedbackLearning>;
   private onlineAI: LumenAI;
   private offlineAI: LocalAI | null = null;
   private isLearning: boolean = false;
@@ -58,10 +71,12 @@ export class LumenBrain {
     this.memories = new Map();
     this.learningPatterns = new Map();
     this.personalityTraits = new Map();
+    this.feedbackLearning = new Map();
     this.onlineAI = new LumenAI();
     this.initializeBrainStorage();
     this.loadBrainData();
     this.startEvolutionCycle();
+    this.startFeedbackProcessor();
   }
 
   static getInstance(): LumenBrain {
@@ -539,6 +554,201 @@ export class LumenBrain {
         this.learningPatterns.delete(id);
       }
     });
+  }
+
+  private startFeedbackProcessor(): void {
+    // Process feedback learning every 2 minutes
+    setInterval(async () => {
+      await this.processFeedbackLearning();
+    }, 2 * 60 * 1000); // 2 minutes
+  }
+
+  private async processFeedbackLearning(): Promise<void> {
+    try {
+      // Get unprocessed feedback from database
+      const unprocessedFeedback = await storage.getUnprocessedFeedbacks();
+      
+      for (const feedback of unprocessedFeedback) {
+        await this.learnFromFeedback(feedback);
+        await storage.markFeedbackProcessed(feedback.id);
+      }
+    } catch (error) {
+      console.error('Error processing feedback learning:', error);
+    }
+  }
+
+  private async learnFromFeedback(feedback: any): Promise<void> {
+    const feedbackId = `fb_${feedback.id}_${Date.now()}`;
+    
+    // Create learning record
+    const feedbackLearning: FeedbackLearning = {
+      feedback_id: feedbackId,
+      message_id: feedback.messageId.toString(),
+      feedback_type: feedback.type,
+      rating: feedback.rating || 3,
+      user_feedback: feedback.feedback || '',
+      suggestion: feedback.suggestion || '',
+      learned_pattern: '',
+      applied_to_memory: false,
+      timestamp: new Date()
+    };
+
+    // Process different types of feedback
+    if (feedback.type === 'thumbs_up') {
+      // Positive feedback - reinforce the pattern
+      await this.reinforceSuccessfulPattern(feedback.messageId, feedback.rating || 5);
+    } else if (feedback.type === 'thumbs_down') {
+      // Negative feedback - learn what to avoid
+      await this.learnFromFailure(feedback.messageId, feedback.feedback);
+    } else if (feedback.type === 'correction') {
+      // User correction - create new learning pattern
+      await this.createCorrectionPattern(feedback.messageId, feedback.suggestion);
+    } else if (feedback.type === 'preference') {
+      // User preference - update personality traits
+      await this.updatePersonalityFromFeedback(feedback.feedback);
+    }
+
+    // Store feedback learning
+    this.feedbackLearning.set(feedbackId, feedbackLearning);
+    
+    // Save changes
+    this.saveBrainData();
+  }
+
+  private async reinforceSuccessfulPattern(messageId: string, rating: number): Promise<void> {
+    // Find the memory associated with this message
+    const relatedMemory = Array.from(this.memories.values()).find(m => 
+      m.content.includes(messageId) || m.context.includes(messageId)
+    );
+
+    if (relatedMemory) {
+      // Boost importance and confidence
+      relatedMemory.importance = Math.min(10, relatedMemory.importance + rating * 0.5);
+      relatedMemory.confidence = Math.min(1, relatedMemory.confidence + 0.1);
+      relatedMemory.usage_count++;
+      relatedMemory.last_accessed = new Date();
+      
+      // Create positive learning pattern
+      const patternId = `pattern_success_${Date.now()}`;
+      const pattern: LearningPattern = {
+        pattern_id: patternId,
+        trigger: relatedMemory.context,
+        response_template: relatedMemory.content,
+        success_rate: Math.min(1, 0.8 + rating * 0.05),
+        usage_frequency: 1,
+        created_from: relatedMemory.source,
+        last_used: new Date(),
+        effectiveness_score: rating * 0.2
+      };
+      
+      this.learningPatterns.set(patternId, pattern);
+    }
+  }
+
+  private async learnFromFailure(messageId: string, feedback: string): Promise<void> {
+    // Find the memory and reduce its importance
+    const relatedMemory = Array.from(this.memories.values()).find(m => 
+      m.content.includes(messageId) || m.context.includes(messageId)
+    );
+
+    if (relatedMemory) {
+      relatedMemory.importance = Math.max(1, relatedMemory.importance - 1);
+      relatedMemory.confidence = Math.max(0.1, relatedMemory.confidence - 0.1);
+      
+      // Create negative learning pattern to avoid
+      const patternId = `pattern_avoid_${Date.now()}`;
+      const pattern: LearningPattern = {
+        pattern_id: patternId,
+        trigger: relatedMemory.context,
+        response_template: `[AVOID]: ${relatedMemory.content}`,
+        success_rate: 0.1,
+        usage_frequency: 1,
+        created_from: relatedMemory.source,
+        last_used: new Date(),
+        effectiveness_score: 0.1
+      };
+      
+      this.learningPatterns.set(patternId, pattern);
+    }
+  }
+
+  private async createCorrectionPattern(messageId: string, suggestion: string): Promise<void> {
+    // Create a new learning pattern from user correction
+    const patternId = `pattern_correction_${Date.now()}`;
+    const pattern: LearningPattern = {
+      pattern_id: patternId,
+      trigger: messageId,
+      response_template: suggestion,
+      success_rate: 0.9, // High success rate for user corrections
+      usage_frequency: 1,
+      created_from: 'online',
+      last_used: new Date(),
+      effectiveness_score: 0.9
+    };
+    
+    this.learningPatterns.set(patternId, pattern);
+    
+    // Create corrected memory
+    const memoryId = `mem_correction_${Date.now()}`;
+    const memory: BrainMemory = {
+      id: memoryId,
+      type: 'learning',
+      content: suggestion,
+      context: `User correction for message ${messageId}`,
+      importance: 8,
+      confidence: 0.95,
+      source: 'online',
+      timestamp: new Date(),
+      connections: [],
+      usage_count: 1,
+      last_accessed: new Date(),
+      evolution_stage: 0
+    };
+    
+    this.memories.set(memoryId, memory);
+  }
+
+  private async updatePersonalityFromFeedback(feedback: string): Promise<void> {
+    // Analyze feedback to determine personality adjustments
+    const lowerFeedback = feedback.toLowerCase();
+    
+    // Update personality traits based on feedback
+    if (lowerFeedback.includes('more friendly') || lowerFeedback.includes('warmer')) {
+      this.adjustPersonalityTrait('warmth', 0.1);
+    }
+    if (lowerFeedback.includes('more professional') || lowerFeedback.includes('formal')) {
+      this.adjustPersonalityTrait('professionalism', 0.1);
+    }
+    if (lowerFeedback.includes('more creative') || lowerFeedback.includes('innovative')) {
+      this.adjustPersonalityTrait('creativity', 0.1);
+    }
+    if (lowerFeedback.includes('more helpful') || lowerFeedback.includes('supportive')) {
+      this.adjustPersonalityTrait('helpfulness', 0.1);
+    }
+    if (lowerFeedback.includes('less verbose') || lowerFeedback.includes('shorter')) {
+      this.adjustPersonalityTrait('verbosity', -0.1);
+    }
+  }
+
+  private adjustPersonalityTrait(trait: string, adjustment: number): void {
+    let evolution = this.personalityTraits.get(trait);
+    if (!evolution) {
+      evolution = {
+        trait,
+        current_value: 0.5,
+        change_rate: 0.01,
+        influences: []
+      };
+    }
+    
+    evolution.current_value = Math.max(0, Math.min(1, evolution.current_value + adjustment));
+    evolution.influences.push({
+      source: 'online',
+      impact: adjustment,
+      timestamp: new Date()
+    });
+    
+    this.personalityTraits.set(trait, evolution);
   }
 
   // Public API methods
