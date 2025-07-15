@@ -15,6 +15,7 @@ import { backupSystem } from "./services/backup-system";
 import { hybridBrain } from "./services/hybrid-brain";
 import { consciousnessCore } from "./services/consciousness-core";
 import { ollamaIntegration } from "./services/ollama-integration";
+import { perplexityService } from "./services/perplexity-search";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -1365,6 +1366,86 @@ Respond with only the title, no quotes or additional text.`;
     } catch (error) {
       console.error('Set default backup error:', error);
       res.status(500).json({ error: "Failed to set default backup" });
+    }
+  });
+
+  // Perplexity Web Search API routes
+  app.post("/api/search/web", async (req, res) => {
+    try {
+      const { query, config } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ error: "Query is required" });
+      }
+
+      console.log('🔍 Perplexity web search:', query);
+      const searchResult = await perplexityService.searchWeb(query, config);
+      
+      res.json({
+        success: true,
+        result: searchResult.choices[0].message.content,
+        citations: searchResult.citations,
+        usage: searchResult.usage
+      });
+    } catch (error) {
+      console.error('Web search error:', error);
+      res.status(500).json({ 
+        error: "Failed to perform web search",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/search/weather/:location", async (req, res) => {
+    try {
+      const { location } = req.params;
+      console.log('🌤️ Weather search for:', location);
+      
+      const weatherInfo = await perplexityService.getWeather(location);
+      res.json({
+        success: true,
+        location,
+        weather: weatherInfo
+      });
+    } catch (error) {
+      console.error('Weather search error:', error);
+      res.status(500).json({ 
+        error: "Failed to get weather information",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/search/news/:topic?", async (req, res) => {
+    try {
+      const { topic } = req.params;
+      console.log('📰 News search for:', topic || 'general news');
+      
+      const newsInfo = await perplexityService.getNews(topic);
+      res.json({
+        success: true,
+        topic: topic || 'general',
+        news: newsInfo
+      });
+    } catch (error) {
+      console.error('News search error:', error);
+      res.status(500).json({ 
+        error: "Failed to get news information",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/search/health", async (req, res) => {
+    try {
+      const healthStatus = await perplexityService.getHealthStatus();
+      res.json(healthStatus);
+    } catch (error) {
+      console.error('Search health check error:', error);
+      res.status(500).json({ 
+        healthy: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

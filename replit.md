@@ -465,6 +465,16 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Removed outdated three-brain references and consciousness-only fallback documentation
 - Created clear distinction between OpenAI (intelligent responses) and Simple Local AI (pattern-based)
 
+**January 15, 2025**: Perplexity Web Search Integration for Real-Time Data
+- Integrated Perplexity API for real-time web search capabilities
+- Created PerplexitySearchService with comprehensive web search, weather, and news functions
+- Added web search detection in OpenAI service for weather, news, and current event queries
+- Implemented real-time data integration in both voice mode and normal chat mode
+- Added API endpoints for web search, weather lookup, and news retrieval
+- Enhanced AI responses with current information when users ask about real-world events
+- Restored Lumen's ability to provide up-to-date weather forecasts and breaking news
+- Integrated search results directly into AI system prompts for contextual responses
+
 **January 12, 2025**: Database implementation
 - Migrated from in-memory storage to PostgreSQL database
 - Created DatabaseStorage class implementing IStorage interface
