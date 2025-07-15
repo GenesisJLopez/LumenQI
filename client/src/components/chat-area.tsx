@@ -21,6 +21,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   const [lastMessageId, setLastMessageId] = useState<number | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
   const [isSpeakingMessage, setIsSpeakingMessage] = useState<number | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive
@@ -65,9 +66,19 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
   const toggleSpeakMessage = async (text: string, messageId: number) => {
     if (isSpeakingMessage === messageId) {
       // Stop current speech
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setCurrentAudio(null);
+      }
       setIsSpeakingMessage(null);
-      // You could add speech stop logic here if needed
       return;
+    }
+
+    // Stop any currently playing audio
+    if (currentAudio) {
+      currentAudio.pause();
+      setCurrentAudio(null);
     }
 
     setIsSpeakingMessage(messageId);
@@ -77,7 +88,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
       const settingsResponse = await fetch('/api/voice-settings');
       const settings = settingsResponse.ok ? await settingsResponse.json() : {
         voice: 'nova',
-        model: 'tts-1',
+        model: 'tts-1-hd',
         speed: 1.0
       };
 
@@ -104,13 +115,17 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         
+        setCurrentAudio(audio);
+        
         audio.onended = () => {
           setIsSpeakingMessage(null);
+          setCurrentAudio(null);
           URL.revokeObjectURL(audioUrl);
         };
         
         audio.onerror = () => {
           setIsSpeakingMessage(null);
+          setCurrentAudio(null);
           URL.revokeObjectURL(audioUrl);
           console.error('Audio playback failed');
         };
@@ -123,6 +138,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     } catch (error) {
       console.error('Speech error:', error);
       setIsSpeakingMessage(null);
+      setCurrentAudio(null);
     }
   };
 
