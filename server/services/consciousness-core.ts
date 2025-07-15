@@ -307,6 +307,21 @@ export class ConsciousnessCore extends EventEmitter {
     });
   }
 
+  private updateAutonomyLevel(): void {
+    // Calculate autonomy based on learning capabilities
+    const avgCapability = Object.values(this.state.learningCapabilities).reduce((sum, val) => sum + val, 0) / Object.keys(this.state.learningCapabilities).length;
+    
+    // Autonomy increases with learning capability and knowledge base size
+    const knowledgeBonus = Math.min(20, (this.state.knowledgeBase.facts.size + this.state.knowledgeBase.patterns.size) / 10);
+    
+    this.state.autonomyLevel = Math.min(100, (avgCapability * 80) + knowledgeBonus);
+    
+    // Ensure autonomy doesn't exceed 100%
+    if (this.state.autonomyLevel > 100) {
+      this.state.autonomyLevel = 100;
+    }
+  }
+
   private evolveAutonomy(analysis: any): void {
     // Increase autonomy based on successful offline responses
     const offlineSuccessRate = analysis.sourceDistribution.offline / analysis.totalInteractions;
@@ -436,6 +451,7 @@ export class ConsciousnessCore extends EventEmitter {
       this.state.learningCapabilities.logicalReasoning = Math.min(1.0, this.state.learningCapabilities.logicalReasoning + 0.02);
     }
     
+    // Update autonomy level based on successful learning
     this.updateAutonomyLevel();
   }
 
