@@ -11,6 +11,7 @@ import { identityStorage } from "./services/identity-storage";
 import { emotionAdaptationService } from "./services/emotion-adaptation";
 import { aiConfigManager } from "./services/ai-config";
 import { lumenBrain } from "./services/lumen-brain";
+import { backupSystem } from "./services/backup-system";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -1191,6 +1192,95 @@ Respond with only the title, no quotes or additional text.`;
       res.send(brainData);
     } catch (error) {
       res.status(500).json({ error: "Failed to export brain data" });
+    }
+  });
+
+  // Backup System API endpoints
+  app.get("/api/backup/list", async (req, res) => {
+    try {
+      const backups = backupSystem.getBackups();
+      res.json(backups);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get backups" });
+    }
+  });
+
+  app.post("/api/backup/create", async (req, res) => {
+    try {
+      const { name, description, isDefault } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ error: "Backup name is required" });
+      }
+
+      const backupId = await backupSystem.createBackup(name, description || '', isDefault || false);
+      res.json({ success: true, backupId, message: "Backup created successfully" });
+    } catch (error) {
+      console.error('Backup creation error:', error);
+      res.status(500).json({ error: "Failed to create backup" });
+    }
+  });
+
+  app.post("/api/backup/restore/:backupId", async (req, res) => {
+    try {
+      const { backupId } = req.params;
+      const success = await backupSystem.restoreBackup(backupId);
+      
+      if (success) {
+        res.json({ success: true, message: "Backup restored successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to restore backup" });
+      }
+    } catch (error) {
+      console.error('Backup restore error:', error);
+      res.status(500).json({ error: "Failed to restore backup" });
+    }
+  });
+
+  app.post("/api/backup/restore-default", async (req, res) => {
+    try {
+      const success = await backupSystem.restoreDefaultBackup();
+      
+      if (success) {
+        res.json({ success: true, message: "Default backup restored successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to restore default backup" });
+      }
+    } catch (error) {
+      console.error('Default backup restore error:', error);
+      res.status(500).json({ error: "Failed to restore default backup" });
+    }
+  });
+
+  app.delete("/api/backup/:backupId", async (req, res) => {
+    try {
+      const { backupId } = req.params;
+      const success = await backupSystem.deleteBackup(backupId);
+      
+      if (success) {
+        res.json({ success: true, message: "Backup deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Backup not found" });
+      }
+    } catch (error) {
+      console.error('Backup deletion error:', error);
+      res.status(500).json({ error: "Failed to delete backup" });
+    }
+  });
+
+  app.post("/api/backup/set-default/:backupId", async (req, res) => {
+    try {
+      const { backupId } = req.params;
+      const success = await backupSystem.setAsDefault(backupId);
+      
+      if (success) {
+        res.json({ success: true, message: "Default backup set successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to set default backup" });
+      }
+    } catch (error) {
+      console.error('Set default backup error:', error);
+      res.status(500).json({ error: "Failed to set default backup" });
     }
   });
 

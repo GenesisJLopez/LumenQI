@@ -3,7 +3,7 @@ import path from 'path';
 import { LocalAI, LocalAIConfig, createLocalAI } from './local-ai';
 
 interface AIProviderConfig {
-  provider: 'ollama' | 'openai' | 'local-python';
+  provider: 'ollama' | 'openai' | 'local-python' | 'simple-local';
   config: LocalAIConfig;
   enabled: boolean;
   priority: number;
@@ -35,7 +35,7 @@ const DEFAULT_AI_SETTINGS: AISettings = {
       provider: 'ollama',
       config: {
         provider: 'ollama',
-        model: 'llama3.1:8b',
+        model: 'llama3.2:1b',
         baseUrl: 'http://localhost:11434',
         temperature: 0.7,
         maxTokens: 500
@@ -47,13 +47,24 @@ const DEFAULT_AI_SETTINGS: AISettings = {
       provider: 'local-python',
       config: {
         provider: 'local-python',
-        model: 'local-llama',
+        model: 'simple-llama-3.2-1b',
         baseUrl: 'http://localhost:8000',
         temperature: 0.7,
         maxTokens: 500
       },
-      enabled: false,
+      enabled: true,
       priority: 3
+    },
+    {
+      provider: 'simple-local',
+      config: {
+        provider: 'simple-local',
+        model: 'simple-llama-3.2-1b',
+        temperature: 0.7,
+        maxTokens: 200
+      },
+      enabled: true,
+      priority: 4
     }
   ],
   fallbackEnabled: true,

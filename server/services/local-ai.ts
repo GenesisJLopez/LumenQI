@@ -130,6 +130,34 @@ export class LocalAI {
     emotionContext?: string,
     isVoiceMode: boolean = false
   ): Promise<LocalAIResponse> {
+    // Try Simple Local AI first as a fallback
+    try {
+      const { simpleLocalAI } = await import('./simple-local-ai');
+      
+      if (simpleLocalAI.isEnabled()) {
+        const response = await simpleLocalAI.generateResponse(
+          userMessage,
+          conversationContext,
+          memories,
+          emotionContext,
+          isVoiceMode
+        );
+        
+        return {
+          content: response.content,
+          usage: {
+            prompt_tokens: Math.ceil(userMessage.length / 4),
+            completion_tokens: Math.ceil(response.content.length / 4),
+            total_tokens: Math.ceil((userMessage.length + response.content.length) / 4)
+          },
+          model: response.model,
+          provider: response.provider
+        };
+      }
+    } catch (error) {
+      console.warn('Simple Local AI fallback failed, trying Python backend:', error);
+    }
+
     // Integration with local Python ML backend
     const response = await fetch('http://localhost:8000/generate', {
       method: 'POST',
@@ -154,6 +182,11 @@ export class LocalAI {
     
     return {
       content: data.response || "I'm sorry, I couldn't process that request.",
+      usage: {
+        prompt_tokens: data.usage?.prompt_tokens || 0,
+        completion_tokens: data.usage?.completion_tokens || 0,
+        total_tokens: data.usage?.total_tokens || 0
+      },
       model: this.config.model,
       provider: 'local-python'
     };
