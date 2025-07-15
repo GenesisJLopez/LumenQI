@@ -1,4 +1,4 @@
-import { LocalAI } from './local-ai';
+import { lumenAI } from './openai';
 import { storage } from '../storage';
 
 export interface PersonalityTrait {
@@ -301,16 +301,13 @@ export class PersonalityEvolutionSystem {
     // Convert traits to personality description
     const personalityDescription = this.generatePersonalityDescription(profile.traits);
     
-    // Update stored personality data for the local AI system
-    const personalityData = {
+    // Update Lumen AI's personality
+    lumenAI.updatePersonality({
       name: 'Lumen QI',
       traits: this.generatePersonalityTraits(profile.traits),
       background: `An evolving AI companion who has adapted to Genesis through ${profile.interactionCount} interactions`,
       responseStyle: personalityDescription
-    };
-    
-    // Store personality data for use by the AI system
-    console.log('🧠 Personality evolution updated:', personalityData);
+    });
   }
 
   private generatePersonalityDescription(traits: PersonalityTrait[]): string {

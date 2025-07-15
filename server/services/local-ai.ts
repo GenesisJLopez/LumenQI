@@ -1,8 +1,7 @@
 import { identityStorage } from './identity-storage';
-import { customAIEngine } from './custom-ai-engine';
 
 export interface LocalAIConfig {
-  provider: 'custom' | 'ollama' | 'openai' | 'local-python';
+  provider: 'ollama' | 'openai' | 'local-python';
   model: string;
   baseUrl?: string;
   apiKey?: string;
@@ -38,8 +37,6 @@ export class LocalAI {
   ): Promise<LocalAIResponse> {
     try {
       switch (this.config.provider) {
-        case 'custom':
-          return await this.generateWithCustomAI(userMessage, conversationContext, memories, emotionContext, isVoiceMode);
         case 'ollama':
           return await this.generateWithOllama(userMessage, conversationContext, memories, emotionContext, isVoiceMode);
         case 'openai':
@@ -53,36 +50,6 @@ export class LocalAI {
       console.error('Local AI generation error:', error);
       throw error;
     }
-  }
-
-  private async generateWithCustomAI(
-    userMessage: string,
-    conversationContext: Array<{ role: string; content: string }>,
-    memories: Array<{ content: string; context?: string }>,
-    emotionContext?: string,
-    isVoiceMode: boolean = false
-  ): Promise<LocalAIResponse> {
-    console.log('🧠 Using Custom AI Engine for response generation');
-    
-    // Use our custom AI engine with the same interface
-    const aiResponse = await customAIEngine.generateResponse(
-      userMessage,
-      conversationContext,
-      memories,
-      emotionContext,
-      isVoiceMode
-    );
-    
-    return {
-      content: aiResponse.content,
-      usage: {
-        prompt_tokens: 0, // Not tracked in custom engine
-        completion_tokens: 0,
-        total_tokens: 0
-      },
-      model: aiResponse.model,
-      provider: aiResponse.provider
-    };
   }
 
   private async generateWithOllama(
@@ -145,8 +112,15 @@ export class LocalAI {
     emotionContext?: string,
     isVoiceMode: boolean = false
   ): Promise<LocalAIResponse> {
-    // Fallback disabled - OpenAI removed from system
-    throw new Error('OpenAI provider has been removed from the system');
+    // Fallback to OpenAI if configured
+    const { lumenAI } = await import('./openai');
+    const content = await lumenAI.generateResponse(userMessage, conversationContext, memories, emotionContext, isVoiceMode);
+    
+    return {
+      content,
+      model: 'gpt-4o',
+      provider: 'openai'
+    };
   }
 
   private async generateWithLocalPython(
@@ -245,17 +219,13 @@ IMPORTANT GUIDELINES:
   async healthCheck(): Promise<{ status: string; provider: string; model: string }> {
     try {
       switch (this.config.provider) {
-        case 'custom':
-          const customStatus = await customAIEngine.healthCheck();
-          return customStatus;
-        
         case 'ollama':
           const response = await fetch(`${this.config.baseUrl || 'http://localhost:11434'}/api/tags`);
           if (!response.ok) throw new Error('Ollama not responding');
           return { status: 'healthy', provider: 'ollama', model: this.config.model };
         
         case 'openai':
-          return { status: 'disabled', provider: 'openai', model: this.config.model };
+          return { status: 'healthy', provider: 'openai', model: this.config.model };
         
         case 'local-python':
           const pyResponse = await fetch('http://localhost:8000/health');
@@ -274,10 +244,6 @@ IMPORTANT GUIDELINES:
   async getAvailableModels(): Promise<string[]> {
     try {
       switch (this.config.provider) {
-        case 'custom':
-          const customModels = await customAIEngine.getAvailableModels();
-          return customModels;
-        
         case 'ollama':
           const response = await fetch(`${this.config.baseUrl || 'http://localhost:11434'}/api/tags`);
           if (!response.ok) return [];
@@ -315,8 +281,9 @@ IMPORTANT GUIDELINES:
 // Factory function to create LocalAI instance
 export function createLocalAI(config?: Partial<LocalAIConfig>): LocalAI {
   const defaultConfig: LocalAIConfig = {
-    provider: 'custom',
-    model: 'lumen-qi-custom',
+    provider: 'ollama',
+    model: 'llama3.1:8b',
+    baseUrl: 'http://localhost:11434',
     temperature: 0.7,
     maxTokens: 500
   };

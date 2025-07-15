@@ -80,7 +80,7 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - **Frontend**: Vite builds optimized React application to `dist/public`
 - **Backend**: esbuild bundles Express server to `dist/index.js`
 - **Database**: Drizzle manages schema migrations with `db:push` command
-- **Environment Variables**: DATABASE_URL required
+- **Environment Variables**: DATABASE_URL and OPENAI_API_KEY required
 
 ### Architecture Decisions
 
@@ -94,11 +94,10 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Lower latency than HTTP polling
 - Efficient resource usage
 
-**AI Integration**: Custom Llama 3 AI Engine with personality system for:
-- High-quality natural language processing using local models
+**AI Integration**: OpenAI API with custom personality system for:
+- High-quality natural language processing
 - Configurable AI behavior and traits
 - Memory-enhanced contextual responses
-- Complete elimination of external API dependencies
 
 **Frontend Architecture**: React with shadcn/ui for:
 - Modern component-based development
@@ -317,58 +316,6 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Emotion data sent to server for real-time personality adaptation during conversations
 - Implemented emotion trend analysis and emotional journey tracking
 - Voice mode integration ensures emotion detection runs continuously for natural conversation flow
-
-**January 14, 2025**: Custom AI Engine Implementation (Brain Replacement)
-- Built completely custom AI engine using intelligent pattern-matching without any third-party model dependencies
-- Created CustomAIEngine class with conversation patterns and contextual response generation
-- Integrated custom AI engine as primary provider in AI configuration system
-- Implemented comprehensive vocabulary building and conversation understanding system
-- Added pattern-based response system with fallback mechanisms for reliable conversation continuity
-- Created mobile deployment scripts for iOS and Android with embedded AI capabilities
-- Built contextual response database with Lumen's personality integration
-- Configured health checking and model availability for custom AI engine
-- Preserved existing Lumen interface while completely replacing AI processing backend
-- Custom AI engine now handles all conversation generation with no external dependencies
-
-**January 15, 2025**: System Analysis & Bug Fixes
-- Fixed Custom AI Engine initialization with proper async handling
-- Resolved WebSocket message storage errors (aiResponse object vs string)
-- Updated natural-speech.ts to use Llama 3 TTS instead of OpenAI references
-- Fixed base64 audio data conversion for proper HTML5 Audio playback
-- Corrected personality evolution system to remove lumenAI references
-- Verified all chat and voice functionality working correctly
-- System now fully operational with no external dependencies
-- All OpenAI references successfully eliminated from client and server code
-
-**January 15, 2025**: User-Friendly Troubleshooting Guide Implementation
-- Created comprehensive troubleshooting guide for connection and system issues
-- Integrated troubleshooting interface into settings modal as dedicated tab
-- Added real-time system diagnostics for WebSocket, AI, TTS, and database connectivity
-- Implemented categorized troubleshooting steps (General, Chat Issues, Voice Issues)
-- Added automated diagnostic tools to identify common connection problems
-- Created user-friendly interface with visual status indicators and actionable solutions
-- Integrated "New Chat" functionality for clearing conversation state
-- Added microphone permission handling and audio system checks
-- Enhanced settings modal with HelpCircle icon for easy access to troubleshooting
-- System now provides comprehensive self-service support for users
-
-**January 14, 2025**: Complete OpenAI Elimination & Llama 3 Integration
-- Successfully eliminated all OpenAI dependencies from the entire codebase
-- Replaced OpenAI TTS with native Llama 3 TTS Service for ultra-realistic voice synthesis
-- Created advanced harmonic voice generation with emotional tone adaptation
-- Implemented model switching capabilities: Llama 3 8B, 70B, and Lite variants
-- Fixed audio playback using HTML5 Audio API with blob URL streaming
-- Enhanced voice settings with comprehensive Lumen voice profiles
-- Added dynamic voice characteristics: Nova, Alloy, Echo, Fable, Onyx, Shimmer
-- Created intelligent voice envelope generation for natural speech patterns
-- Implemented real-time audio buffer synthesis with harmonic-rich waveforms
-- Added model-specific quality descriptions and hardware requirements
-- Voice system now fully independent of external APIs with Nova-quality output
-- Cleaned up AI configuration interface to focus on Lumen QI status
-- Successfully tested TTS API endpoint with base64 audio response
-- Completely removed OpenAI package and all references from the system
-- Updated code generation, personality evolution, and all services to use local AI
-- System now operates entirely with local Llama 3 models without external dependencies
 
 **January 12, 2025**: Database implementation
 - Migrated from in-memory storage to PostgreSQL database

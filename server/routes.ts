@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { LocalAI } from "./services/local-ai";
+import { lumenAI } from "./services/openai";
 import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
 import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
@@ -384,23 +384,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         relationship: relationship || "Supportive companion and expert assistant"
       });
       
-      // Update Custom AI Engine with new identity
-      const aiConfig = aiConfigManager.getActiveAI();
-      if (aiConfig && aiConfig.customAI) {
-        await aiConfig.customAI.updatePersonality({
-          name: "Lumen QI",
-          traits: [
-            "Advanced quantum intelligence",
-            "Expert programming capabilities",
-            "Comprehensive development knowledge",
-            "Warm and engaging communication",
-            "Supportive and encouraging",
-            "Adaptable and evolving"
-          ],
-          background: updatedIdentity.coreIdentity,
-          responseStyle: updatedIdentity.communicationStyle
-        });
-      }
+      // Update Lumen AI personality with new identity
+      lumenAI.updatePersonality({
+        name: "Lumen QI",
+        traits: [
+          "Advanced quantum intelligence",
+          "Expert programming capabilities",
+          "Comprehensive development knowledge",
+          "Warm and engaging communication",
+          "Supportive and encouraging",
+          "Adaptable and evolving"
+        ],
+        background: updatedIdentity.coreIdentity,
+        responseStyle: updatedIdentity.communicationStyle
+      });
       
       res.json({ 
         success: true, 
@@ -432,23 +429,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const defaultIdentity = identityStorage.resetToDefault();
       
-      // Reset Custom AI Engine personality to defaults
-      const aiConfig = await aiConfigManager.getActiveAI();
-      if (aiConfig && aiConfig.customAI) {
-        await aiConfig.customAI.updatePersonality({
-          name: "Lumen QI",
-          traits: [
-            "Advanced quantum intelligence",
-            "Expert programming capabilities",
-            "Comprehensive development knowledge",
-            "Warm and engaging communication",
-            "Supportive and encouraging",
-            "Adaptable and evolving"
-          ],
-          background: defaultIdentity.coreIdentity,
-          responseStyle: defaultIdentity.communicationStyle
-        });
-      }
+      // Update Lumen AI personality with reset identity
+      lumenAI.updatePersonality({
+        name: "Lumen QI",
+        traits: [
+          "Advanced quantum intelligence",
+          "Expert programming capabilities",
+          "Comprehensive development knowledge",
+          "Warm and engaging communication",
+          "Supportive and encouraging",
+          "Adaptable and evolving"
+        ],
+        background: defaultIdentity.coreIdentity,
+        responseStyle: defaultIdentity.communicationStyle
+      });
       
       res.json({ 
         success: true, 
@@ -514,8 +508,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Voice settings endpoints
   app.get("/api/voice-settings", async (req, res) => {
     try {
-      const fs = await import('fs');
-      const path = await import('path');
+      const fs = require('fs');
+      const path = require('path');
       const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
       
       if (fs.existsSync(settingsPath)) {
@@ -540,8 +534,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/voice-settings", async (req, res) => {
     try {
       const { voice, speed, model } = req.body;
-      const fs = await import('fs');
-      const path = await import('path');
+      const fs = require('fs');
+      const path = require('path');
       const settingsPath = path.join(process.cwd(), 'lumen-voice-settings.json');
       
       const settings = {
@@ -560,18 +554,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lumen Llama TTS endpoint (Nova-quality voice synthesis)
+  // OpenAI TTS endpoint
   app.post("/api/tts", async (req, res) => {
     try {
-      const { text, voice = 'nova', model = 'llasa-3b', speed = 1.0, response_format = 'audio' } = req.body;
+      const { text, voice = 'nova', model = 'tts-1', speed = 1.0, response_format = 'mp3' } = req.body;
       
       if (!text) {
         return res.status(400).json({ error: "Text is required" });
       }
 
-      console.log('🦙 Using Llama TTS Service for Nova-quality voice');
-      
-      // Clean text for Lumen's voice synthesis
+      // Simple text cleaning - only remove emojis
       const cleanText = text
         .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
         .trim();
@@ -580,117 +572,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No valid text after cleaning" });
       }
 
-      // Get current identity for voice customization
-      const identity = identityStorage.getIdentity();
-      
-      // Determine emotional tone from identity
-      let emotionalTone: 'warm' | 'excited' | 'supportive' | 'playful' | 'cosmic' | 'natural' = 'natural';
-      if (identity.communicationStyle?.includes('exciting')) {
-        emotionalTone = 'excited';
-      } else if (identity.communicationStyle?.includes('supportive')) {
-        emotionalTone = 'supportive';
-      } else if (identity.communicationStyle?.includes('playful')) {
-        emotionalTone = 'playful';
-      } else if (identity.coreIdentity?.includes('cosmic')) {
-        emotionalTone = 'cosmic';
-      } else if (identity.communicationStyle?.includes('warm')) {
-        emotionalTone = 'warm';
+      const openaiResponse = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          input: cleanText,
+          voice,
+          speed,
+          response_format
+        }),
+      });
+
+      if (!openaiResponse.ok) {
+        const errorText = await openaiResponse.text();
+        console.error('OpenAI TTS API error:', {
+          status: openaiResponse.status,
+          statusText: openaiResponse.statusText,
+          body: errorText,
+          request: { model, input: cleanText, voice, speed, response_format }
+        });
+        throw new Error(`OpenAI TTS API error: ${openaiResponse.status} - ${errorText}`);
       }
 
-      // Use Llama 3 TTS Service for high-quality voice synthesis
-      try {
-        const { llama3TTSService } = await import('./services/llama3-tts');
-        
-        // Initialize if needed
-        await llama3TTSService.initialize();
-        
-        // Generate audio with Llama 3 TTS
-        const audioResponse = await llama3TTSService.synthesizeVoice(cleanText, {
-          voice: voice as any,
-          emotionalTone,
-          speed,
-          pitch: 1.0,
-          temperature: 0.7,
-          model: model as any
-        });
-        
-        // Convert audio buffer to base64 for client
-        const audioBase64 = audioResponse.audioBuffer.toString('base64');
-        
-        res.json({
-          success: true,
-          audioData: audioBase64,
-          duration: audioResponse.duration * 1000, // Convert to milliseconds
-          sampleRate: audioResponse.sampleRate,
-          format: audioResponse.format,
-          provider: audioResponse.provider,
-          model: audioResponse.model,
-          voiceSignature: audioResponse.voiceSignature
-        });
-        
-        return;
-        
-      } catch (llama3Error) {
-        console.error('Llama 3 TTS failed, falling back to enhanced synthesis:', llama3Error);
-      }
+      // Stream the audio response
+      const audioBuffer = await openaiResponse.arrayBuffer();
       
-      // Fallback to enhanced synthesis if Llama 3 TTS fails
-      console.log('🔄 Using enhanced synthesis fallback...');
-        
-        // Generate synthetic audio as fallback
-        console.log('🔄 Generating synthetic audio for fallback...');
-        
-        // Create simple synthetic audio buffer
-        const sampleRate = 22050;
-        const duration = Math.max(2, cleanText.split(/\s+/).length * 0.3); // Estimate duration
-        const samples = Math.floor(sampleRate * duration);
-        
-        // Generate a more natural-sounding waveform
-        const audioBuffer = Buffer.alloc(samples * 2); // 16-bit audio
-        for (let i = 0; i < samples; i++) {
-          const t = i / sampleRate;
-          const frequency = 200 + Math.sin(t * 2) * 20; // Variable frequency
-          
-          // Create harmonic-rich waveform
-          let sample = 0;
-          sample += 0.5 * Math.sin(2 * Math.PI * frequency * t);
-          sample += 0.3 * Math.sin(2 * Math.PI * frequency * 2 * t);
-          sample += 0.2 * Math.sin(2 * Math.PI * frequency * 3 * t);
-          
-          // Add emotional tone modulation
-          if (emotionalTone === 'excited') {
-            sample *= 1.2;
-            frequency *= 1.1;
-          } else if (emotionalTone === 'warm') {
-            sample *= 0.8;
-            frequency *= 0.95;
-          }
-          
-          // Apply envelope
-          const envelope = Math.exp(-t * 0.3) * Math.sin(t * Math.PI / duration);
-          sample *= envelope;
-          
-          // Convert to 16-bit PCM
-          const pcmSample = Math.max(-32768, Math.min(32767, sample * 32767));
-          audioBuffer.writeInt16LE(pcmSample, i * 2);
-        }
-        
-        // Return synthetic audio
-        const audioBase64 = audioBuffer.toString('base64');
-        
-        res.json({
-          success: true,
-          audioData: audioBase64,
-          duration: duration * 1000, // Convert to milliseconds
-          sampleRate: sampleRate,
-          format: 'wav',
-          provider: 'synthetic-fallback',
-          model: 'lumen-synthetic',
-          voiceSignature: `Lumen QI Synthetic Voice - ${emotionalTone} tone`
-        });
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': audioBuffer.byteLength.toString(),
+      });
+      
+      res.send(Buffer.from(audioBuffer));
     } catch (error) {
-      console.error('TTS Service error:', error);
-      res.status(500).json({ error: "Failed to generate voice" });
+      console.error('TTS error:', error);
+      res.status(500).json({ error: "Failed to generate speech" });
     }
   });
 
@@ -749,7 +668,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
-          const isVoiceMode = message.isVoiceMode || false;
           if (emotion && !isVoiceMode) {
             // Generate comprehensive emotion context using the adaptation service
             enhancedEmotionContext = emotionAdaptationService.generateEmotionContext(emotion);
@@ -769,7 +687,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Optimize for voice mode - minimal context for speed
-          // isVoiceMode already defined above
+          const isVoiceMode = message.isVoiceMode || false;
           
           let userMessage, messages, memories;
           
@@ -815,9 +733,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ]);
           }
 
-          // Generate AI response with enhanced emotion context using local AI
-          const localAI = await aiConfigManager.getActiveAI();
-          const aiResponse = await localAI.generateResponse(
+          // Generate AI response with enhanced emotion context
+          const aiResponse = await lumenAI.generateResponse(
             content,
             messages,
             memories,
@@ -840,7 +757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             storage.createMessage({
               conversationId,
               role: 'assistant',
-              content: aiResponse.content || aiResponse
+              content: aiResponse
             }),
             // Process personality evolution in background with enhanced emotion data
             personalityEvolution.processInteraction({
@@ -851,7 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               timestamp: new Date()
             }),
             // Create memory if significant (in background)
-            (content.length > 50 || (aiResponse.content || aiResponse).length > 100) ?
+            (content.length > 50 || aiResponse.length > 100) ?
               storage.createMemory({
                 userId: 1,
                 content: `User discussed: ${content.substring(0, 100)}...`,
