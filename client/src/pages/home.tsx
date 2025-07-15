@@ -224,6 +224,24 @@ export default function Home() {
     clearMemoriesMutation.mutate();
   };
 
+  // Auto-generate conversation title after first message
+  const generateConversationTitle = async (conversationId: number) => {
+    try {
+      const response = await fetch(`/api/conversations/${conversationId}/generate-title`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        // Refresh conversations list to show new title
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      }
+    } catch (error) {
+      console.error('Failed to generate conversation title:', error);
+    }
+  };
+
   const handleNewConversation = () => {
     // Clear current conversation selection
     setCurrentConversationId(undefined);
@@ -345,6 +363,11 @@ export default function Home() {
         if (!isVoiceMode) {
           queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
           queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+        }
+        
+        // Auto-generate conversation title after first AI response
+        if (lastMessage.conversationId && messages.length <= 2) {
+          generateConversationTitle(lastMessage.conversationId);
         }
       }
       

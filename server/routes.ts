@@ -89,6 +89,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate conversation title endpoint
+  app.post("/api/conversations/:id/generate-title", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const messages = await storage.getMessagesByConversation(conversationId);
+      
+      if (messages.length === 0) {
+        return res.json({ title: "New Chat" });
+      }
+      
+      // Get first user message for title generation
+      const firstUserMessage = messages.find(msg => msg.role === 'user');
+      if (!firstUserMessage) {
+        return res.json({ title: "New Chat" });
+      }
+      
+      // Generate a short, descriptive title (max 4-5 words)
+      const titlePrompt = `Generate a very short, descriptive title (maximum 4-5 words) for this conversation based on the first message. Be concise and clear.
+
+First message: "${firstUserMessage.content}"
+
+Respond with only the title, no quotes or additional text.`;
+      
+      const titleResponse = await lumenAI.generateResponse(titlePrompt, [], [], undefined, false);
+      const title = titleResponse.substring(0, 50).trim(); // Limit to 50 characters
+      
+      // Update conversation title
+      await storage.updateConversation(conversationId, { title });
+      
+      res.json({ title });
+    } catch (error) {
+      console.error('Title generation error:', error);
+      res.status(500).json({ error: "Failed to generate title" });
+    }
+  });
+
   app.delete("/api/conversations/:id", async (req, res) => {
     try {
       const conversationId = parseInt(req.params.id);
@@ -733,6 +769,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ]);
           }
 
+          // Use AI config manager to get active AI with auto-switching
+          const activeAI = await aiConfigManager.getActiveAI();
+          
           // Generate AI response with enhanced emotion context
           const aiResponse = await lumenAI.generateResponse(
             content,
@@ -742,12 +781,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isVoiceMode
           );
 
-          // Send response back to client immediately
+          // Send response back to client immediately with provider info
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
               type: 'ai_response',
               content: aiResponse,
-              conversationId
+              conversationId,
+              provider: activeAI.provider,
+              model: activeAI.model || 'Unknown'
             }));
           }
 

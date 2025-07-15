@@ -266,33 +266,50 @@ export function AIConfig() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {status.map((provider) => (
-              <div key={provider.provider} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  {getProviderIcon(provider.provider)}
-                  <div>
-                    <div className="font-medium capitalize">{provider.provider}</div>
-                    <div className="text-sm text-muted-foreground">{provider.model}</div>
+              <div key={provider.provider} className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    {getProviderIcon(provider.provider)}
+                    <div>
+                      <div className="font-semibold text-lg capitalize">{provider.provider}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {provider.provider === 'openai' && 'Online AI • GPT-4 • High Performance'}
+                        {provider.provider === 'ollama' && 'Offline AI • Llama 3 • Local Processing'}
+                        {provider.provider === 'local-python' && 'Local Python • Custom Models'}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(provider.status)}
-                  <Badge
-                    variant={provider.status === 'healthy' ? 'default' : 'secondary'}
-                    className={getStatusColor(provider.status)}
-                  >
-                    {provider.status}
-                  </Badge>
-                  {provider.status === 'healthy' && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(provider.status)}
+                      <Badge
+                        variant={provider.status === 'healthy' ? 'default' : 'secondary'}
+                        className={`${getStatusColor(provider.status)} font-medium`}
+                      >
+                        {provider.status}
+                      </Badge>
+                    </div>
                     <Button
-                      variant="outline"
+                      variant={provider.status === 'healthy' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => switchProvider(provider.provider as any)}
+                      disabled={provider.status !== 'healthy'}
+                      className={provider.status === 'healthy' ? 'bg-green-500 hover:bg-green-600' : ''}
                     >
-                      Switch
+                      {provider.status === 'healthy' ? 'Switch' : 'Unavailable'}
                     </Button>
-                  )}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-4">
+                  <span>Model: {provider.model}</span>
+                  <span>•</span>
+                  <span>
+                    {provider.provider === 'openai' && 'Requires internet connection'}
+                    {provider.provider === 'ollama' && 'Works offline'}
+                    {provider.provider === 'local-python' && 'Local processing'}
+                  </span>
                 </div>
               </div>
             ))}

@@ -247,8 +247,8 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
                     className="flex-1 cursor-pointer mr-3"
                     onClick={() => onConversationSelect(conversation.id)}
                   >
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                      {conversation.title}
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]">
+                      {conversation.title.length > 30 ? `${conversation.title.substring(0, 30)}...` : conversation.title}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
                       {formatTimeAgo(conversation.updatedAt)}
