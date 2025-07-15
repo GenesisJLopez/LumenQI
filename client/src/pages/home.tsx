@@ -283,6 +283,9 @@ export default function Home() {
       }
     }
 
+    // Immediately refresh the UI to show the user's message
+    queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+
     // Optimize for voice mode - skip emotion processing for speed
     if (isVoiceMode) {
       sendMessage({
@@ -326,7 +329,7 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use async function to handle TTS with cached settings for speed
+          // Use async function to handle TTS with fallback for voice mode
           const speakResponse = async () => {
             try {
               const { openAITTS } = await import('@/lib/openai-tts');
@@ -349,12 +352,61 @@ export default function Home() {
                   }
                 },
                 onError: (error) => {
-                  console.error('Voice synthesis error:', error);
-                  setIsSpeaking(false);
+                  console.error('OpenAI TTS error, using browser fallback:', error);
+                  // Fallback to browser TTS for voice mode
+                  useBrowserTTSFallback(lastMessage.content);
                 }
               });
             } catch (error) {
-              console.error('Failed to import or use OpenAI TTS:', error);
+              console.error('Failed to import OpenAI TTS, using browser fallback:', error);
+              // Fallback to browser TTS for voice mode
+              useBrowserTTSFallback(lastMessage.content);
+            }
+          };
+
+          // Browser TTS fallback for voice mode
+          const useBrowserTTSFallback = (text: string) => {
+            if ('speechSynthesis' in window) {
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.rate = 0.9;
+              utterance.pitch = 1;
+              utterance.volume = 1;
+              
+              // Try to use a high-quality voice
+              const voices = speechSynthesis.getVoices();
+              const preferredVoice = voices.find(voice => 
+                voice.name.includes('Samantha') || 
+                voice.name.includes('Karen') || 
+                voice.name.includes('Zira')
+              );
+              if (preferredVoice) {
+                utterance.voice = preferredVoice;
+              }
+              
+              utterance.onstart = () => {
+                console.log('Browser TTS: Started speaking');
+                setIsSpeaking(true);
+              };
+              
+              utterance.onend = () => {
+                console.log('Browser TTS: Finished speaking, restarting listening');
+                setIsSpeaking(false);
+                // Restart listening after speaking
+                if (isSupported) {
+                  setTimeout(() => {
+                    startListening();
+                  }, 200);
+                }
+              };
+              
+              utterance.onerror = (error) => {
+                console.error('Browser TTS error:', error);
+                setIsSpeaking(false);
+              };
+              
+              speechSynthesis.speak(utterance);
+            } else {
+              console.error('Speech synthesis not supported');
               setIsSpeaking(false);
             }
           };
@@ -362,11 +414,9 @@ export default function Home() {
           speakResponse();
         }
         
-        // Skip UI refresh in voice mode for speed
-        if (!isVoiceMode) {
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
-        }
+        // Always refresh UI to show updated conversation
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
         
         // Auto-generate conversation title after first AI response
         if (lastMessage.conversationId && messages.length <= 2) {

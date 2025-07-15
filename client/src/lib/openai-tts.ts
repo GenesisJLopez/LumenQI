@@ -104,7 +104,16 @@ export class OpenAITTS {
       };
 
       console.log('Starting TTS audio playback');
-      await this.currentAudio.play();
+      try {
+        await this.currentAudio.play();
+      } catch (playError) {
+        console.error('Audio play error:', playError);
+        this.isPlaying = false;
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+        throw playError;
+      }
 
     } catch (error) {
       this.isPlaying = false;
