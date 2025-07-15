@@ -1,1 +1,12 @@
-{}
+{
+  "pattern_1752567752348": {
+    "pattern_id": "pattern_1752567752348",
+    "trigger": "Hello",
+    "response_template": "Hey there! How's it going? Anything exciting happening today?",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T08:22:32.348Z",
+    "effectiveness_score": 0.8
+  }
+}

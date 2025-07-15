@@ -1,1 +1,16 @@
-{}
+{
+  "mem_1752567752347_w8g6g35zm": {
+    "id": "mem_1752567752347_w8g6g35zm",
+    "type": "conversation",
+    "content": "User: Hello | AI: Hey there! How's it going? Anything exciting happening today?",
+    "context": "Generated via online brain",
+    "importance": 5,
+    "confidence": 0.9,
+    "source": "online",
+    "timestamp": "2025-07-15T08:22:32.347Z",
+    "connections": [],
+    "usage_count": 1,
+    "last_accessed": "2025-07-15T08:22:32.347Z",
+    "evolution_stage": 0
+  }
+}
