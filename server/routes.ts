@@ -1149,6 +1149,21 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
+  app.post("/api/ai-config/switch/:provider", async (req, res) => {
+    try {
+      const { provider } = req.params;
+      const success = await aiConfigManager.switchProvider(provider as 'ollama' | 'openai' | 'local-python');
+      
+      if (success) {
+        res.json({ success: true, message: `Switched to ${provider}` });
+      } else {
+        res.status(400).json({ success: false, message: `Failed to switch to ${provider}` });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to switch AI provider" });
+    }
+  });
+
   app.get("/api/ai-config/models/:provider", async (req, res) => {
     try {
       const provider = req.params.provider as 'ollama' | 'openai' | 'local-python';

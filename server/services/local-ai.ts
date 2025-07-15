@@ -130,7 +130,36 @@ export class LocalAI {
     emotionContext?: string,
     isVoiceMode: boolean = false
   ): Promise<LocalAIResponse> {
-    // Try Simple Local AI first as a fallback
+    // Check if using embedded local AI
+    if (this.config.baseUrl === 'embedded') {
+      try {
+        const { simpleLocalAI } = await import('./simple-local-ai');
+        
+        const response = await simpleLocalAI.generateResponse(
+          userMessage,
+          conversationContext,
+          memories,
+          emotionContext,
+          isVoiceMode
+        );
+        
+        return {
+          content: response.content,
+          usage: {
+            prompt_tokens: Math.ceil(userMessage.length / 4),
+            completion_tokens: Math.ceil(response.content.length / 4),
+            total_tokens: Math.ceil((userMessage.length + response.content.length) / 4)
+          },
+          model: response.model,
+          provider: 'embedded-local'
+        };
+      } catch (error) {
+        console.error('Embedded Local AI error:', error);
+        throw error;
+      }
+    }
+
+    // Try Simple Local AI first as a fallback for external Python
     try {
       const { simpleLocalAI } = await import('./simple-local-ai');
       
@@ -158,7 +187,7 @@ export class LocalAI {
       console.warn('Simple Local AI fallback failed, trying Python backend:', error);
     }
 
-    // Integration with local Python ML backend
+    // Integration with external Python ML backend
     const response = await fetch('http://localhost:8000/generate', {
       method: 'POST',
       headers: {
@@ -261,9 +290,21 @@ IMPORTANT GUIDELINES:
           return { status: 'healthy', provider: 'openai', model: this.config.model };
         
         case 'local-python':
-          const pyResponse = await fetch('http://localhost:8000/health');
-          if (!pyResponse.ok) throw new Error('Local Python AI not responding');
-          return { status: 'healthy', provider: 'local-python', model: this.config.model };
+          // Check if using embedded local AI
+          if (this.config.baseUrl === 'embedded') {
+            // Test embedded local AI
+            const { simpleLocalAI } = await import('./simple-local-ai');
+            const testResult = await simpleLocalAI.testConnection();
+            if (testResult) {
+              return { status: 'healthy', provider: 'local-python', model: this.config.model };
+            }
+            throw new Error('Embedded local AI not responding');
+          } else {
+            // Try external Python backend
+            const pyResponse = await fetch('http://localhost:8000/health');
+            if (!pyResponse.ok) throw new Error('Local Python AI not responding');
+            return { status: 'healthy', provider: 'local-python', model: this.config.model };
+          }
         
         default:
           throw new Error(`Unknown provider: ${this.config.provider}`);
