@@ -56,9 +56,32 @@ export class LumenAI {
       // Build system prompt optimized for voice mode
       let systemPrompt;
       if (isVoiceMode) {
-        // Ultra-fast voice mode: minimal system prompt but include search results
+        // Voice mode: dynamic personality system
         const identity = identityStorage.getIdentity();
-        systemPrompt = `You are Lumen QI, ${identity.coreIdentity.split('.')[0]}. ${identity.communicationStyle} Keep responses concise and conversational for voice chat. Respond naturally and quickly.`;
+        const voiceResponses = [
+          "Hey there! What's going on?",
+          "I'm here! What can I help you with?",
+          "What's up? How can I assist you today?",
+          "I'm listening! What would you like to talk about?",
+          "Hey! Ready to dive into whatever you need.",
+          "What's on your mind? I'm here to help!",
+          "I'm all ears! What can I do for you?",
+          "Hey Genesis! What's happening?",
+          "I'm here and ready! What's the plan?",
+          "What's cooking? How can I help out?"
+        ];
+        
+        // Add conversation variety for voice mode
+        const conversationCount = conversationContext.length;
+        const varietyPrompt = conversationCount > 2 ? 
+          `Vary your responses - don't repeat the same greetings. Be creative and natural. Mix up your language and approach.` :
+          `Be natural and conversational.`;
+        
+        systemPrompt = `You are Lumen QI, ${identity.coreIdentity.split('.')[0]}. ${identity.communicationStyle} 
+        
+        ${varietyPrompt}
+        
+        Keep responses concise and conversational for voice chat. Respond naturally and quickly. Don't use repetitive phrases or the same greetings.`;
         
         // Add search results to voice mode prompt
         const searchResult = memories.find(m => m.context === 'web_search_result');
@@ -80,10 +103,10 @@ export class LumenAI {
       const response = await openai.chat.completions.create({
         model: isVoiceMode ? "gpt-4o-mini" : "gpt-4o", // Use faster model for voice mode
         messages: messages as any,
-        max_tokens: isVoiceMode ? 100 : 500, // Shorter responses for voice mode
-        temperature: 0.7,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
+        max_tokens: isVoiceMode ? 80 : 500, // Even shorter responses for voice mode
+        temperature: isVoiceMode ? 0.9 : 0.7, // Higher creativity for voice mode
+        presence_penalty: isVoiceMode ? 0.3 : 0.1, // Encourage variety in voice mode
+        frequency_penalty: isVoiceMode ? 0.3 : 0.1, // Discourage repetition in voice mode
       });
 
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't process that request.";
