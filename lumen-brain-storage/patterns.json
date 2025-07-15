@@ -14,9 +14,9 @@
     "trigger": "Can you hear me",
     "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind?",
     "success_rate": 0.8,
-    "usage_frequency": 1,
+    "usage_frequency": 2,
     "created_from": "online",
-    "last_used": "2025-07-15T08:24:56.089Z",
+    "last_used": "2025-07-15T09:38:49.243Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752569075026": {
@@ -87,6 +87,26 @@
     "usage_frequency": 1,
     "created_from": "online",
     "last_used": "2025-07-15T09:24:32.544Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752572248123": {
+    "pattern_id": "pattern_1752572248123",
+    "trigger": "Lumen what's the weather in Dallas Texas",
+    "response_template": "Hey there! The current weather in Dallas is 26°C (79°F) with partly cloudy skies. Looking into tomor",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:37:28.123Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752572329936": {
+    "pattern_id": "pattern_1752572329936",
+    "trigger": "Can you hear me loud and clear",
+    "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind?",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:38:49.936Z",
     "effectiveness_score": 0.8
   }
 }
