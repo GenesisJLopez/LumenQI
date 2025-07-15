@@ -809,8 +809,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ]);
           }
 
-          // Generate AI response with enhanced emotion context
-          const aiResponse = await lumenAI.generateResponse(
+          // Generate AI response with enhanced emotion context using local AI
+          const localAI = await aiConfigManager.getActiveAI();
+          const aiResponse = await localAI.generateResponse(
             content,
             messages,
             memories,

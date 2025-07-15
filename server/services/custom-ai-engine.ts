@@ -28,25 +28,33 @@ export class CustomAIEngine {
   private conversationPatterns: Map<string, string[]> = new Map();
   private responseDatabase: Map<string, string> = new Map();
 
+  private model: any = null;
+  private initializationPromise: Promise<void> | null = null;
+
   constructor(config: CustomAIConfig) {
     this.config = config;
-    this.initializeEngine();
+    this.initializationPromise = this.initializeEngine();
   }
 
   private async initializeEngine(): Promise<void> {
     console.log('🧠 Initializing Custom AI Engine...');
     
-    // Initialize vocabulary and tokenizer
-    await this.buildVocabulary();
-    
-    // Build neural network architecture
-    await this.buildModel();
-    
-    // Load or create training data
-    await this.loadTrainingData();
-    
-    console.log('✅ Custom AI Engine initialized successfully');
-    this.isLoaded = true;
+    try {
+      // Initialize vocabulary and tokenizer
+      await this.buildVocabulary();
+      
+      // Build neural network architecture
+      await this.buildModel();
+      
+      // Load or create training data
+      await this.loadTrainingData();
+      
+      console.log('✅ Custom AI Engine initialized successfully');
+      this.isLoaded = true;
+    } catch (error) {
+      console.error('❌ Failed to initialize Custom AI Engine:', error);
+      throw error;
+    }
   }
 
   private async buildVocabulary(): Promise<void> {
@@ -298,7 +306,12 @@ export class CustomAIEngine {
   ): Promise<AIResponse> {
     const startTime = Date.now();
     
-    if (!this.isLoaded || !this.model) {
+    // Ensure engine is initialized
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+    }
+    
+    if (!this.isLoaded) {
       throw new Error('Custom AI Engine not ready');
     }
 
