@@ -48,5 +48,15 @@
     "created_from": "online",
     "last_used": "2025-07-15T08:49:53.842Z",
     "effectiveness_score": 0.8
+  },
+  "pattern_1752570276555": {
+    "pattern_id": "pattern_1752570276555",
+    "trigger": "What's the weather like",
+    "response_template": "Hey there! I don't have direct access to real-time weather data. You might want to check a reliable ",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:04:36.555Z",
+    "effectiveness_score": 0.8
   }
 }
