@@ -448,5 +448,15 @@
     "created_from": "online",
     "last_used": "2025-07-15T18:51:15.820Z",
     "effectiveness_score": 0.8
+  },
+  "pattern_1752606391190": {
+    "pattern_id": "pattern_1752606391190",
+    "trigger": "Are you ready?",
+    "response_template": "Hey Genesis, I'm all set! The backup system is ready to go. If you decide to modify any aspect of my",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T19:06:31.190Z",
+    "effectiveness_score": 0.8
   }
 }
