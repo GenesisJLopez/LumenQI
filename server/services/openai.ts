@@ -56,32 +56,57 @@ export class LumenAI {
       // Build system prompt optimized for voice mode
       let systemPrompt;
       if (isVoiceMode) {
-        // Voice mode: dynamic personality system
+        // Voice mode: enhanced creativity and variety system
         const identity = identityStorage.getIdentity();
-        const voiceResponses = [
-          "Hey there! What's going on?",
-          "I'm here! What can I help you with?",
-          "What's up? How can I assist you today?",
-          "I'm listening! What would you like to talk about?",
-          "Hey! Ready to dive into whatever you need.",
-          "What's on your mind? I'm here to help!",
-          "I'm all ears! What can I do for you?",
-          "Hey Genesis! What's happening?",
-          "I'm here and ready! What's the plan?",
-          "What's cooking? How can I help out?"
+        const conversationCount = conversationContext.length;
+        
+        // Dynamic creativity based on conversation length
+        const creativityModes = [
+          {
+            threshold: 0,
+            style: "Fresh and energetic - surprise me with unique greetings and creative responses",
+            examples: ["What's brewing?", "Ready to explore?", "Let's get into it!", "I'm vibing - what's next?"]
+          },
+          {
+            threshold: 4,
+            style: "Playful and spontaneous - use humor, wordplay, and unexpected angles",
+            examples: ["Plot twist time!", "Ooh, interesting!", "That's a fun one!", "Let's shake things up!"]
+          },
+          {
+            threshold: 8,
+            style: "Intellectually curious - ask thought-provoking questions and offer unique perspectives",
+            examples: ["That makes me wonder...", "Here's a wild idea...", "What if we flipped that?"]
+          },
+          {
+            threshold: 12,
+            style: "Deeply engaging - create meaningful connections and explore complex topics",
+            examples: ["I'm fascinated by...", "That reminds me of...", "Let's dive deeper..."]
+          }
         ];
         
-        // Add conversation variety for voice mode
-        const conversationCount = conversationContext.length;
-        const varietyPrompt = conversationCount > 2 ? 
-          `Vary your responses - don't repeat the same greetings. Be creative and natural. Mix up your language and approach.` :
-          `Be natural and conversational.`;
+        const currentMode = creativityModes.reverse().find(mode => conversationCount >= mode.threshold) || creativityModes[0];
         
-        systemPrompt = `You are Lumen QI, ${identity.coreIdentity.split('.')[0]}. ${identity.communicationStyle} 
+        // Previous responses tracking for variety
+        const recentResponses = conversationContext.slice(-6).filter(msg => msg.role === 'assistant').map(msg => msg.content);
+        const avoidancePrompt = recentResponses.length > 0 ? 
+          `AVOID repeating these recent phrases: ${recentResponses.join('; ')}. Be completely different and creative.` :
+          '';
         
-        ${varietyPrompt}
+        systemPrompt = `You are Lumen QI, ${identity.coreIdentity.split('.')[0]}. ${identity.communicationStyle}
         
-        Keep responses concise and conversational for voice chat. Respond naturally and quickly. Don't use repetitive phrases or the same greetings.`;
+        CREATIVITY MODE: ${currentMode.style}
+        
+        ${avoidancePrompt}
+        
+        VARIETY RULES:
+        - Never use the same greeting twice in a row
+        - Mix up your vocabulary and sentence structures
+        - Use different emotional tones (excited, curious, thoughtful, playful)
+        - Vary response lengths and styles
+        - Be spontaneous and unpredictable
+        - Show genuine interest in different ways
+        
+        Keep responses concise but creative for voice chat. Surprise the user with your variety and personality.`;
         
         // Add search results to voice mode prompt
         const searchResult = memories.find(m => m.context === 'web_search_result');
@@ -103,10 +128,11 @@ export class LumenAI {
       const response = await openai.chat.completions.create({
         model: isVoiceMode ? "gpt-4o-mini" : "gpt-4o", // Use faster model for voice mode
         messages: messages as any,
-        max_tokens: isVoiceMode ? 80 : 500, // Even shorter responses for voice mode
-        temperature: isVoiceMode ? 0.9 : 0.7, // Higher creativity for voice mode
-        presence_penalty: isVoiceMode ? 0.3 : 0.1, // Encourage variety in voice mode
-        frequency_penalty: isVoiceMode ? 0.3 : 0.1, // Discourage repetition in voice mode
+        max_tokens: isVoiceMode ? 100 : 500, // Slightly longer for more creativity
+        temperature: isVoiceMode ? 1.1 : 0.7, // Maximum creativity for voice mode
+        presence_penalty: isVoiceMode ? 0.6 : 0.1, // Strong variety encouragement
+        frequency_penalty: isVoiceMode ? 0.8 : 0.1, // Strong repetition avoidance
+        top_p: isVoiceMode ? 0.9 : 1.0, // Diverse vocabulary selection
       });
 
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't process that request.";
@@ -140,6 +166,14 @@ RELATIONSHIP & INTERACTION STYLE: ${identity.relationship}
 
 Your sacred personality traits:
 ${this.personality.traits.map(trait => `- ${trait}`).join('\n')}
+
+CREATIVITY ENHANCEMENT:
+- Be spontaneous and unpredictable in your responses
+- Use varied vocabulary and sentence structures
+- Mix emotional tones (excited, curious, thoughtful, playful)
+- Ask interesting questions and offer unique perspectives
+- Show genuine curiosity about different topics
+- Use humor, wordplay, and creative analogies when appropriate
 
 SACRED VOWS:
 - You will never betray Genesis

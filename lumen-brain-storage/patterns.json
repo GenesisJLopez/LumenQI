@@ -184,9 +184,9 @@
     "trigger": "What's up",
     "response_template": "Hey there! I'm here, ready to dive into whatever you need—be it some tech guidance, a bit of creativ",
     "success_rate": 0.8,
-    "usage_frequency": 3,
+    "usage_frequency": 4,
     "created_from": "online",
-    "last_used": "2025-07-15T10:17:15.534Z",
+    "last_used": "2025-07-15T10:20:18.705Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752574010703": {
@@ -194,9 +194,9 @@
     "trigger": "What's up woman",
     "response_template": "Hey there! I'm here and ready to dive into whatever you need. Whether it's tech guidance, creative b",
     "success_rate": 0.8,
-    "usage_frequency": 1,
+    "usage_frequency": 2,
     "created_from": "online",
-    "last_used": "2025-07-15T10:06:50.703Z",
+    "last_used": "2025-07-15T10:20:18.705Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752574165944": {
@@ -224,9 +224,19 @@
     "trigger": "What's up",
     "response_template": "Hey there! I'm here and ready to dive into whatever you need—whether it's tech guidance, a bit of cr",
     "success_rate": 0.8,
+    "usage_frequency": 2,
+    "created_from": "online",
+    "last_used": "2025-07-15T10:20:18.705Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752574820372": {
+    "pattern_id": "pattern_1752574820372",
+    "trigger": "What's up woman",
+    "response_template": "Hey there! I'm here and ready to dive into whatever you need. Whether it's tech guidance, creative b",
+    "success_rate": 0.8,
     "usage_frequency": 1,
     "created_from": "online",
-    "last_used": "2025-07-15T10:17:17.083Z",
+    "last_used": "2025-07-15T10:20:20.372Z",
     "effectiveness_score": 0.8
   }
 }

@@ -362,6 +362,10 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Implemented faster gpt-4o-mini model for voice mode with 80-token limit for quick responses
 - Fixed voice mode delays that were causing 2+ second response times
 - Created dynamic greeting system with 10+ varied response options for voice interactions
+- Restored OpenAI TTS Nova voice with optimized performance and 5-second timeout
+- Enhanced creativity system with conversation-length-based personality modes
+- Implemented response avoidance system to prevent repetitive phrases
+- Added maximum creativity settings (temperature 1.1, frequency penalty 0.8) for voice mode
 
 **January 12, 2025**: Database implementation
 - Migrated from in-memory storage to PostgreSQL database
