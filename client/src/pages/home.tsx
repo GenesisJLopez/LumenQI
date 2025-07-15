@@ -22,6 +22,7 @@ import { BrainStats } from '@/components/brain-stats';
 import { FeedbackButtons } from '@/components/feedback-buttons';
 import { FeedbackLearningDisplay } from '@/components/feedback-learning-display';
 import { SystemArchitecturePanel } from '@/components/system-architecture-panel';
+import { AIConfigPanel } from '@/components/ai-config-panel';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -892,7 +893,7 @@ export default function Home() {
                 {activeTab === 'ai-config' && (
                   <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
                     <div className="space-y-6 pb-16">
-                      <AIConfig />
+                      <AIConfigPanel />
                     </div>
                   </div>
                 )}

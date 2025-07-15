@@ -24,12 +24,24 @@ const DEFAULT_AI_SETTINGS: AISettings = {
       provider: 'openai',
       config: {
         provider: 'openai',
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         temperature: 0.7,
         maxTokens: 500
       },
       enabled: true,
-      priority: 1 // Prefer online GPT-4 when available
+      priority: 1 // Online AI when internet available
+    },
+    {
+      provider: 'local-python',
+      config: {
+        provider: 'local-python',
+        model: 'embedded-llama-3.2-1b',
+        baseUrl: 'embedded',
+        temperature: 0.7,
+        maxTokens: 400
+      },
+      enabled: true,
+      priority: 2 // Self-contained local AI (no external dependencies)
     },
     {
       provider: 'ollama',
@@ -40,31 +52,8 @@ const DEFAULT_AI_SETTINGS: AISettings = {
         temperature: 0.7,
         maxTokens: 500
       },
-      enabled: true,
-      priority: 2 // Fallback to offline Llama3 when online unavailable
-    },
-    {
-      provider: 'local-python',
-      config: {
-        provider: 'local-python',
-        model: 'simple-llama-3.2-1b',
-        baseUrl: 'http://localhost:8000',
-        temperature: 0.7,
-        maxTokens: 500
-      },
-      enabled: true,
-      priority: 3
-    },
-    {
-      provider: 'simple-local',
-      config: {
-        provider: 'simple-local',
-        model: 'simple-llama-3.2-1b',
-        temperature: 0.7,
-        maxTokens: 200
-      },
-      enabled: true,
-      priority: 4
+      enabled: false,
+      priority: 3 // Optional external Ollama (requires setup)
     }
   ],
   fallbackEnabled: true,
@@ -116,8 +105,18 @@ export class AIConfigManager {
       .filter(p => p.enabled)
       .sort((a, b) => a.priority - b.priority);
 
+    // Check internet connectivity first
+    const hasInternet = await this.checkInternetConnectivity();
+    console.log(`🌐 Internet connectivity: ${hasInternet ? 'Available' : 'Unavailable'}`);
+
     for (const provider of enabledProviders) {
       try {
+        // Skip OpenAI if no internet
+        if (provider.provider === 'openai' && !hasInternet) {
+          console.log(`⚠ Skipping OpenAI (no internet connection)`);
+          continue;
+        }
+
         const ai = createLocalAI(provider.config);
         const health = await ai.healthCheck();
         
@@ -131,13 +130,17 @@ export class AIConfigManager {
       }
     }
 
-    // If no provider is available, use the first enabled one as fallback
-    if (enabledProviders.length > 0) {
-      this.activeAI = createLocalAI(enabledProviders[0].config);
-      console.log(`⚠ Using fallback AI provider: ${enabledProviders[0].provider}`);
-    } else {
-      console.error('❌ No AI providers available');
-    }
+    // Always fall back to embedded local AI if nothing else works
+    const embeddedConfig = {
+      provider: 'local-python' as const,
+      model: 'embedded-llama-3.2-1b',
+      baseUrl: 'embedded',
+      temperature: 0.7,
+      maxTokens: 400
+    };
+    
+    this.activeAI = createLocalAI(embeddedConfig);
+    console.log(`✓ Using embedded local AI as fallback: ${embeddedConfig.model}`);
   }
 
   async getActiveAI(): Promise<LocalAI> {
