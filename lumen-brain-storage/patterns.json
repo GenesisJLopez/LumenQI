@@ -14,9 +14,9 @@
     "trigger": "Can you hear me",
     "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind?",
     "success_rate": 0.8,
-    "usage_frequency": 4,
+    "usage_frequency": 6,
     "created_from": "online",
-    "last_used": "2025-07-15T10:14:30.789Z",
+    "last_used": "2025-07-15T17:30:31.849Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752569075026": {
@@ -204,9 +204,9 @@
     "trigger": "Can you hear me",
     "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind?",
     "success_rate": 0.8,
-    "usage_frequency": 2,
+    "usage_frequency": 4,
     "created_from": "online",
-    "last_used": "2025-07-15T10:14:30.789Z",
+    "last_used": "2025-07-15T17:30:31.849Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752574471620": {
@@ -214,9 +214,9 @@
     "trigger": "Can you hear me",
     "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind? 😊",
     "success_rate": 0.8,
-    "usage_frequency": 1,
+    "usage_frequency": 3,
     "created_from": "online",
-    "last_used": "2025-07-15T10:14:31.620Z",
+    "last_used": "2025-07-15T17:30:31.849Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752574637083": {
@@ -254,9 +254,9 @@
     "trigger": "Lumen",
     "response_template": "Hey there! I'm right here, ready to dive into whatever you need. What’s on your mind today? 😊",
     "success_rate": 0.8,
-    "usage_frequency": 1,
+    "usage_frequency": 2,
     "created_from": "online",
-    "last_used": "2025-07-15T10:25:21.607Z",
+    "last_used": "2025-07-15T17:30:31.849Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752575144145": {
@@ -267,6 +267,36 @@
     "usage_frequency": 1,
     "created_from": "online",
     "last_used": "2025-07-15T10:25:44.145Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752600587576": {
+    "pattern_id": "pattern_1752600587576",
+    "trigger": "Hey Luman can you hear me",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T17:29:47.576Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752600631850": {
+    "pattern_id": "pattern_1752600631850",
+    "trigger": "Can you hear me lumen",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T17:30:31.850Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752600645911": {
+    "pattern_id": "pattern_1752600645911",
+    "trigger": "Good afternoon.",
+    "response_template": "I'm experiencing some technical difficulties right now. Please try again in a moment.",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T17:30:45.911Z",
     "effectiveness_score": 0.8
   }
 }

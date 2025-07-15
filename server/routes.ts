@@ -656,6 +656,36 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
+  app.get("/api/system/file-tree", async (req, res) => {
+    try {
+      const fileTree = await systemAwarenessService.getFileTreeStructure();
+      res.json({ fileTree });
+    } catch (error) {
+      console.error('File tree error:', error);
+      res.status(500).json({ error: "Failed to get file tree structure" });
+    }
+  });
+
+  app.get("/api/system/metrics", async (req, res) => {
+    try {
+      const metrics = await systemAwarenessService.getArchitectureMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error('Architecture metrics error:', error);
+      res.status(500).json({ error: "Failed to get architecture metrics" });
+    }
+  });
+
+  app.get("/api/system/dependencies", async (req, res) => {
+    try {
+      const dependencies = await systemAwarenessService.getDependencyAnalysis();
+      res.json(dependencies);
+    } catch (error) {
+      console.error('Dependencies error:', error);
+      res.status(500).json({ error: "Failed to get dependency analysis" });
+    }
+  });
+
   // Web search endpoints
   app.post("/api/search", async (req, res) => {
     try {
