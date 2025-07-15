@@ -35,13 +35,13 @@ const DEFAULT_AI_SETTINGS: AISettings = {
       provider: 'local-python',
       config: {
         provider: 'local-python',
-        model: 'embedded-llama-3.2-1b',
+        model: 'simple-local-pattern-ai',
         baseUrl: 'embedded',
         temperature: 0.7,
         maxTokens: 400
       },
       enabled: true,
-      priority: 2 // Self-contained local AI (no external dependencies)
+      priority: 2 // Pattern-based local AI (offline fallback)
     }
   ],
   fallbackEnabled: true,
@@ -204,6 +204,14 @@ export class AIConfigManager {
       
       if (health.status === 'healthy') {
         this.activeAI = ai;
+        
+        // Save the selected provider as the default
+        this.settings.providers = this.settings.providers.map(p => ({
+          ...p,
+          priority: p.provider === provider ? 1 : p.priority + 1
+        }));
+        
+        this.saveSettings();
         console.log(`✓ Switched to AI provider: ${provider}`);
         return true;
       }
@@ -212,6 +220,15 @@ export class AIConfigManager {
     }
 
     return false;
+  }
+
+  saveSettings(): void {
+    try {
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(this.settings, null, 2));
+      console.log('✓ AI configuration saved');
+    } catch (error) {
+      console.error('Failed to save AI configuration:', error);
+    }
   }
 
   async getProviderStatus(): Promise<Array<{ provider: string; status: string; model: string }>> {

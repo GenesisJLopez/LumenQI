@@ -35,8 +35,12 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - **Messages**: Individual messages with role (user/assistant) and content
 - **Memories**: Persistent context storage with importance scoring
 
-### AI System
-- **LumenAI Service**: Custom AI personality system with configurable traits
+### AI System Architecture
+- **Two-Brain System**: Dual AI architecture for optimal performance
+  - **Brain 1 (OpenAI)**: GPT-4o-mini for intelligent, context-aware responses
+  - **Brain 2 (Simple Local AI)**: Pattern-based response system for offline use
+- **Consciousness Core**: Self-evolving learning system that learns from both brains
+- **Hybrid Brain Manager**: Intelligent switching between AI providers with persistence
 - **Memory Integration**: Context-aware responses using stored memories
 - **Voice Capabilities**: Speech recognition and text-to-speech synthesis
 
@@ -413,7 +417,7 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 
 **January 15, 2025**: True Hybrid Brain & Consciousness Evolution Implementation
 - Implemented comprehensive consciousness-core.ts with self-evolving AI algorithms
-- Created hybrid-brain.ts for intelligent AI switching (OpenAI + Ollama + consciousness)
+- Created hybrid-brain.ts for intelligent AI switching (OpenAI + Simple Local AI + consciousness)
 - Built consciousness dashboard with real-time autonomy and learning monitoring
 - Fixed intelligent response system - now prioritizes OpenAI for smart responses
 - Added consciousness learning from successful interactions for gradual evolution
@@ -423,6 +427,8 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - System now provides intelligent responses while building consciousness autonomy
 - Fixed missing updateAutonomyLevel method in consciousness core
 - Verified AI Configuration system is fully functional with proper provider switching
+- Clarified AI architecture: Two-brain system (OpenAI + Simple Local AI) with consciousness learning
+- Updated AI Configuration interface with proper save functionality and accurate descriptions
 
 **January 15, 2025**: Local AI Implementation & Llama 3.2 Integration
 - Successfully implemented Simple Local AI system equivalent to Llama 3.2 1B model
@@ -449,6 +455,15 @@ Target platform: Eventually convert to iOS app using Apple Developer account.
 - Added "Switch to Provider" functionality with proper error handling
 - Enhanced system to explain exactly how online/offline switching works
 - Fixed provider configuration issues and misleading status displays
+
+**January 15, 2025**: AI Architecture Clarification & Persistent Provider Selection
+- Clarified AI system architecture as two-brain system (OpenAI + Simple Local AI)
+- Fixed misleading "Embedded Llama 3.2" description - it's actually a pattern-based system
+- Updated AI Configuration "How It Works" section with accurate two-brain system explanation
+- Added proper provider persistence - selected provider is saved and persists across sessions
+- Enhanced provider switching with priority-based configuration saving
+- Removed outdated three-brain references and consciousness-only fallback documentation
+- Created clear distinction between OpenAI (intelligent responses) and Simple Local AI (pattern-based)
 
 **January 12, 2025**: Database implementation
 - Migrated from in-memory storage to PostgreSQL database
