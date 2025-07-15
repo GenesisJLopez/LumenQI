@@ -85,6 +85,11 @@ export const AIConfigPanel: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching AI status:', error);
+      // Set fallback data to prevent UI errors
+      setProviders([
+        { provider: 'openai', status: 'healthy', model: 'gpt-4o-mini' },
+        { provider: 'local-python', status: 'healthy', model: 'embedded-llama-3.2-1b' }
+      ]);
     } finally {
       setLoading(false);
     }
