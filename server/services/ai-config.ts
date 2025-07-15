@@ -21,6 +21,17 @@ const CONFIG_FILE = path.join(process.cwd(), 'ai-config.json');
 const DEFAULT_AI_SETTINGS: AISettings = {
   providers: [
     {
+      provider: 'openai',
+      config: {
+        provider: 'openai',
+        model: 'gpt-4o',
+        temperature: 0.7,
+        maxTokens: 500
+      },
+      enabled: true,
+      priority: 1 // Prefer online GPT-4 when available
+    },
+    {
       provider: 'ollama',
       config: {
         provider: 'ollama',
@@ -30,18 +41,7 @@ const DEFAULT_AI_SETTINGS: AISettings = {
         maxTokens: 500
       },
       enabled: true,
-      priority: 1
-    },
-    {
-      provider: 'openai',
-      config: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        temperature: 0.7,
-        maxTokens: 500
-      },
-      enabled: true,
-      priority: 2
+      priority: 2 // Fallback to offline Llama3 when online unavailable
     },
     {
       provider: 'local-python',
@@ -134,11 +134,59 @@ export class AIConfigManager {
       await this.initializeActiveAI();
     }
     
+    // Auto-switch based on connectivity if enabled
+    if (this.settings.autoSwitch) {
+      await this.checkAndSwitchProvider();
+    }
+    
     if (!this.activeAI) {
       throw new Error('No AI provider available');
     }
 
     return this.activeAI;
+  }
+
+  private async checkAndSwitchProvider(): Promise<void> {
+    try {
+      // Check internet connectivity and OpenAI availability
+      const isOnline = await this.checkInternetConnectivity();
+      
+      if (isOnline) {
+        // Try OpenAI first when online
+        const openaiProvider = this.settings.providers.find(p => p.provider === 'openai' && p.enabled);
+        if (openaiProvider && this.activeAI?.provider !== 'openai') {
+          console.log('🌐 Online detected - switching to OpenAI GPT-4');
+          await this.switchProvider('openai');
+        }
+      } else {
+        // Fall back to Ollama/Llama3 when offline
+        const ollamaProvider = this.settings.providers.find(p => p.provider === 'ollama' && p.enabled);
+        if (ollamaProvider && this.activeAI?.provider !== 'ollama') {
+          console.log('🔌 Offline detected - switching to local Llama3');
+          await this.switchProvider('ollama');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking connectivity:', error);
+    }
+  }
+
+  private async checkInternetConnectivity(): Promise<boolean> {
+    try {
+      // Quick OpenAI API health check
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'User-Agent': 'Lumen-QI/1.0'
+        },
+        signal: AbortSignal.timeout(5000)
+      });
+      return response.ok;
+    } catch (error) {
+      console.log('Internet connectivity check failed, using offline mode');
+      return false;
+    }
   }
 
   async switchProvider(provider: 'ollama' | 'openai' | 'local-python'): Promise<boolean> {
