@@ -126,7 +126,7 @@ export class OpenAITTS {
     cleanText = cleanText.replace(/\s+/g, ' ').trim();
     
     return cleanText;
- 
+  }
 
   stop(): void {
     if (this.currentAudio) {

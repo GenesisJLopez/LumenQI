@@ -5,11 +5,11 @@
  * Installs and configures Ollama for local AI processing
  */
 
-const { execSync, spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
-const os = require('os');
+import { execSync, spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import https from 'https';
+import os from 'os';
 
 class OllamaSetup {
   constructor() {

@@ -8,6 +8,7 @@ import { personalityEvolution } from "./services/personality-evolution";
 import { identityStorage } from "./services/identity-storage";
 import { emotionAdaptationService } from "./services/emotion-adaptation";
 import { aiConfigManager } from "./services/ai-config";
+import { lumenBrain } from "./services/lumen-brain";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -791,13 +792,14 @@ Respond with only the title, no quotes or additional text.`;
           // Use AI config manager to get active AI with auto-switching
           const activeAI = await aiConfigManager.getActiveAI();
           
-          // Generate AI response with enhanced emotion context
-          const aiResponse = await lumenAI.generateResponse(
+          // Initialize brain offline AI if not already done
+          await lumenBrain.initializeOfflineAI();
+          
+          // Generate AI response using brain system (hybrid online/offline)
+          const { response: aiResponse, source: aiSource } = await lumenBrain.generateResponse(
             content,
             messages,
-            memories,
-            enhancedEmotionContext,
-            isVoiceMode
+            enhancedEmotionContext
           );
 
           // Send response back to client immediately with provider info
@@ -807,7 +809,8 @@ Respond with only the title, no quotes or additional text.`;
               content: aiResponse,
               conversationId,
               provider: activeAI.provider,
-              model: activeAI.model || 'Unknown'
+              model: activeAI.model || 'Unknown',
+              source: aiSource // Include brain source (online/offline/hybrid)
             }));
           }
 
@@ -944,6 +947,36 @@ Respond with only the title, no quotes or additional text.`;
       }
     } catch (error) {
       res.status(500).json({ error: "Failed to get available models" });
+    }
+  });
+
+  // Brain API endpoints
+  app.get("/api/brain/stats", async (req, res) => {
+    try {
+      const stats = lumenBrain.getBrainStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get brain statistics" });
+    }
+  });
+
+  app.post("/api/brain/evolve", async (req, res) => {
+    try {
+      await lumenBrain.forceEvolution();
+      res.json({ success: true, message: "Evolution cycle completed" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to trigger evolution" });
+    }
+  });
+
+  app.get("/api/brain/export", async (req, res) => {
+    try {
+      const brainData = lumenBrain.exportBrainData();
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="lumen-brain-export.json"');
+      res.send(brainData);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to export brain data" });
     }
   });
 

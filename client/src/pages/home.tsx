@@ -18,6 +18,7 @@ import { CodeGenerator } from '@/components/code-generator';
 import { EmotionDisplay } from '@/components/emotion-display';
 import { EmotionAdaptationDisplay } from '@/components/emotion-adaptation-display';
 import { AIConfig } from '@/components/ai-config';
+import { BrainStats } from '@/components/brain-stats';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -656,47 +657,7 @@ export default function Home() {
                         </p>
                       </div>
                       
-                      <div className="space-y-4">
-                        <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
-                          <h4 className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-3">
-                            Quantum Interface Status
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Core Status</span>
-                              <span className="text-sm font-medium text-green-600 dark:text-green-400">Active</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Processing Power</span>
-                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">98.7%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Neural Networks</span>
-                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">Optimized</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-lg">
-                          <h4 className="text-sm font-medium text-green-900 dark:text-green-300 mb-3">
-                            Code Generation Engine
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Engine Status</span>
-                              <span className="text-sm font-medium text-green-600 dark:text-green-400">Online</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Capabilities</span>
-                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Full-Stack</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600 dark:text-gray-400">Frameworks</span>
-                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">All Major</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <BrainStats />
                     </div>
                   </div>
                 )}
