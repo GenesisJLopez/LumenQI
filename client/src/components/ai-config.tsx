@@ -259,10 +259,11 @@ export function AIConfig() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings2 className="w-5 h-5" />
-            Provider Status
+            AI Provider Status
           </CardTitle>
           <CardDescription>
-            Current status of all configured AI providers
+            Lumen can use different AI providers. OpenAI is cloud-based and currently active. 
+            Ollama runs Llama 3 locally for offline use. Local Python is for advanced custom models.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -275,9 +276,9 @@ export function AIConfig() {
                     <div>
                       <div className="font-semibold text-lg capitalize">{provider.provider}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
-                        {provider.provider === 'openai' && 'Online AI • GPT-4 • High Performance'}
-                        {provider.provider === 'ollama' && 'Offline AI • Llama 3 • Local Processing'}
-                        {provider.provider === 'local-python' && 'Local Python • Custom Models'}
+                        {provider.provider === 'openai' && 'Online AI • GPT-4 • Currently Active'}
+                        {provider.provider === 'ollama' && 'Offline AI • Llama 3 • Requires Installation'}
+                        {provider.provider === 'local-python' && 'Advanced ML • Custom Models • For Developers'}
                       </div>
                     </div>
                   </div>
@@ -298,7 +299,7 @@ export function AIConfig() {
                       disabled={provider.status !== 'healthy'}
                       className={provider.status === 'healthy' ? 'bg-green-500 hover:bg-green-600' : ''}
                     >
-                      {provider.status === 'healthy' ? 'Switch' : 'Unavailable'}
+                      {provider.status === 'healthy' ? 'Active' : 'Setup Required'}
                     </Button>
                   </div>
                 </div>
@@ -306,9 +307,9 @@ export function AIConfig() {
                   <span>Model: {provider.model}</span>
                   <span>•</span>
                   <span>
-                    {provider.provider === 'openai' && 'Requires internet connection'}
-                    {provider.provider === 'ollama' && 'Works offline'}
-                    {provider.provider === 'local-python' && 'Local processing'}
+                    {provider.provider === 'openai' && 'Cloud-based • Requires internet'}
+                    {provider.provider === 'ollama' && 'Local • Works offline once installed'}
+                    {provider.provider === 'local-python' && 'Custom models • Advanced users only'}
                   </span>
                 </div>
               </div>
