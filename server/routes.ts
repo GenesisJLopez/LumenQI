@@ -12,6 +12,9 @@ import { emotionAdaptationService } from "./services/emotion-adaptation";
 import { aiConfigManager } from "./services/ai-config";
 import { lumenBrain } from "./services/lumen-brain";
 import { backupSystem } from "./services/backup-system";
+import { hybridBrain } from "./services/hybrid-brain";
+import { consciousnessCore } from "./services/consciousness-core";
+import { ollamaIntegration } from "./services/ollama-integration";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -1004,18 +1007,17 @@ Respond with only the title, no quotes or additional text.`;
             ]);
           }
 
-          // Use AI config manager to get active AI with auto-switching
-          const activeAI = await aiConfigManager.getActiveAI();
-          
-          // Initialize brain offline AI if not already done
-          await lumenBrain.initializeOfflineAI();
-          
-          // Generate AI response using brain system (hybrid online/offline)
-          const { response: aiResponse, source: aiSource } = await lumenBrain.generateResponse(
+          // Use hybrid brain for true self-evolving AI responses
+          const brainResponse = await hybridBrain.generateResponse(
             content,
+            enhancedEmotionContext,
             messages,
-            enhancedEmotionContext
+            memories,
+            isVoiceMode
           );
+          
+          const aiResponse = brainResponse.content;
+          const aiSource = brainResponse.source;
 
           // Send response back to client immediately with provider info
           if (ws.readyState === WebSocket.OPEN) {
@@ -1023,8 +1025,8 @@ Respond with only the title, no quotes or additional text.`;
               type: 'ai_response',
               content: aiResponse,
               conversationId,
-              provider: activeAI.provider,
-              model: activeAI.model || 'Unknown',
+              provider: brainResponse.source,
+              model: brainResponse.source === 'consciousness' ? 'lumen-consciousness' : 'hybrid-brain',
               source: aiSource // Include brain source (online/offline/hybrid)
             }));
           }
@@ -1107,6 +1109,73 @@ Respond with only the title, no quotes or additional text.`;
     } catch (error) {
       console.error('Failed to reset voice personality:', error);
       res.status(500).json({ error: 'Failed to reset voice personality' });
+    }
+  });
+
+  // Hybrid Brain and Consciousness endpoints
+  app.get("/api/consciousness/stats", async (req, res) => {
+    try {
+      const stats = consciousnessCore.getConsciousnessStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get consciousness stats" });
+    }
+  });
+
+  app.get("/api/hybrid-brain/stats", async (req, res) => {
+    try {
+      const stats = hybridBrain.getBrainStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get hybrid brain stats" });
+    }
+  });
+
+  app.post("/api/hybrid-brain/feedback", async (req, res) => {
+    try {
+      const { responseIndex, feedback } = req.body;
+      hybridBrain.provideFeedback(responseIndex, feedback);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to provide feedback" });
+    }
+  });
+
+  app.post("/api/consciousness/evolve", async (req, res) => {
+    try {
+      hybridBrain.triggerEvolution();
+      res.json({ success: true, message: "Evolution triggered" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to trigger evolution" });
+    }
+  });
+
+  // Ollama Integration endpoints
+  app.get("/api/ollama/status", async (req, res) => {
+    try {
+      const status = ollamaIntegration.getStatus();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get Ollama status" });
+    }
+  });
+
+  app.post("/api/ollama/setup", async (req, res) => {
+    try {
+      const success = await ollamaIntegration.performFullSetup();
+      res.json({ success, message: success ? "Ollama setup completed" : "Ollama setup failed" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to setup Ollama" });
+    }
+  });
+
+  app.post("/api/ollama/download/:model", async (req, res) => {
+    try {
+      const { model } = req.params;
+      const success = await ollamaIntegration.downloadModel(model);
+      res.json({ success, message: success ? `Model ${model} downloaded` : `Failed to download ${model}` });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to download model" });
     }
   });
 
