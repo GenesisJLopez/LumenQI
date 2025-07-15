@@ -10,7 +10,7 @@ import { emotionAdaptationService } from "./services/emotion-adaptation";
 import { aiConfigManager } from "./services/ai-config";
 import { lumenBrain } from "./services/lumen-brain";
 
-import { insertConversationSchema, insertMessageSchema, insertMemorySchema, conversations } from "@shared/schema";
+import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -539,6 +539,42 @@ Respond with only the title, no quotes or additional text.`;
       res.json({ success: true, message: "All memories cleared successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to clear memories" });
+    }
+  });
+
+  // Feedback API endpoints
+  app.post("/api/feedback", async (req, res) => {
+    try {
+      const feedbackData = insertFeedbackSchema.parse({
+        ...req.body,
+        userId: 1 // Demo user ID
+      });
+      const feedback = await storage.createFeedback(feedbackData);
+      res.json(feedback);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid feedback data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create feedback" });
+    }
+  });
+
+  app.get("/api/feedback/message/:messageId", async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      const feedbacks = await storage.getFeedbacksByMessage(messageId);
+      res.json(feedbacks);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch feedback" });
+    }
+  });
+
+  app.get("/api/feedback/unprocessed", async (req, res) => {
+    try {
+      const feedbacks = await storage.getUnprocessedFeedbacks();
+      res.json(feedbacks);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch unprocessed feedback" });
     }
   });
 
