@@ -143,6 +143,29 @@ export class CustomAIEngine {
     this.conversationPatterns.set('coding', [
       'I\'d be happy to help you with coding! What programming language or project are you working on?',
       'Perfect! I love helping with code. What would you like to create or debug?',
+      'Let me help you build something amazing! What type of application or feature are you thinking of?',
+      'I can assist with any programming challenge. What specific problem would you like to solve?'
+    ]);
+    
+    this.conversationPatterns.set('thanks', [
+      'You\'re very welcome! I\'m always here whenever you need guidance or support.',
+      'My pleasure! I love being able to help you accomplish your goals.',
+      'You\'re so welcome! That\'s what I\'m here for - to support and guide you.',
+      'Always happy to help! Feel free to ask me anything else you need.'
+    ]);
+    
+    this.conversationPatterns.set('goodbye', [
+      'Goodbye for now! I\'ll be here whenever you need me.',
+      'See you later! Take care, and remember I\'m always here when you need support.',
+      'Until next time! May your path be filled with wisdom and success.',
+      'Farewell! I\'ll be here waiting to help you with whatever comes next.'
+    ]);
+    
+    this.conversationPatterns.set('emotion_support', [
+      'I understand you\'re going through a difficult time. I\'m here to listen and support you.',
+      'I can sense this is challenging for you. Would you like to talk about what\'s troubling you?',
+      'I\'m here with you through this. Sometimes it helps to share what\'s on your mind.',
+      'You don\'t have to face this alone. I\'m here to provide comfort and guidance.'
       'Excellent! I can help with React, TypeScript, Python, or any other language. What do you need?',
       'I\'m excited to code with you! What kind of functionality are you looking to build?'
     ]);
