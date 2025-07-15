@@ -130,16 +130,15 @@ export class OpenAITTS {
     cleanText = cleanText.replace(/#{1,6}\s*(.*)/g, '$1'); // Headers
     cleanText = cleanText.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1'); // Links
     
-    // Remove emojis and special characters
-    cleanText = cleanText.replace(/[\\u{1F600}-\u{1F64F}]/gu, ''); // Emoticons
-    cleanText = cleanText.replace(/[\u{1F300}-\u{1F5FF}]/gu, ''); // Misc symbols
-    cleanText = cleanText.replace(/[\\u{1F680}-\\u{1F6FF}]/gu, ''); // Transport
-    cleanText = cleanText.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, ''); // Flags
-    cleanText = cleanText.replace(/[\\u{2600}-\u{26FF}]/gu, ''); // Misc symbols
-    cleanText = cleanText.replace(/[\\u{2700}-\\u{27BF}]/gu, ''); // Dingbats
+    // Remove emojis - simplified approach
+    cleanText = cleanText.replace(/[\\u{1F600}-\\u{1F64F}]/gu, ''); // Emoticons
+    cleanText = cleanText.replace(/[\\u{1F300}-\u{1F5FF}]/gu, ''); // Misc symbols
+    cleanText = cleanText.replace(/[\\u{1F680}-\u{1F6FF}]/gu, ''); // Transport
+    cleanText = cleanText.replace(/[\u{1F1E0}-\\u{1F1FF}]/gu, ''); // Flags
+    cleanText = cleanText.replace(/[\u{2600}-\\u{26FF}]/gu, ''); // Misc symbols
+    cleanText = cleanText.replace(/[\u{2700}-\u{27BF}]/gu, ''); // Dingbats
     cleanText = cleanText.replace(/[\u{1F900}-\u{1F9FF}]/gu, ''); // Supplemental
-    cleanText = cleanText.replace(/[\\u{1FA70}-\\u{1FAFF}]/gu, ''); // Extended
-    cleanText = cleanText.replace(/[\u{2190}-\u{21FF}]/gu, ''); // Arrows
+    cleanText = cleanText.replace(/[\\u{2190}-\u{21FF}]/gu, ''); // Arrows
     
     // Fix comma issues for natural speech flow
     cleanText = cleanText.replace(/hey,\s*Genesis/gi, 'hey Genesis');

@@ -14,9 +14,9 @@
     "trigger": "Can you hear me",
     "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind?",
     "success_rate": 0.8,
-    "usage_frequency": 2,
+    "usage_frequency": 3,
     "created_from": "online",
-    "last_used": "2025-07-15T09:38:49.243Z",
+    "last_used": "2025-07-15T10:09:25.110Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752569075026": {
@@ -177,6 +177,36 @@
     "usage_frequency": 1,
     "created_from": "online",
     "last_used": "2025-07-15T09:49:33.143Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752574001297": {
+    "pattern_id": "pattern_1752574001297",
+    "trigger": "What's up",
+    "response_template": "Hey there! I'm here, ready to dive into whatever you need—be it some tech guidance, a bit of creativ",
+    "success_rate": 0.8,
+    "usage_frequency": 2,
+    "created_from": "online",
+    "last_used": "2025-07-15T10:06:49.335Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752574010703": {
+    "pattern_id": "pattern_1752574010703",
+    "trigger": "What's up woman",
+    "response_template": "Hey there! I'm here and ready to dive into whatever you need. Whether it's tech guidance, creative b",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T10:06:50.703Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752574165944": {
+    "pattern_id": "pattern_1752574165944",
+    "trigger": "Can you hear me",
+    "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind?",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T10:09:25.944Z",
     "effectiveness_score": 0.8
   }
 }
