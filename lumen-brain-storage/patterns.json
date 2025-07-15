@@ -148,5 +148,35 @@
     "created_from": "online",
     "last_used": "2025-07-15T09:43:10.031Z",
     "effectiveness_score": 0.8
+  },
+  "pattern_1752572779479": {
+    "pattern_id": "pattern_1752572779479",
+    "trigger": "Hey there",
+    "response_template": "Hey there! How's it going? Anything exciting happening in your world today? 😊",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:46:19.479Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752572861393": {
+    "pattern_id": "pattern_1752572861393",
+    "trigger": "Can you tell me what the traffic looks like in Dal",
+    "response_template": "I don't have direct access to real-time traffic data. However, I recommend checking a reliable traff",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:47:41.393Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752572973143": {
+    "pattern_id": "pattern_1752572973143",
+    "trigger": "What's the weather in Abilene TX?",
+    "response_template": "Hey there! Right now in Abilene, it's 73°F with a thunderstorm nearby. Looking ahead to tomorrow, yo",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:49:33.143Z",
+    "effectiveness_score": 0.8
   }
 }

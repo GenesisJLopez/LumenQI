@@ -283,10 +283,7 @@ export default function Home() {
       }
     }
 
-    // Immediately refresh the UI to show the user's message
-    queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
-
-    // Optimize for voice mode - skip emotion processing for speed
+    // Send message immediately for faster response
     if (isVoiceMode) {
       sendMessage({
         type: 'chat_message',
@@ -310,6 +307,11 @@ export default function Home() {
         emotionContext,
       });
     }
+
+    // Refresh UI after sending message
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+    }, 100);
   };
 
   // Process incoming WebSocket messages
@@ -329,88 +331,53 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use async function to handle TTS with fallback for voice mode
+          // Use OpenAI TTS for voice mode (same as regular speaker button)
           const speakResponse = async () => {
             try {
               const { openAITTS } = await import('@/lib/openai-tts');
+              console.log('Voice mode: Using OpenAI TTS');
               await openAITTS.speak(lastMessage.content, {
-                voice: 'nova', // Use default for speed in voice mode
-                model: 'tts-1',
+                voice: 'nova',
+                model: 'tts-1-hd',
                 speed: 1.0,
                 onStart: () => {
-                  console.log('Voice mode: Started speaking');
+                  console.log('Voice mode: OpenAI TTS started speaking');
                   setIsSpeaking(true);
                 },
                 onEnd: () => {
-                  console.log('Voice mode: Finished speaking, restarting listening');
+                  console.log('Voice mode: OpenAI TTS finished speaking, restarting listening');
                   setIsSpeaking(false);
                   // Restart listening after speaking
                   if (isSupported) {
                     setTimeout(() => {
                       startListening();
-                    }, 200); // Reduced delay for faster turnaround
+                    }, 100); // Faster restart for better conversation flow
                   }
                 },
                 onError: (error) => {
-                  console.error('OpenAI TTS error, using browser fallback:', error);
-                  // Fallback to browser TTS for voice mode
-                  useBrowserTTSFallback(lastMessage.content);
+                  console.error('OpenAI TTS error in voice mode:', error);
+                  setIsSpeaking(false);
+                  // Restart listening even on error
+                  if (isSupported) {
+                    setTimeout(() => {
+                      startListening();
+                    }, 100);
+                  }
                 }
               });
             } catch (error) {
-              console.error('Failed to import OpenAI TTS, using browser fallback:', error);
-              // Fallback to browser TTS for voice mode
-              useBrowserTTSFallback(lastMessage.content);
+              console.error('Failed to load OpenAI TTS in voice mode:', error);
+              setIsSpeaking(false);
+              // Restart listening even on error
+              if (isSupported) {
+                setTimeout(() => {
+                  startListening();
+                }, 100);
+              }
             }
           };
 
-          // Browser TTS fallback for voice mode
-          const useBrowserTTSFallback = (text: string) => {
-            if ('speechSynthesis' in window) {
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.rate = 0.9;
-              utterance.pitch = 1;
-              utterance.volume = 1;
-              
-              // Try to use a high-quality voice
-              const voices = speechSynthesis.getVoices();
-              const preferredVoice = voices.find(voice => 
-                voice.name.includes('Samantha') || 
-                voice.name.includes('Karen') || 
-                voice.name.includes('Zira')
-              );
-              if (preferredVoice) {
-                utterance.voice = preferredVoice;
-              }
-              
-              utterance.onstart = () => {
-                console.log('Browser TTS: Started speaking');
-                setIsSpeaking(true);
-              };
-              
-              utterance.onend = () => {
-                console.log('Browser TTS: Finished speaking, restarting listening');
-                setIsSpeaking(false);
-                // Restart listening after speaking
-                if (isSupported) {
-                  setTimeout(() => {
-                    startListening();
-                  }, 200);
-                }
-              };
-              
-              utterance.onerror = (error) => {
-                console.error('Browser TTS error:', error);
-                setIsSpeaking(false);
-              };
-              
-              speechSynthesis.speak(utterance);
-            } else {
-              console.error('Speech synthesis not supported');
-              setIsSpeaking(false);
-            }
-          };
-          
+          // Only use OpenAI TTS in voice mode - no browser fallback
           speakResponse();
         }
         
