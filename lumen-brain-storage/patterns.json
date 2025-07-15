@@ -8,5 +8,15 @@
     "created_from": "online",
     "last_used": "2025-07-15T08:22:32.348Z",
     "effectiveness_score": 0.8
+  },
+  "pattern_1752567896089": {
+    "pattern_id": "pattern_1752567896089",
+    "trigger": "Can you hear me",
+    "response_template": "I can definitely \"hear\" you in a digital sense! What's on your mind?",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T08:24:56.089Z",
+    "effectiveness_score": 0.8
   }
 }

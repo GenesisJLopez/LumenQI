@@ -75,9 +75,7 @@ export class OpenAITTS {
         if (audioUrl) {
           URL.revokeObjectURL(audioUrl);
         }
-        if (options.onEnd) {
-          options.onEnd();
-        }
+        options.onEnd?.();
       };
 
       this.currentAudio.onerror = (error) => {
@@ -166,4 +164,7 @@ export class OpenAITTS {
   }
 }
 
-export const openAITTS = new OpenAITTS()
+export const openAITTS = new OpenAITTS();
+
+// Export for backward compatibility
+export default openAITTS;
