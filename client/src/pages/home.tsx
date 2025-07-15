@@ -21,6 +21,7 @@ import { AIConfig } from '@/components/ai-config';
 import { BrainStats } from '@/components/brain-stats';
 import { FeedbackButtons } from '@/components/feedback-buttons';
 import { FeedbackLearningDisplay } from '@/components/feedback-learning-display';
+import { RealTimeArchitectureExplorer } from '@/components/real-time-architecture-explorer';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -959,6 +960,16 @@ export default function Home() {
                             Feedback Learning System
                           </h4>
                           <FeedbackLearningDisplay />
+                        </div>
+                        
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                            Real-Time System Architecture Explorer
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            Interactive file tree with live system monitoring, real-time architecture metrics, and dependency analysis.
+                          </p>
+                          <RealTimeArchitectureExplorer />
                         </div>
                       </div>
                     </div>

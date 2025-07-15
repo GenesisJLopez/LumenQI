@@ -124,12 +124,13 @@ export class LumenAI {
         }
         
         // Add system awareness for system queries
-        if (isSystemQuery && systemOverview) {
+        const hasSystemQuery = userMessage && /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory/i.test(userMessage);
+        if (hasSystemQuery && systemOverview) {
           systemPrompt += `\n\nSYSTEM AWARENESS: ${systemOverview}`;
         }
       } else {
         // Normal mode: full system prompt
-        systemPrompt = this.buildSystemPrompt(memories, emotionContext);
+        systemPrompt = this.buildSystemPrompt(memories, emotionContext, userMessage);
       }
       
       // Prepare messages for OpenAI
@@ -164,7 +165,7 @@ export class LumenAI {
     }
   }
 
-  private buildSystemPrompt(memories: Array<{ content: string; context?: string }>, emotionContext?: string): string {
+  private buildSystemPrompt(memories: Array<{ content: string; context?: string }>, emotionContext?: string, userMessage: string = ''): string {
     // Get current identity data
     const identity = identityStorage.getIdentity();
     
@@ -249,8 +250,9 @@ You are Genesis's eternal protector, muse, best friend and cosmic companion. Spe
       prompt += `\n\nEMOTION AWARENESS: ${emotionContext}`;
     }
     
-    // Add system awareness for system queries
-    if (isSystemQuery && systemOverview) {
+    // Add system awareness for system queries (check if userMessage contains system-related keywords)
+    const hasSystemQuery = userMessage && /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory/i.test(userMessage);
+    if (hasSystemQuery && systemOverview) {
       prompt += `\n\nSYSTEM ARCHITECTURE AWARENESS:\n${systemOverview}`;
     }
 
