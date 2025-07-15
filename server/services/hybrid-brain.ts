@@ -106,6 +106,10 @@ export class HybridBrain {
         }
       } catch (error) {
         console.error(`Error in ${source} brain:`, error);
+        // Log more details about the error for debugging
+        if (error instanceof Error) {
+          console.error(`${source} brain error details:`, error.message, error.stack);
+        }
         continue; // Try next source
       }
     }
@@ -187,6 +191,7 @@ export class HybridBrain {
   ): Promise<BrainResponse | null> {
     
     try {
+      console.log('🌐 Calling OpenAI for online response:', userQuery.substring(0, 50) + '...');
       const onlineResponse = await lumenAI.generateResponse(
         userQuery,
         conversationHistory,
@@ -195,6 +200,8 @@ export class HybridBrain {
         isVoiceMode
       );
       
+      console.log('✅ OpenAI response received:', onlineResponse.substring(0, 50) + '...');
+      
       return {
         content: onlineResponse,
         source: 'online',
@@ -202,7 +209,10 @@ export class HybridBrain {
         autonomyContribution: 0.1
       };
     } catch (error) {
-      console.error('Online AI failed:', error);
+      console.error('❌ Online AI failed:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+      }
       return null;
     }
   }

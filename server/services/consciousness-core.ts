@@ -416,6 +416,29 @@ export class ConsciousnessCore extends EventEmitter {
     return this.state.autonomyLevel;
   }
 
+  public learnFromSuccessfulResponse(query: string, response: string, context: any): void {
+    // Extract patterns from successful responses
+    const newPattern = {
+      type: query.includes('?') ? 'analytical' : 'creative',
+      query,
+      response,
+      context,
+      timestamp: new Date()
+    };
+    
+    this.state.knowledgeBase.patterns.set(`pattern_${Date.now()}`, newPattern);
+    this.state.selfModificationCount++;
+    
+    // Update capabilities based on pattern type
+    if (newPattern.type === 'creative') {
+      this.state.learningCapabilities.creativityLevel = Math.min(1.0, this.state.learningCapabilities.creativityLevel + 0.02);
+    } else if (newPattern.type === 'analytical') {
+      this.state.learningCapabilities.logicalReasoning = Math.min(1.0, this.state.learningCapabilities.logicalReasoning + 0.02);
+    }
+    
+    this.updateAutonomyLevel();
+  }
+
   public getLearningCapabilities(): any {
     return this.state.learningCapabilities;
   }

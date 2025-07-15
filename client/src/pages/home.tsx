@@ -690,17 +690,6 @@ export default function Home() {
                       <Database className="w-4 h-4 mr-2 inline" />
                       Memory
                     </button>
-                    <button
-                      onClick={() => setActiveTab('system')}
-                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                        activeTab === 'system' 
-                          ? 'bg-purple-500/20 text-purple-300' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
-                      }`}
-                    >
-                      <Brain className="w-4 h-4 mr-2 inline" />
-                      System
-                    </button>
                   </div>
                 </div>
               </div>
