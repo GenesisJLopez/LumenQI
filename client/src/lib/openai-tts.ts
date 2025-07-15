@@ -75,12 +75,12 @@ export class OpenAITTS {
         if (audioUrl) {
           URL.revokeObjectURL(audioUrl);
         }
-        if (options.onEnd) {
-          try {
+        try {
+          if (options.onEnd) {
             options.onEnd();
-          } catch (error) {
-            console.error('Error in onEnd callback:', error);
           }
+        } catch (error) {
+          console.error('Error in onEnd callback:', error);
         }
       };
 
