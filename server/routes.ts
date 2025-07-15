@@ -834,7 +834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             storage.createMessage({
               conversationId,
               role: 'assistant',
-              content: aiResponse
+              content: aiResponse.content || aiResponse
             }),
             // Process personality evolution in background with enhanced emotion data
             personalityEvolution.processInteraction({
@@ -845,7 +845,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               timestamp: new Date()
             }),
             // Create memory if significant (in background)
-            (content.length > 50 || aiResponse.length > 100) ?
+            (content.length > 50 || (aiResponse.content || aiResponse).length > 100) ?
               storage.createMemory({
                 userId: 1,
                 content: `User discussed: ${content.substring(0, 100)}...`,

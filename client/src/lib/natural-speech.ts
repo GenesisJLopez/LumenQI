@@ -1,4 +1,4 @@
-// Ultra-natural speech synthesis with OpenAI TTS fallback
+// Ultra-natural speech synthesis with Llama 3 TTS
 export class NaturalSpeech {
   private synthesis: SpeechSynthesis;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
@@ -107,17 +107,17 @@ export class NaturalSpeech {
     const cleanText = this.cleanTextForNaturalSpeech(text);
     if (!cleanText.trim()) return;
 
-    // Try OpenAI TTS first
+    // Try Llama 3 TTS first
     try {
-      await this.speakWithOpenAI(cleanText, options);
+      await this.speakWithLlama3TTS(cleanText, options);
     } catch (error) {
-      console.warn('OpenAI TTS failed, falling back to browser TTS:', error);
+      console.warn('Llama 3 TTS failed, falling back to browser TTS:', error);
       // Fallback to browser TTS
       this.speakWithBrowserTTS(cleanText, options);
     }
   }
 
-  private async speakWithOpenAI(text: string, options: any) {
+  private async speakWithLlama3TTS(text: string, options: any) {
     if (!text.trim()) return;
 
     try {
@@ -129,7 +129,7 @@ export class NaturalSpeech {
         body: JSON.stringify({
           text: text,
           voice: options.voice || 'nova',
-          model: options.model || 'tts-1-hd',
+          model: options.model || 'llama3-8b',
           speed: options.speed || 1.0,
           response_format: 'mp3'
         }),
@@ -139,7 +139,18 @@ export class NaturalSpeech {
         throw new Error(`TTS request failed: ${response.status}`);
       }
 
-      const audioBlob = await response.blob();
+      const result = await response.json();
+      if (!result.success || !result.audioData) {
+        throw new Error('TTS response missing audio data');
+      }
+
+      // Convert base64 to blob
+      const audioData = atob(result.audioData);
+      const audioArray = new Uint8Array(audioData.length);
+      for (let i = 0; i < audioData.length; i++) {
+        audioArray[i] = audioData.charCodeAt(i);
+      }
+      const audioBlob = new Blob([audioArray], { type: 'audio/wav' });
       const audioUrl = URL.createObjectURL(audioBlob);
 
       this.currentAudio = new Audio(audioUrl);
@@ -148,7 +159,7 @@ export class NaturalSpeech {
       this.currentAudio.onplay = () => {
         this.isPlaying = true;
         options.onStart?.();
-        console.log('OpenAI TTS playback started');
+        console.log('Llama 3 TTS playback started');
       };
       
       this.currentAudio.onended = () => {
@@ -167,7 +178,7 @@ export class NaturalSpeech {
 
     } catch (error) {
       this.isPlaying = false;
-      console.error('OpenAI TTS error:', error);
+      console.error('Llama 3 TTS error:', error);
       throw error;
     }
   }
@@ -229,7 +240,7 @@ export class NaturalSpeech {
   }
 
   stop() {
-    // Stop OpenAI TTS audio
+    // Stop Llama 3 TTS audio
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
