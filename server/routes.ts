@@ -432,20 +432,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const defaultIdentity = identityStorage.resetToDefault();
       
-      // Update Lumen AI personality with reset identity
-      lumenAI.updatePersonality({
-        name: "Lumen QI",
-        traits: [
-          "Advanced quantum intelligence",
-          "Expert programming capabilities",
-          "Comprehensive development knowledge",
-          "Warm and engaging communication",
-          "Supportive and encouraging",
-          "Adaptable and evolving"
-        ],
-        background: defaultIdentity.coreIdentity,
-        responseStyle: defaultIdentity.communicationStyle
-      });
+      // Reset Custom AI Engine personality to defaults
+      const aiConfig = await aiConfigManager.getActiveAI();
+      if (aiConfig && aiConfig.customAI) {
+        await aiConfig.customAI.updatePersonality({
+          name: "Lumen QI",
+          traits: [
+            "Advanced quantum intelligence",
+            "Expert programming capabilities",
+            "Comprehensive development knowledge",
+            "Warm and engaging communication",
+            "Supportive and encouraging",
+            "Adaptable and evolving"
+          ],
+          background: defaultIdentity.coreIdentity,
+          responseStyle: defaultIdentity.communicationStyle
+        });
+      }
       
       res.json({ 
         success: true, 
