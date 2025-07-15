@@ -662,14 +662,22 @@ Respond with only the title, no quotes or additional text.`;
       res.json({ fileTree });
     } catch (error) {
       console.error('File tree error:', error);
-      res.status(500).json({ error: "Failed to get file tree structure" });
+      res.status(500).json({ error: "Failed to get file tree structure", fileTree: [] });
     }
   });
 
   app.get("/api/system/metrics", async (req, res) => {
     try {
       const metrics = await systemAwarenessService.getArchitectureMetrics();
-      res.json(metrics);
+      res.json(metrics || {
+        totalFiles: 0,
+        totalFolders: 0,
+        codeFiles: 0,
+        configFiles: 0,
+        dependencies: 0,
+        services: 0,
+        lastUpdated: new Date().toISOString()
+      });
     } catch (error) {
       console.error('Architecture metrics error:', error);
       res.status(500).json({ error: "Failed to get architecture metrics" });
