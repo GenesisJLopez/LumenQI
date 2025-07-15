@@ -331,52 +331,64 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use browser TTS for immediate response, then try OpenAI TTS
+          // Use OpenAI TTS for Lumen's natural voice with optimized performance
           const speakResponse = async () => {
             const cleanText = lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim();
             
-            // Immediate browser TTS for instant response
-            if ('speechSynthesis' in window) {
-              const utterance = new SpeechSynthesisUtterance(cleanText);
-              utterance.rate = 0.9;
-              utterance.pitch = 1.1;
-              utterance.volume = 1;
-              
-              // Use best available voice
-              const voices = speechSynthesis.getVoices();
-              const preferredVoice = voices.find(voice => 
-                voice.name.includes('Samantha') || 
-                voice.name.includes('Karen') || 
-                voice.name.includes('Zira') ||
-                voice.name.includes('Female')
-              );
-              if (preferredVoice) {
-                utterance.voice = preferredVoice;
+            try {
+              // Use optimized TTS API call with faster model
+              const response = await fetch('/api/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  text: cleanText,
+                  voice: 'nova', // Lumen's natural voice
+                  model: 'tts-1', // Faster model for voice mode
+                  speed: 1.0
+                })
+              });
+
+              if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                audio.onloadeddata = () => {
+                  // Audio is ready to play immediately
+                  audio.play();
+                };
+                
+                audio.onplay = () => {
+                  setIsSpeaking(true);
+                };
+                
+                audio.onended = () => {
+                  setIsSpeaking(false);
+                  URL.revokeObjectURL(audioUrl);
+                  // Restart listening immediately
+                  if (isSupported) {
+                    setTimeout(() => startListening(), 30);
+                  }
+                };
+                
+                audio.onerror = () => {
+                  setIsSpeaking(false);
+                  URL.revokeObjectURL(audioUrl);
+                  // Restart listening even on error
+                  if (isSupported) {
+                    setTimeout(() => startListening(), 30);
+                  }
+                };
+                
+                // Start loading audio immediately
+                audio.load();
+              } else {
+                throw new Error('TTS API failed');
               }
-              
-              utterance.onstart = () => {
-                setIsSpeaking(true);
-              };
-              
-              utterance.onend = () => {
-                setIsSpeaking(false);
-                // Restart listening immediately
-                if (isSupported) {
-                  setTimeout(() => startListening(), 30);
-                }
-              };
-              
-              utterance.onerror = () => {
-                setIsSpeaking(false);
-                if (isSupported) {
-                  setTimeout(() => startListening(), 30);
-                }
-              };
-              
-              speechSynthesis.speak(utterance);
-            } else {
-              // Fallback: just restart listening
+            } catch (error) {
+              console.error('OpenAI TTS failed:', error);
               setIsSpeaking(false);
+              // Always restart listening
               if (isSupported) {
                 setTimeout(() => startListening(), 30);
               }

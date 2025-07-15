@@ -184,9 +184,9 @@
     "trigger": "What's up",
     "response_template": "Hey there! I'm here, ready to dive into whatever you need—be it some tech guidance, a bit of creativ",
     "success_rate": 0.8,
-    "usage_frequency": 2,
+    "usage_frequency": 3,
     "created_from": "online",
-    "last_used": "2025-07-15T10:06:49.335Z",
+    "last_used": "2025-07-15T10:17:15.534Z",
     "effectiveness_score": 0.8
   },
   "pattern_1752574010703": {
@@ -217,6 +217,16 @@
     "usage_frequency": 1,
     "created_from": "online",
     "last_used": "2025-07-15T10:14:31.620Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752574637083": {
+    "pattern_id": "pattern_1752574637083",
+    "trigger": "What's up",
+    "response_template": "Hey there! I'm here and ready to dive into whatever you need—whether it's tech guidance, a bit of cr",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T10:17:17.083Z",
     "effectiveness_score": 0.8
   }
 }

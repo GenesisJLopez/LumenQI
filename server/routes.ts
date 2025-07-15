@@ -701,7 +701,7 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
-  // OpenAI TTS endpoint
+  // Optimized OpenAI TTS endpoint for voice mode
   app.post("/api/tts", async (req, res) => {
     try {
       const { text, voice = 'nova', model = 'tts-1', speed = 1.0, response_format = 'mp3' } = req.body;
@@ -710,14 +710,18 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Text is required" });
       }
 
-      // Simple text cleaning - only remove emojis
+      // Minimal text cleaning for faster processing
       const cleanText = text
-        .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+        .replace(/[^\w\s.,!?'-]/g, '') // Only keep essential characters
         .trim();
 
       if (!cleanText) {
         return res.status(400).json({ error: "No valid text after cleaning" });
       }
+
+      // Use faster TTS-1 model for voice mode with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
       const openaiResponse = await fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
@@ -726,13 +730,16 @@ Respond with only the title, no quotes or additional text.`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model,
+          model: 'tts-1', // Always use faster model for voice mode
           input: cleanText,
           voice,
           speed,
           response_format
         }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!openaiResponse.ok) {
         const errorText = await openaiResponse.text();
@@ -740,17 +747,18 @@ Respond with only the title, no quotes or additional text.`;
           status: openaiResponse.status,
           statusText: openaiResponse.statusText,
           body: errorText,
-          request: { model, input: cleanText, voice, speed, response_format }
+          request: { model: 'tts-1', input: cleanText, voice, speed, response_format }
         });
         throw new Error(`OpenAI TTS API error: ${openaiResponse.status} - ${errorText}`);
       }
 
-      // Stream the audio response
+      // Stream the audio response directly
       const audioBuffer = await openaiResponse.arrayBuffer();
       
       res.set({
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioBuffer.byteLength.toString(),
+        'Cache-Control': 'no-cache', // Prevent caching for real-time use
       });
       
       res.send(Buffer.from(audioBuffer));
