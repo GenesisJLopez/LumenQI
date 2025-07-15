@@ -211,17 +211,22 @@ export class WebSearchService {
   // Weather from wttr.in (free service)
   private async getWeatherFromWttr(location: string): Promise<WeatherData | null> {
     try {
+      // Clean and format location
+      const cleanLocation = location.replace(/\s+/g, '+').replace(/[^a-zA-Z0-9+,.-]/g, '');
+      
       const response = await fetch(
-        `https://wttr.in/${encodeURIComponent(location)}?format=j1`,
+        `https://wttr.in/${cleanLocation}?format=j1`,
         {
           headers: {
             'User-Agent': this.userAgent,
+            'Accept': 'application/json',
           },
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Weather API error: ${response.status}`);
+        console.error(`Weather API error: ${response.status} for location: ${cleanLocation}`);
+        return null; // Return null instead of throwing error
       }
 
       const data = await response.json();
@@ -374,6 +379,19 @@ export class WebSearchService {
     if (weatherIndex !== -1 && weatherIndex < words.length - 1) {
       return words.slice(weatherIndex + 1).join(' ');
     }
+    
+    // Also try to extract location from "in [location]" pattern
+    const inMatch = query.match(/in\s+([^?]+)/i);
+    if (inMatch) {
+      return inMatch[1].trim();
+    }
+    
+    // Try to extract location from common patterns
+    const locationMatch = query.match(/weather.*?(?:in|for|at)\s+([^?]+)/i);
+    if (locationMatch) {
+      return locationMatch[1].trim();
+    }
+    
     return null;
   }
 

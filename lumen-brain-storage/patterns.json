@@ -58,5 +58,25 @@
     "created_from": "online",
     "last_used": "2025-07-15T09:04:36.555Z",
     "effectiveness_score": 0.8
+  },
+  "pattern_1752571078638": {
+    "pattern_id": "pattern_1752571078638",
+    "trigger": "What's up lumen",
+    "response_template": "Hey there! I'm here, ready to dive into whatever you need—be it some tech guidance, a bit of creativ",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:17:58.638Z",
+    "effectiveness_score": 0.8
+  },
+  "pattern_1752571159586": {
+    "pattern_id": "pattern_1752571159586",
+    "trigger": "What's the weather in Dallas Texas tomorrow",
+    "response_template": "Hey there! I don't have direct access to real-time weather data. You might want to check a reliable ",
+    "success_rate": 0.8,
+    "usage_frequency": 1,
+    "created_from": "online",
+    "last_used": "2025-07-15T09:19:19.586Z",
+    "effectiveness_score": 0.8
   }
 }
