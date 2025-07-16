@@ -21,6 +21,7 @@ import { proactiveAI } from "./services/proactive-ai";
 import { naturalConversation } from "./services/natural-conversation";
 import { calendarIntegration } from "./services/calendar-integration";
 import { conversationFlowAnalyzer } from "./services/conversation-flow-analyzer";
+import { voiceToneService } from "./services/voice-tone-service";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -1865,6 +1866,110 @@ Respond with only the title, no quotes or additional text.`;
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
+    }
+  });
+
+  // Voice Tone API endpoints
+  app.get("/api/voice-tones", async (req, res) => {
+    try {
+      const settings = voiceToneService.getSettings();
+      const allTones = voiceToneService.getAllTones();
+      res.json({
+        currentTone: settings.currentTone,
+        allTones,
+        settings
+      });
+    } catch (error) {
+      console.error('Voice tone fetch error:', error);
+      res.status(500).json({ error: "Failed to fetch voice tones" });
+    }
+  });
+
+  app.post("/api/voice-tones/current", async (req, res) => {
+    try {
+      const { toneId } = req.body;
+      const success = await voiceToneService.setCurrentTone(toneId);
+      
+      if (success) {
+        const currentTone = voiceToneService.getCurrentTone();
+        res.json({ success: true, currentTone });
+      } else {
+        res.status(400).json({ success: false, error: "Invalid tone ID" });
+      }
+    } catch (error) {
+      console.error('Voice tone update error:', error);
+      res.status(500).json({ error: "Failed to update current tone" });
+    }
+  });
+
+  app.post("/api/voice-tones/custom", async (req, res) => {
+    try {
+      const tone = req.body;
+      const success = await voiceToneService.addCustomTone(tone);
+      
+      if (success) {
+        res.json({ success: true, message: "Custom tone added successfully" });
+      } else {
+        res.status(400).json({ success: false, error: "Tone ID already exists" });
+      }
+    } catch (error) {
+      console.error('Custom tone creation error:', error);
+      res.status(500).json({ error: "Failed to create custom tone" });
+    }
+  });
+
+  app.put("/api/voice-tones/custom/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const success = await voiceToneService.updateCustomTone(id, updates);
+      
+      if (success) {
+        res.json({ success: true, message: "Custom tone updated successfully" });
+      } else {
+        res.status(404).json({ success: false, error: "Custom tone not found" });
+      }
+    } catch (error) {
+      console.error('Custom tone update error:', error);
+      res.status(500).json({ error: "Failed to update custom tone" });
+    }
+  });
+
+  app.delete("/api/voice-tones/custom/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await voiceToneService.deleteCustomTone(id);
+      
+      if (success) {
+        res.json({ success: true, message: "Custom tone deleted successfully" });
+      } else {
+        res.status(404).json({ success: false, error: "Custom tone not found" });
+      }
+    } catch (error) {
+      console.error('Custom tone deletion error:', error);
+      res.status(500).json({ error: "Failed to delete custom tone" });
+    }
+  });
+
+  app.get("/api/voice-tones/adapt/:traits", async (req, res) => {
+    try {
+      const traits = decodeURIComponent(req.params.traits).split(',');
+      const adaptedTone = await voiceToneService.adaptToneToPersonality(traits);
+      res.json({ adaptedTone });
+    } catch (error) {
+      console.error('Tone adaptation error:', error);
+      res.status(500).json({ error: "Failed to adapt tone to personality" });
+    }
+  });
+
+  app.get("/api/voice-tones/personality-prompt/:toneId", async (req, res) => {
+    try {
+      const { toneId } = req.params;
+      const prompt = voiceToneService.generateTonePersonalityPrompt(toneId);
+      res.json({ prompt });
+    } catch (error) {
+      console.error('Tone personality prompt error:', error);
+      res.status(500).json({ error: "Failed to generate tone personality prompt" });
     }
   });
 
