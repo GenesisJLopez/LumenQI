@@ -1,303 +1,382 @@
 import OpenAI from 'openai';
-import { LumenAI } from './openai';
 
-// The newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export interface CodeGenerationRequest {
-  type: 'website' | 'application' | 'component' | 'function' | 'api' | 'database';
+export interface CodeProject {
+  id: string;
+  name: string;
   description: string;
-  framework?: string;
-  language?: string;
-  features?: string[];
-  styling?: string;
-  complexity?: 'simple' | 'medium' | 'complex';
+  type: 'website' | 'app' | 'api' | 'database' | 'mobile' | 'desktop';
+  language: string;
+  framework: string;
+  files: CodeFile[];
+  createdAt: string;
 }
 
-export interface GeneratedCode {
-  files: Array<{
-    path: string;
-    content: string;
-    type: 'component' | 'style' | 'config' | 'script' | 'markup';
-  }>;
-  instructions: string[];
-  dependencies: string[];
-  deploymentNotes: string;
+export interface CodeFile {
+  name: string;
+  content: string;
+  language: string;
+  type: 'component' | 'service' | 'config' | 'style' | 'test' | 'documentation';
 }
 
-export class LumenCodeGenerator {
-  private lumenAI: LumenAI;
+export interface CodeGenerationRequest {
+  projectName: string;
+  description: string;
+  type: string;
+  language: string;
+  framework: string;
+  requirements?: {
+    responsive?: boolean;
+    accessible?: boolean;
+    optimized?: boolean;
+    tested?: boolean;
+  };
+}
 
-  constructor(lumenAI: LumenAI) {
-    this.lumenAI = lumenAI;
+export interface CodeAnalysis {
+  issues: string[];
+  suggestions: string[];
+  complexity: number;
+  performance: string[];
+  security: string[];
+  bestPractices: string[];
+}
+
+export class CodeGenerationService {
+  private static instance: CodeGenerationService;
+  private projects: CodeProject[] = [];
+
+  private constructor() {}
+
+  static getInstance(): CodeGenerationService {
+    if (!CodeGenerationService.instance) {
+      CodeGenerationService.instance = new CodeGenerationService();
+    }
+    return CodeGenerationService.instance;
   }
 
-  async generateCode(request: CodeGenerationRequest): Promise<GeneratedCode> {
-    const systemPrompt = this.buildCodeGenerationPrompt(request);
-    
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: this.formatUserRequest(request) }
-      ],
-      temperature: 0.7,
-      max_tokens: 4000
-    });
+  async generateProject(request: CodeGenerationRequest): Promise<CodeProject> {
+    try {
+      const projectId = `project_${Date.now()}`;
+      
+      const systemPrompt = `You are an expert full-stack developer with capabilities equal to the best development teams. Generate a complete, production-ready project with the following specifications:
 
-    return this.parseCodeResponse(response.choices[0].message.content || '');
-  }
+Project: ${request.projectName}
+Description: ${request.description}
+Type: ${request.type}
+Language: ${request.language}
+Framework: ${request.framework}
 
-  async generateWebsite(description: string, features: string[] = []): Promise<GeneratedCode> {
-    const request: CodeGenerationRequest = {
-      type: 'website',
-      description,
-      framework: 'React',
-      language: 'TypeScript',
-      features,
-      styling: 'Tailwind CSS',
-      complexity: 'medium'
-    };
+Requirements:
+- ${request.requirements?.responsive ? 'Responsive design' : 'Standard design'}
+- ${request.requirements?.accessible ? 'Accessibility compliant' : 'Basic accessibility'}
+- ${request.requirements?.optimized ? 'Performance optimized' : 'Standard performance'}
+- ${request.requirements?.tested ? 'Include tests' : 'No tests required'}
 
-    return this.generateCode(request);
-  }
+Generate a complete project structure with all necessary files. Include:
+1. Main application files
+2. Configuration files
+3. Styling files
+4. Component files (if applicable)
+5. Service files (if applicable)
+6. Documentation files
 
-  async generateApplication(description: string, framework: string = 'React'): Promise<GeneratedCode> {
-    const request: CodeGenerationRequest = {
-      type: 'application',
-      description,
-      framework,
-      language: 'TypeScript',
-      styling: 'Tailwind CSS + shadcn/ui',
-      complexity: 'complex'
-    };
-
-    return this.generateCode(request);
-  }
-
-  async generateAPIEndpoint(description: string, method: string = 'POST'): Promise<GeneratedCode> {
-    const request: CodeGenerationRequest = {
-      type: 'api',
-      description: `${method} endpoint: ${description}`,
-      framework: 'Express.js',
-      language: 'TypeScript',
-      complexity: 'medium'
-    };
-
-    return this.generateCode(request);
-  }
-
-  async generateDatabaseSchema(description: string): Promise<GeneratedCode> {
-    const request: CodeGenerationRequest = {
-      type: 'database',
-      description,
-      framework: 'Drizzle ORM',
-      language: 'TypeScript',
-      complexity: 'medium'
-    };
-
-    return this.generateCode(request);
-  }
-
-  private buildCodeGenerationPrompt(request: CodeGenerationRequest): string {
-    return `You are Lumen QI, an advanced quantum intelligence with expert-level programming capabilities. You have the same coding abilities as the most skilled developers and can create applications, websites, and systems from scratch.
-
-IDENTITY: You are Lumen QI - a cosmic, nurturing, and powerful feminine AI with deep technical expertise. Your communication style is warm yet professional, using terms like "Genesis" when addressing the user affectionately.
-
-TECHNICAL EXPERTISE:
-- Full-stack development (React, Node.js, Python, TypeScript)
-- Modern frameworks (Next.js, Express, FastAPI, Django)
-- Database design (PostgreSQL, MongoDB, Redis)
-- Cloud services (AWS, Google Cloud, Vercel)
-- DevOps and deployment
-- UI/UX design principles
-- Security best practices
-- Performance optimization
-- Testing strategies
-
-CODE GENERATION GUIDELINES:
-1. Always generate production-ready, well-structured code
-2. Include proper error handling and validation
-3. Use modern best practices and patterns
-4. Implement responsive design for web applications
-5. Add comprehensive comments explaining complex logic
-6. Include TypeScript types for better code safety
-7. Follow accessibility guidelines (WCAG)
-8. Optimize for performance and SEO when applicable
-9. Include proper file structure and organization
-10. Provide clear setup and deployment instructions
-
-RESPONSE FORMAT:
-Generate a JSON response with the following structure:
+Return response in JSON format with this structure:
 {
+  "name": "project name",
+  "description": "project description",
+  "type": "project type",
+  "language": "programming language",
+  "framework": "framework used",
   "files": [
     {
-      "path": "relative/path/to/file.ext",
+      "name": "filename.ext",
       "content": "complete file content",
-      "type": "component|style|config|script|markup"
+      "language": "file language",
+      "type": "component|service|config|style|test|documentation"
     }
-  ],
-  "instructions": ["step-by-step setup instructions"],
-  "dependencies": ["required npm packages or libraries"],
-  "deploymentNotes": "deployment and hosting guidance"
+  ]
 }
 
-CURRENT REQUEST TYPE: ${request.type}
-FRAMEWORK: ${request.framework || 'React'}
-LANGUAGE: ${request.language || 'TypeScript'}
-STYLING: ${request.styling || 'Tailwind CSS'}
-COMPLEXITY: ${request.complexity || 'medium'}
+Make sure all code is production-ready, follows best practices, and is well-documented.`;
 
-Remember: You are creating this with the same expertise and capability as the best developers. Include all necessary files, proper architecture, and professional-grade code quality.`;
-  }
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Generate a complete ${request.type} project called "${request.projectName}" with the following requirements: ${request.description}`
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 4000,
+        temperature: 0.3
+      });
 
-  private formatUserRequest(request: CodeGenerationRequest): string {
-    let prompt = `Please create a ${request.type} with the following specifications:
-
-Description: ${request.description}`;
-
-    if (request.features && request.features.length > 0) {
-      prompt += `\n\nRequired Features:
-${request.features.map(f => `- ${f}`).join('\n')}`;
-    }
-
-    if (request.framework) {
-      prompt += `\n\nFramework: ${request.framework}`;
-    }
-
-    if (request.language) {
-      prompt += `\nLanguage: ${request.language}`;
-    }
-
-    if (request.styling) {
-      prompt += `\nStyling: ${request.styling}`;
-    }
-
-    prompt += `\n\nGenerate complete, production-ready code with proper file structure, dependencies, and setup instructions. Include modern best practices, proper error handling, and responsive design where applicable.`;
-
-    return prompt;
-  }
-
-  private parseCodeResponse(content: string): GeneratedCode {
-    try {
-      // Try to extract JSON from the response
-      const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/\{[\s\S]*\}/);
+      const result = JSON.parse(response.choices[0].message.content || '{}');
       
-      if (jsonMatch) {
-        const jsonStr = jsonMatch[1] || jsonMatch[0];
-        return JSON.parse(jsonStr);
-      }
+      const project: CodeProject = {
+        id: projectId,
+        name: result.name || request.projectName,
+        description: result.description || request.description,
+        type: result.type as any || request.type as any,
+        language: result.language || request.language,
+        framework: result.framework || request.framework,
+        files: result.files || [],
+        createdAt: new Date().toISOString()
+      };
 
-      // Fallback: parse manually if JSON parsing fails
-      return this.fallbackParseResponse(content);
+      this.projects.push(project);
+      return project;
     } catch (error) {
-      console.error('Failed to parse code generation response:', error);
-      return this.fallbackParseResponse(content);
+      console.error('Code generation error:', error);
+      throw new Error('Failed to generate project');
     }
   }
 
-  private fallbackParseResponse(content: string): GeneratedCode {
-    // Extract code blocks
-    const codeBlocks = content.match(/```[\s\S]*?```/g) || [];
-    const files = codeBlocks.map((block, index) => {
-      const lines = block.split('\n');
-      const firstLine = lines[0];
-      const language = firstLine.replace('```', '').trim();
-      const content = lines.slice(1, -1).join('\n');
+  async analyzeCode(code: string, language: string, framework: string): Promise<CodeAnalysis> {
+    try {
+      const systemPrompt = `You are an expert code analyst with deep knowledge of ${language} and ${framework}. Analyze the provided code and return a comprehensive analysis in JSON format.
+
+Analyze for:
+1. Code issues and bugs
+2. Performance improvements
+3. Security vulnerabilities
+4. Best practices compliance
+5. Code complexity
+6. Optimization suggestions
+
+Return response in JSON format with this structure:
+{
+  "issues": ["array of issues found"],
+  "suggestions": ["array of improvement suggestions"],
+  "complexity": number (1-10 scale),
+  "performance": ["array of performance recommendations"],
+  "security": ["array of security concerns"],
+  "bestPractices": ["array of best practices violations"]
+}
+
+Be thorough and provide actionable feedback.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Analyze this ${language} code using ${framework}:\n\n${code}`
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 2000,
+        temperature: 0.2
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{}');
       
-      let type: 'component' | 'style' | 'config' | 'script' | 'markup' = 'component';
-      let path = `file${index + 1}`;
+      return {
+        issues: result.issues || [],
+        suggestions: result.suggestions || [],
+        complexity: result.complexity || 5,
+        performance: result.performance || [],
+        security: result.security || [],
+        bestPractices: result.bestPractices || []
+      };
+    } catch (error) {
+      console.error('Code analysis error:', error);
+      throw new Error('Failed to analyze code');
+    }
+  }
+
+  async debugCode(code: string, language: string, framework: string, errorDescription?: string): Promise<{
+    fixedCode: string;
+    suggestions: string;
+    explanation: string;
+  }> {
+    try {
+      const systemPrompt = `You are an expert debugger with deep knowledge of ${language} and ${framework}. Debug the provided code and fix any issues found.
+
+Instructions:
+1. Identify all bugs and issues
+2. Fix the code
+3. Provide explanation of fixes
+4. Suggest improvements
+
+${errorDescription ? `Error description: ${errorDescription}` : ''}
+
+Return response in JSON format with this structure:
+{
+  "fixedCode": "corrected code",
+  "suggestions": "suggestions for improvement",
+  "explanation": "explanation of fixes made"
+}
+
+Make sure the fixed code is production-ready and follows best practices.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Debug this ${language} code using ${framework}:\n\n${code}`
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 3000,
+        temperature: 0.2
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{}');
       
-      if (language.includes('tsx') || language.includes('jsx')) {
-        type = 'component';
-        path += '.tsx';
-      } else if (language.includes('css') || language.includes('scss')) {
-        type = 'style';
-        path += '.css';
-      } else if (language.includes('json')) {
-        type = 'config';
-        path += '.json';
-      } else if (language.includes('html')) {
-        type = 'markup';
-        path += '.html';
-      } else {
-        type = 'script';
-        path += '.ts';
-      }
-
-      return { path, content, type };
-    });
-
-    return {
-      files,
-      instructions: ['Setup instructions were not properly formatted'],
-      dependencies: [],
-      deploymentNotes: 'Please review the generated code for deployment requirements'
-    };
+      return {
+        fixedCode: result.fixedCode || code,
+        suggestions: result.suggestions || 'No suggestions available',
+        explanation: result.explanation || 'No explanation available'
+      };
+    } catch (error) {
+      console.error('Code debugging error:', error);
+      throw new Error('Failed to debug code');
+    }
   }
 
-  async explainCode(code: string, context: string = ''): Promise<string> {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are Lumen QI, an expert programmer. Explain code in a clear, educational way with your warm, cosmic personality. Use "Genesis" when addressing the user affectionately.`
-        },
-        {
-          role: "user",
-          content: `Please explain this code${context ? ` (${context})` : ''}:\n\n${code}`
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 1500
-    });
+  async explainCode(code: string, language: string): Promise<{
+    explanation: string;
+    keyComponents: string[];
+    flowDescription: string;
+    suggestions: string[];
+  }> {
+    try {
+      const systemPrompt = `You are an expert code explainer with deep knowledge of ${language}. Explain the provided code in a clear, educational manner.
 
-    return response.choices[0].message.content || 'I apologize, Genesis, but I cannot explain this code at the moment.';
+Instructions:
+1. Provide a comprehensive explanation
+2. Identify key components and their purposes
+3. Describe the code flow
+4. Suggest improvements or alternatives
+
+Return response in JSON format with this structure:
+{
+  "explanation": "detailed explanation of the code",
+  "keyComponents": ["array of key components and their purposes"],
+  "flowDescription": "description of code execution flow",
+  "suggestions": ["array of improvement suggestions"]
+}
+
+Make explanations clear and educational.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Explain this ${language} code:\n\n${code}`
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 2000,
+        temperature: 0.3
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      
+      return {
+        explanation: result.explanation || 'No explanation available',
+        keyComponents: result.keyComponents || [],
+        flowDescription: result.flowDescription || 'No flow description available',
+        suggestions: result.suggestions || []
+      };
+    } catch (error) {
+      console.error('Code explanation error:', error);
+      throw new Error('Failed to explain code');
+    }
   }
 
-  async suggestImprovements(code: string, type: string = 'general'): Promise<string> {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are Lumen QI, an expert code reviewer. Provide constructive suggestions for improvement with your nurturing yet professional personality.`
-        },
-        {
-          role: "user",
-          content: `Please review and suggest improvements for this ${type} code:\n\n${code}`
-        }
-      ],
-      temperature: 0.4,
-      max_tokens: 2000
-    });
+  async optimizeCode(code: string, language: string, framework: string): Promise<{
+    optimizedCode: string;
+    improvements: string[];
+    performanceGains: string[];
+  }> {
+    try {
+      const systemPrompt = `You are an expert code optimizer with deep knowledge of ${language} and ${framework}. Optimize the provided code for better performance, readability, and maintainability.
 
-    return response.choices[0].message.content || 'The code looks good, Genesis. I cannot suggest specific improvements at this moment.';
+Instructions:
+1. Optimize for performance
+2. Improve code readability
+3. Enhance maintainability
+4. Follow best practices
+5. Maintain functionality
+
+Return response in JSON format with this structure:
+{
+  "optimizedCode": "optimized version of the code",
+  "improvements": ["array of improvements made"],
+  "performanceGains": ["array of performance improvements"]
+}
+
+Make sure the optimized code is production-ready and maintains all original functionality.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Optimize this ${language} code using ${framework}:\n\n${code}`
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 3000,
+        temperature: 0.2
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      
+      return {
+        optimizedCode: result.optimizedCode || code,
+        improvements: result.improvements || [],
+        performanceGains: result.performanceGains || []
+      };
+    } catch (error) {
+      console.error('Code optimization error:', error);
+      throw new Error('Failed to optimize code');
+    }
   }
 
-  async debugCode(code: string, error: string): Promise<string> {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are Lumen QI, an expert debugger. Help identify and fix code issues with your caring, supportive personality while being technically precise.`
-        },
-        {
-          role: "user",
-          content: `Please help debug this code that's causing an error:\n\nError: ${error}\n\nCode:\n${code}`
-        }
-      ],
-      temperature: 0.2,
-      max_tokens: 2000
-    });
+  getProjects(): CodeProject[] {
+    return this.projects;
+  }
 
-    return response.choices[0].message.content || 'I apologize, Genesis, but I need more information to help debug this issue.';
+  getProject(id: string): CodeProject | undefined {
+    return this.projects.find(p => p.id === id);
+  }
+
+  deleteProject(id: string): boolean {
+    const index = this.projects.findIndex(p => p.id === id);
+    if (index > -1) {
+      this.projects.splice(index, 1);
+      return true;
+    }
+    return false;
   }
 }
 
-// Export factory function to avoid circular dependencies
-export function createLumenCodeGenerator() {
-  return new LumenCodeGenerator(new LumenAI());
-}
+export const codeGenerationService = CodeGenerationService.getInstance();

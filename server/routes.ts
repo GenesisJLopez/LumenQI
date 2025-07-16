@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { lumenAI } from "./services/openai";
-import { createLumenCodeGenerator, type CodeGenerationRequest } from "./services/code-generation";
+
 import { webSearchService } from "./services/web-search";
 import { systemAwarenessService } from "./services/system-awareness";
 import { personalityEvolution } from "./services/personality-evolution";
@@ -23,6 +23,7 @@ import { calendarIntegration } from "./services/calendar-integration";
 import { conversationFlowAnalyzer } from "./services/conversation-flow-analyzer";
 import { voiceToneService } from "./services/voice-tone-service";
 import { visionAnalysisService } from "./services/vision-analysis";
+import { codeGenerationService } from "./services/code-generation";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -47,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   // Create code generator instance
-  const lumenCodeGenerator = createLumenCodeGenerator();
+  // Code generation service is already imported
 
   // API Routes
   app.get("/api/conversations", async (req, res) => {
@@ -2019,6 +2020,137 @@ Respond with only the title, no quotes or additional text.`;
     } catch (error) {
       console.error('Vision history clear error:', error);
       res.status(500).json({ error: "Failed to clear vision history" });
+    }
+  });
+
+  // Code generation endpoints
+  app.post("/api/code/generate", async (req, res) => {
+    try {
+      const { projectName, description, type, language, framework, requirements } = req.body;
+      
+      if (!projectName || !description || !type || !language || !framework) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const project = await codeGenerationService.generateProject({
+        projectName,
+        description,
+        type,
+        language,
+        framework,
+        requirements
+      });
+
+      res.json(project);
+    } catch (error) {
+      console.error("Code generation error:", error);
+      res.status(500).json({ error: "Failed to generate code" });
+    }
+  });
+
+  app.post("/api/code/analyze", async (req, res) => {
+    try {
+      const { code, language, framework } = req.body;
+      
+      if (!code || !language || !framework) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const analysis = await codeGenerationService.analyzeCode(code, language, framework);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Code analysis error:", error);
+      res.status(500).json({ error: "Failed to analyze code" });
+    }
+  });
+
+  app.post("/api/code/debug", async (req, res) => {
+    try {
+      const { code, language, framework, errorDescription } = req.body;
+      
+      if (!code || !language || !framework) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const debugResult = await codeGenerationService.debugCode(code, language, framework, errorDescription);
+      res.json(debugResult);
+    } catch (error) {
+      console.error("Code debugging error:", error);
+      res.status(500).json({ error: "Failed to debug code" });
+    }
+  });
+
+  app.post("/api/code/explain", async (req, res) => {
+    try {
+      const { code, language } = req.body;
+      
+      if (!code || !language) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const explanation = await codeGenerationService.explainCode(code, language);
+      res.json(explanation);
+    } catch (error) {
+      console.error("Code explanation error:", error);
+      res.status(500).json({ error: "Failed to explain code" });
+    }
+  });
+
+  app.post("/api/code/optimize", async (req, res) => {
+    try {
+      const { code, language, framework } = req.body;
+      
+      if (!code || !language || !framework) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const optimization = await codeGenerationService.optimizeCode(code, language, framework);
+      res.json(optimization);
+    } catch (error) {
+      console.error("Code optimization error:", error);
+      res.status(500).json({ error: "Failed to optimize code" });
+    }
+  });
+
+  app.get("/api/code/projects", async (req, res) => {
+    try {
+      const projects = codeGenerationService.getProjects();
+      res.json(projects);
+    } catch (error) {
+      console.error("Get projects error:", error);
+      res.status(500).json({ error: "Failed to get projects" });
+    }
+  });
+
+  app.get("/api/code/projects/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const project = codeGenerationService.getProject(id);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      res.json(project);
+    } catch (error) {
+      console.error("Get project error:", error);
+      res.status(500).json({ error: "Failed to get project" });
+    }
+  });
+
+  app.delete("/api/code/projects/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = codeGenerationService.deleteProject(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete project error:", error);
+      res.status(500).json({ error: "Failed to delete project" });
     }
   });
 
