@@ -394,11 +394,7 @@ export default function Home() {
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
-                audio.onloadeddata = () => {
-                  // Audio is ready to play immediately
-                  audio.play();
-                };
-                
+                // Set speaking state immediately when audio starts playing
                 audio.onplay = () => {
                   setIsSpeaking(true);
                 };
@@ -407,8 +403,8 @@ export default function Home() {
                   setIsSpeaking(false);
                   URL.revokeObjectURL(audioUrl);
                   // Restart listening immediately
-                  if (isSupported) {
-                    setTimeout(() => startListening(), 30);
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 100);
                   }
                 };
                 
@@ -416,13 +412,13 @@ export default function Home() {
                   setIsSpeaking(false);
                   URL.revokeObjectURL(audioUrl);
                   // Restart listening even on error
-                  if (isSupported) {
-                    setTimeout(() => startListening(), 30);
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 100);
                   }
                 };
                 
-                // Start loading audio immediately
-                audio.load();
+                // Play immediately without waiting for full load
+                audio.play().catch(console.error);
               } else {
                 throw new Error('TTS API failed');
               }
@@ -430,8 +426,8 @@ export default function Home() {
               console.error('OpenAI TTS failed:', error);
               setIsSpeaking(false);
               // Always restart listening
-              if (isSupported) {
-                setTimeout(() => startListening(), 30);
+              if (isSupported && isVoiceMode) {
+                setTimeout(() => startListening(), 100);
               }
             }
           };

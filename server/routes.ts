@@ -1341,19 +1341,34 @@ Respond with only the title, no quotes or additional text.`;
             ]);
           }
 
-          // Use hybrid brain for true self-evolving AI responses
+          // Use direct OpenAI for voice mode, hybrid brain for normal mode
           const responseStartTime = Date.now();
-          const brainResponse = await hybridBrain.generateResponse(
-            content,
-            enhancedEmotionContext,
-            messages,
-            memories,
-            isVoiceMode
-          );
-          const responseTime = Date.now() - responseStartTime;
+          let aiResponse, aiSource;
           
-          const aiResponse = brainResponse.content;
-          const aiSource = brainResponse.source;
+          if (isVoiceMode) {
+            // Direct OpenAI call for voice mode - bypass hybrid brain for speed
+            aiResponse = await lumenAI.generateResponse(
+              content,
+              messages,
+              memories,
+              enhancedEmotionContext,
+              isVoiceMode
+            );
+            aiSource = 'online';
+          } else {
+            // Use hybrid brain for normal mode
+            const brainResponse = await hybridBrain.generateResponse(
+              content,
+              enhancedEmotionContext,
+              messages,
+              memories,
+              isVoiceMode
+            );
+            aiResponse = brainResponse.content;
+            aiSource = brainResponse.source;
+          }
+          
+          const responseTime = Date.now() - responseStartTime;
 
           // Send response back to client immediately with provider info
           if (ws.readyState === WebSocket.OPEN) {
