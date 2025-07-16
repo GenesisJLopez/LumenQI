@@ -24,9 +24,9 @@ const DEFAULT_AI_SETTINGS: AISettings = {
       provider: 'openai',
       config: {
         provider: 'openai',
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         temperature: 0.7,
-        maxTokens: 500
+        maxTokens: 1000
       },
       enabled: true,
       priority: 1 // Online AI when internet available
