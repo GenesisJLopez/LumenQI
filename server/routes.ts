@@ -22,6 +22,7 @@ import { naturalConversation } from "./services/natural-conversation";
 import { calendarIntegration } from "./services/calendar-integration";
 import { conversationFlowAnalyzer } from "./services/conversation-flow-analyzer";
 import { voiceToneService } from "./services/voice-tone-service";
+import { visionAnalysisService } from "./services/vision-analysis";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -1970,6 +1971,54 @@ Respond with only the title, no quotes or additional text.`;
     } catch (error) {
       console.error('Tone personality prompt error:', error);
       res.status(500).json({ error: "Failed to generate tone personality prompt" });
+    }
+  });
+
+  // Vision Analysis API endpoints
+  app.post("/api/vision/analyze", async (req, res) => {
+    try {
+      const { image, mode } = req.body;
+      
+      if (!image) {
+        return res.status(400).json({ error: "Image data is required" });
+      }
+
+      const analysis = await visionAnalysisService.analyzeImage(image, mode);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Vision analysis error:', error);
+      res.status(500).json({ error: "Failed to analyze image" });
+    }
+  });
+
+  app.get("/api/vision/history", async (req, res) => {
+    try {
+      const count = req.query.count ? parseInt(req.query.count as string) : 10;
+      const history = visionAnalysisService.getRecentAnalysis(count);
+      res.json(history);
+    } catch (error) {
+      console.error('Vision history error:', error);
+      res.status(500).json({ error: "Failed to fetch vision history" });
+    }
+  });
+
+  app.get("/api/vision/stats", async (req, res) => {
+    try {
+      const stats = visionAnalysisService.getAnalysisStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Vision stats error:', error);
+      res.status(500).json({ error: "Failed to fetch vision stats" });
+    }
+  });
+
+  app.delete("/api/vision/history", async (req, res) => {
+    try {
+      visionAnalysisService.clearHistory();
+      res.json({ success: true, message: "Vision history cleared" });
+    } catch (error) {
+      console.error('Vision history clear error:', error);
+      res.status(500).json({ error: "Failed to clear vision history" });
     }
   });
 
