@@ -20,6 +20,7 @@ import { vocabularyService } from "./services/vocabulary-enhancement";
 import { proactiveAI } from "./services/proactive-ai";
 import { naturalConversation } from "./services/natural-conversation";
 import { calendarIntegration } from "./services/calendar-integration";
+import { conversationFlowAnalyzer } from "./services/conversation-flow-analyzer";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -1126,6 +1127,42 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
+  // Flow Visualization API endpoints
+  app.get("/api/flow/visualization", async (req, res) => {
+    try {
+      const conversationId = req.query.conversationId ? parseInt(req.query.conversationId as string) : undefined;
+      const visualizationData = conversationFlowAnalyzer.getVisualizationData(conversationId);
+      res.json(visualizationData);
+    } catch (error) {
+      console.error('Error fetching flow visualization data:', error);
+      res.status(500).json({ error: "Failed to fetch visualization data" });
+    }
+  });
+
+  app.get("/api/flow/metrics", async (req, res) => {
+    try {
+      const conversationId = req.query.conversationId ? parseInt(req.query.conversationId as string) : undefined;
+      const flows = conversationId 
+        ? conversationFlowAnalyzer.getFlowsByConversation(conversationId)
+        : undefined;
+      const metrics = conversationFlowAnalyzer.calculateMetrics(flows);
+      res.json(metrics);
+    } catch (error) {
+      console.error('Error fetching flow metrics:', error);
+      res.status(500).json({ error: "Failed to fetch flow metrics" });
+    }
+  });
+
+  app.get("/api/flow/patterns", async (req, res) => {
+    try {
+      const patterns = conversationFlowAnalyzer.getFlowPatterns();
+      res.json(patterns);
+    } catch (error) {
+      console.error('Error fetching flow patterns:', error);
+      res.status(500).json({ error: "Failed to fetch flow patterns" });
+    }
+  });
+
   // WebSocket handling for real-time chat
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection established');
@@ -1144,6 +1181,18 @@ Respond with only the title, no quotes or additional text.`;
     };
     
     calendarIntegration.on('calendarAlert', handleCalendarAlert);
+    
+    // Listen for flow analysis updates
+    const handleFlowAnalysis = (flow: any) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'flow_analysis',
+          flow
+        }));
+      }
+    };
+    
+    conversationFlowAnalyzer.on('flowAnalyzed', handleFlowAnalysis);
 
     ws.on('message', async (data: string) => {
       try {
@@ -1265,6 +1314,7 @@ Respond with only the title, no quotes or additional text.`;
           }
 
           // Use hybrid brain for true self-evolving AI responses
+          const responseStartTime = Date.now();
           const brainResponse = await hybridBrain.generateResponse(
             content,
             enhancedEmotionContext,
@@ -1272,6 +1322,7 @@ Respond with only the title, no quotes or additional text.`;
             memories,
             isVoiceMode
           );
+          const responseTime = Date.now() - responseStartTime;
           
           const aiResponse = brainResponse.content;
           const aiSource = brainResponse.source;
@@ -1311,7 +1362,18 @@ Respond with only the title, no quotes or additional text.`;
                 content: `User discussed: ${content.substring(0, 100)}...`,
                 context: `Conversation ${conversationId}`,
                 importance: 2
-              }) : Promise.resolve()
+              }) : Promise.resolve(),
+            // Analyze conversation flow in background (without waiting for message save)
+            conversationFlowAnalyzer.analyzeMessage({
+              id: Date.now(),
+              conversationId,
+              role: 'user',
+              content,
+              createdAt: new Date(),
+              metadata: emotion ? { emotion } : undefined
+            }, aiSource, responseTime).catch(error => {
+              console.error('Flow analysis error:', error);
+            })
           ]).catch(error => {
             console.error('Background operation error:', error);
             // Don't throw - these are background operations
