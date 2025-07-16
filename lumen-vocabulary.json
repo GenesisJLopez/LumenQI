@@ -1,6 +1,916 @@
 {
-  "slang": [],
-  "popCulture": [],
-  "socialTrends": [],
-  "lastUpdate": "2025-07-16T06:51:45.121Z"
+  "slang": [
+    {
+      "term": "impressive",
+      "definition": "often after a makeover or transformation.",
+      "usage": "\"impressive\" - often after a makeover or transformation.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:00.330Z"
+    },
+    {
+      "term": "game",
+      "definition": "especially when flirting; a \"rizzler\" is someone who excels at charming others.",
+      "usage": "\"game\" - especially when flirting; a \"rizzler\" is someone who excels at charming others.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:52.166Z"
+    },
+    {
+      "term": "rizzler",
+      "definition": "everyone at the party wanted to talk to him.”[5]",
+      "usage": "\"rizzler\" - everyone at the party wanted to talk to him.”[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:00.330Z"
+    },
+    {
+      "term": "side",
+      "definition": "eye.”[3]",
+      "usage": "\"side\" - eye.”[3]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "Instagram",
+      "definition": "driven by memes, viral videos, and influencer culture.[3][5] The rise of \"algospeak\" means new words can trend globally within days thanks to algorithm-driven feeds.[5]",
+      "usage": "\"Instagram\" - driven by memes, viral videos, and influencer culture.[3][5] The rise of \"algospeak\" means new words can trend globally within days thanks to algorithm-driven feeds.[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:52.839Z"
+    },
+    {
+      "term": "only in Ohio.",
+      "definition": "**Usage Examples:**",
+      "usage": "\"only in Ohio.\" - **Usage Examples:**",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "phrase",
+      "lastUpdated": "2025-07-16T06:51:52.167Z"
+    },
+    {
+      "term": "Definition",
+      "definition": "** Slang referencing physical attractiveness (often curves); commonly seen as part of playful banter on TikTok.[5]",
+      "usage": "\"Definition\" - ** Slang referencing physical attractiveness (often curves); commonly seen as part of playful banter on TikTok.[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "Caption",
+      "definition": "*“New look, who dis? Feeling snatched today.”*",
+      "usage": "\"Caption\" - *“New look, who dis? Feeling snatched today.”*",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "Comment",
+      "definition": "*“This transformation?? SNATCHED OMG”*",
+      "usage": "\"Comment\" - *“This transformation?? SNATCHED OMG”*",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "Message",
+      "definition": "*“Girl your makeup was snatched last night.”*[1][2]",
+      "usage": "\"Message\" - *“Girl your makeup was snatched last night.”*[1][2]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "TikTok",
+      "definition": "* “‘Bombastic side-eye’ at that outfit choice!”[3]",
+      "usage": "\"TikTok\" - * “‘Bombastic side-eye’ at that outfit choice!”[3]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:52.167Z"
+    },
+    {
+      "term": "flawless",
+      "definition": "often used to compliment someone's appearance, makeup, or outfit.",
+      "usage": "\"flawless\" - often used to compliment someone's appearance, makeup, or outfit.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:58.870Z"
+    },
+    {
+      "term": "short",
+      "definition": "form videos; it's often used humorously without specific meaning but signals being trendy/in-the-loop.[5]",
+      "usage": "\"short\" - form videos; it's often used humorously without specific meaning but signals being trendy/in-the-loop.[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "examples",
+      "definition": "**1. Snatched**",
+      "usage": "\"examples\" - **1. Snatched**",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "Response",
+      "definition": "“Bombastic side-eye…”[3]",
+      "usage": "\"Response\" - “Bombastic side-eye…”[3]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:52.245Z"
+    },
+    {
+      "term": "attractive",
+      "definition": "especially after a makeover or transformation.",
+      "usage": "\"attractive\" - especially after a makeover or transformation.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:52.572Z"
+    },
+    {
+      "term": "compliments",
+      "definition": "usually by appearing attractive or provocative.",
+      "usage": "\"compliments\" - usually by appearing attractive or provocative.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:52.572Z"
+    },
+    {
+      "term": "online",
+      "definition": "driven by memes, viral videos (especially on TikTok), and influencer culture[3][5]. Many words start as jokes but quickly become mainstream ways for young people to express approval (*snatched*, *slay*), skepticism (*side-eye*), attraction (*thirst trap*, *gyat*), confidence (*rizz*), and more.",
+      "usage": "\"online\" - driven by memes, viral videos (especially on TikTok), and influencer culture[3][5]. Many words start as jokes but quickly become mainstream ways for young people to express approval (*snatched*, *slay*), skepticism (*side-eye*), attraction (*thirst trap*, *gyat*), confidence (*rizz*), and more.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "Meme",
+      "definition": "“‘Bombastic side-eye. Criminal, offensive side-eye.’”",
+      "usage": "\"Meme\" - “‘Bombastic side-eye. Criminal, offensive side-eye.’”",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:52.572Z"
+    },
+    {
+      "term": "put",
+      "definition": "together—often used to compliment someone’s appearance after a makeover or transformation.",
+      "usage": "\"put\" - together—often used to compliment someone’s appearance after a makeover or transformation.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:55.852Z"
+    },
+    {
+      "term": "cringe",
+      "definition": "worthy; comes from memes about strange happenings supposedly unique to the state of Ohio.",
+      "usage": "\"cringe\" - worthy; comes from memes about strange happenings supposedly unique to the state of Ohio.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:00.291Z"
+    },
+    {
+      "term": "judgment",
+      "definition": "or just shade—usually accompanied by an exaggerated facial expression.",
+      "usage": "\"judgment\" - or just shade—usually accompanied by an exaggerated facial expression.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "expression",
+      "lastUpdated": "2025-07-16T06:51:52.839Z"
+    },
+    {
+      "term": "everyone",
+      "definition": "so savage!”*[2]",
+      "usage": "\"everyone\" - so savage!”*[2]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:58.870Z"
+    },
+    {
+      "term": "rizz",
+      "definition": "it’s unreal.”* Or: *\"You're such a rizzler!\"*[5]",
+      "usage": "\"rizz\" - it’s unreal.”* Or: *\"You're such a rizzler!\"*[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:58.870Z"
+    },
+    {
+      "term": "example",
+      "definition": "– \"You're so skibidi!\"",
+      "usage": "\"example\" - – \"You're so skibidi!\"",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "Discord",
+      "definition": "with many words gaining popularity almost overnight due to viral trends.[1][3][5]",
+      "usage": "\"Discord\" - with many words gaining popularity almost overnight due to viral trends.[1][3][5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:58.870Z"
+    },
+    {
+      "term": "Note",
+      "definition": "* This term is used playfully as an inside joke among younger users referencing viral meme culture from short-form videos like TikTok.[5]",
+      "usage": "\"Note\" - * This term is used playfully as an inside joke among younger users referencing viral meme culture from short-form videos like TikTok.[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:51:58.870Z"
+    },
+    {
+      "term": "meaning",
+      "definition": "you’re acting wild/silly)[5][4].",
+      "usage": "\"meaning\" - you’re acting wild/silly)[5][4].",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:00.291Z"
+    },
+    {
+      "term": "looks",
+      "definition": "usually flirtatious but not explicit.",
+      "usage": "\"looks\" - usually flirtatious but not explicit.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:00.330Z"
+    },
+    {
+      "term": "together",
+      "definition": "often used to compliment someone's appearance, makeup, or fashion.",
+      "usage": "\"together\" - often used to compliment someone's appearance, makeup, or fashion.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "fierce",
+      "definition": "used to describe someone’s actions or comments that are unapologetically direct.",
+      "usage": "\"fierce\" - used to describe someone’s actions or comments that are unapologetically direct.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "charisma",
+      "definition": "especially romantic charm—and a \"rizzler\" is someone who has a lot of it.[5]",
+      "usage": "\"charisma\" - especially romantic charm—and a \"rizzler\" is someone who has a lot of it.[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    },
+    {
+      "term": "chats",
+      "definition": "or deeper context behind any term—just let me know!",
+      "usage": "\"chats\" - or deeper context behind any term—just let me know!",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-16T06:52:02.691Z"
+    }
+  ],
+  "popCulture": [
+    {
+      "title": "an elementary school in Solo made headlines after enrolling only one new student for the entire school year—sparking memes about “exclusive education” and loneliness on social media platforms like Instagram[2]",
+      "type": "viral",
+      "description": "Trending viral: an elementary school in Solo made headlines after enrolling only one new student for the entire school year—sparking memes about “exclusive education” and loneliness on social media platforms like Instagram[2]",
+      "relevance": 0.8,
+      "keywords": [
+        "an elementary school in solo made headlines after enrolling only one new student for the entire school year—sparking memes about “exclusive education” and loneliness on social media platforms like instagram[2]"
+      ],
+      "lastUpdated": "2025-07-16T06:51:53.329Z"
+    }
+  ],
+  "socialTrends": [
+    {
+      "hashtag": "#MadCoolFestival",
+      "platform": "general",
+      "description": "Trending hashtag: #MadCoolFestival",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "madcoolfestival"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#VisaDenial",
+      "platform": "general",
+      "description": "Trending hashtag: #VisaDenial",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "visadenial"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.363Z"
+    },
+    {
+      "hashtag": "#SocialMediaScreening",
+      "platform": "general",
+      "description": "Trending hashtag: #SocialMediaScreening",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "socialmediascreening"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#RhodeBeautyTakeover",
+      "platform": "general",
+      "description": "Trending hashtag: #RhodeBeautyTakeover",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rhodebeautytakeover"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.363Z"
+    },
+    {
+      "hashtag": "#GetReadyWithMe2025",
+      "platform": "general",
+      "description": "Trending hashtag: #GetReadyWithMe2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "getreadywithme2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.363Z"
+    },
+    {
+      "hashtag": "#GRWM2025",
+      "platform": "general",
+      "description": "Trending hashtag: #GRWM2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "grwm2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.363Z"
+    },
+    {
+      "hashtag": "#FestivalFits2025",
+      "platform": "general",
+      "description": "Trending hashtag: #FestivalFits2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "festivalfits2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.363Z"
+    },
+    {
+      "hashtag": "#PublicAccountChallenge",
+      "platform": "general",
+      "description": "Trending hashtag: #PublicAccountChallenge",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "publicaccountchallenge"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.363Z"
+    },
+    {
+      "hashtag": "#OliviaLiveMadrid",
+      "platform": "general",
+      "description": "Trending hashtag: #OliviaLiveMadrid",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "olivialivemadrid"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.905Z"
+    },
+    {
+      "hashtag": "#PinkpopHeadliner",
+      "platform": "general",
+      "description": "Trending hashtag: #PinkpopHeadliner",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "pinkpopheadliner"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.363Z"
+    },
+    {
+      "hashtag": "#AIArt",
+      "platform": "general",
+      "description": "Trending hashtag: #AIArt",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "aiart"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#Summer2025",
+      "platform": "general",
+      "description": "Trending hashtag: #Summer2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "summer2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#DigitalNomadLife",
+      "platform": "general",
+      "description": "Trending hashtag: #DigitalNomadLife",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "digitalnomadlife"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#EcoTech",
+      "platform": "general",
+      "description": "Trending hashtag: #EcoTech",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "ecotech"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#RhodeSkinTakeover",
+      "platform": "general",
+      "description": "Trending hashtag: #RhodeSkinTakeover",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rhodeskintakeover"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#HaileyBieberEffect",
+      "platform": "general",
+      "description": "Trending hashtag: #HaileyBieberEffect",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "haileybiebereffect"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#DayInMyLife",
+      "platform": "general",
+      "description": "Trending hashtag: #DayInMyLife",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "dayinmylife"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#POVChallenge",
+      "platform": "general",
+      "description": "Trending hashtag: #POVChallenge",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "povchallenge"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#DigitalCapitalism",
+      "platform": "general",
+      "description": "Trending hashtag: #DigitalCapitalism",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "digitalcapitalism"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#RhodeTakeover",
+      "platform": "general",
+      "description": "Trending hashtag: #RhodeTakeover",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rhodetakeover"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#VisaSocialMediaCheck",
+      "platform": "general",
+      "description": "Trending hashtag: #VisaSocialMediaCheck",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "visasocialmediacheck"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#BeautyRoutineChallenge",
+      "platform": "general",
+      "description": "Trending hashtag: #BeautyRoutineChallenge",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "beautyroutinechallenge"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#BrandBossEnergy",
+      "platform": "general",
+      "description": "Trending hashtag: #BrandBossEnergy",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "brandbossenergy"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#FestivalSeason2025",
+      "platform": "general",
+      "description": "Trending hashtag: #FestivalSeason2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "festivalseason2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#Pinkpop2025",
+      "platform": "general",
+      "description": "Trending hashtag: #Pinkpop2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "pinkpop2025"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#SweetSixteenStudioParty",
+      "platform": "general",
+      "description": "Trending hashtag: #SweetSixteenStudioParty",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "sweetsixteenstudioparty"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#PublicProfileChallenge",
+      "platform": "general",
+      "description": "Trending hashtag: #PublicProfileChallenge",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "publicprofilechallenge"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.364Z"
+    },
+    {
+      "hashtag": "#VisaRules",
+      "platform": "general",
+      "description": "Trending hashtag: #VisaRules",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "visarules"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#ThreadsVsX",
+      "platform": "general",
+      "description": "Trending hashtag: #ThreadsVsX",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "threadsvsx"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.905Z"
+    },
+    {
+      "hashtag": "#RhodeGlowUpChallenge",
+      "platform": "general",
+      "description": "Trending hashtag: #RhodeGlowUpChallenge",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rhodeglowupchallenge"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.905Z"
+    },
+    {
+      "hashtag": "#FestivalFitCheck",
+      "platform": "general",
+      "description": "Trending hashtag: #FestivalFitCheck",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "festivalfitcheck"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.159Z"
+    },
+    {
+      "hashtag": "#SweetSixteenParty",
+      "platform": "general",
+      "description": "Trending hashtag: #SweetSixteenParty",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "sweetsixteenparty"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#StudioVibes",
+      "platform": "general",
+      "description": "Trending hashtag: #StudioVibes",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "studiovibes"
+      ],
+      "lastUpdated": "2025-07-16T06:51:51.905Z"
+    },
+    {
+      "hashtag": "#AIArtistry",
+      "platform": "general",
+      "description": "Trending hashtag: #AIArtistry",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "aiartistry"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.159Z"
+    },
+    {
+      "hashtag": "#EcoSummer2025",
+      "platform": "general",
+      "description": "Trending hashtag: #EcoSummer2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "ecosummer2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.159Z"
+    },
+    {
+      "hashtag": "#RhodeGlowUp",
+      "platform": "general",
+      "description": "Trending hashtag: #RhodeGlowUp",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rhodeglowup"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#OliviaLive",
+      "platform": "general",
+      "description": "Trending hashtag: #OliviaLive",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "olivialive"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#ThreadsTakeover",
+      "platform": "general",
+      "description": "Trending hashtag: #ThreadsTakeover",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "threadstakeover"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.159Z"
+    },
+    {
+      "hashtag": "#XUpdate",
+      "platform": "general",
+      "description": "Trending hashtag: #XUpdate",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "xupdate"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.159Z"
+    },
+    {
+      "hashtag": "#ReverseDanceChallenge",
+      "platform": "general",
+      "description": "Trending hashtag: #ReverseDanceChallenge",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "reversedancechallenge"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.159Z"
+    },
+    {
+      "hashtag": "#NoFilterGlow",
+      "platform": "general",
+      "description": "Trending hashtag: #NoFilterGlow",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "nofilterglow"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.159Z"
+    },
+    {
+      "hashtag": "#MadCool2025",
+      "platform": "general",
+      "description": "Trending hashtag: #MadCool2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "madcool2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#DigitalAssets",
+      "platform": "general",
+      "description": "Trending hashtag: #DigitalAssets",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "digitalassets"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#CreatorEconomy",
+      "platform": "general",
+      "description": "Trending hashtag: #CreatorEconomy",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "creatoreconomy"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#RhodeSkin",
+      "platform": "general",
+      "description": "Trending hashtag: #RhodeSkin",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rhodeskin"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#BeautyRoutine2025",
+      "platform": "general",
+      "description": "Trending hashtag: #BeautyRoutine2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "beautyroutine2025"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#OliviaRodrigo",
+      "platform": "general",
+      "description": "Trending hashtag: #OliviaRodrigo",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "oliviarodrigo"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#MadridMusicFest",
+      "platform": "general",
+      "description": "Trending hashtag: #MadridMusicFest",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "madridmusicfest"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#RhodeAcquired",
+      "platform": "general",
+      "description": "Trending hashtag: #RhodeAcquired",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rhodeacquired"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#ELFBeautyCollab",
+      "platform": "general",
+      "description": "Trending hashtag: #ELFBeautyCollab",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "elfbeautycollab"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#MakeItPublic",
+      "platform": "general",
+      "description": "Trending hashtag: #MakeItPublic",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "makeitpublic"
+      ],
+      "lastUpdated": "2025-07-16T06:51:56.439Z"
+    },
+    {
+      "hashtag": "#SweetSixteen",
+      "platform": "general",
+      "description": "Trending hashtag: #SweetSixteen",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "sweetsixteen"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#CreativeBoom16",
+      "platform": "general",
+      "description": "Trending hashtag: #CreativeBoom16",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "creativeboom16"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#GlowUpChallenge",
+      "platform": "general",
+      "description": "Trending hashtag: #GlowUpChallenge",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "glowupchallenge"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#FitCheck2025",
+      "platform": "general",
+      "description": "Trending hashtag: #FitCheck2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "fitcheck2025"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#AIMashup",
+      "platform": "general",
+      "description": "Trending hashtag: #AIMashup",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "aimashup"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#VisaRules2025",
+      "platform": "general",
+      "description": "Trending hashtag: #VisaRules2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "visarules2025"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.475Z"
+    },
+    {
+      "hashtag": "#SummerReset2025",
+      "platform": "general",
+      "description": "Trending hashtag: #SummerReset2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "summerreset2025"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#DigitalTwin",
+      "platform": "general",
+      "description": "Trending hashtag: #DigitalTwin",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "digitaltwin"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    },
+    {
+      "hashtag": "#FestivalSeason",
+      "platform": "general",
+      "description": "Trending hashtag: #FestivalSeason",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "festivalseason"
+      ],
+      "lastUpdated": "2025-07-16T06:52:00.574Z"
+    }
+  ],
+  "lastUpdate": "2025-07-16T06:59:04.007Z"
 }

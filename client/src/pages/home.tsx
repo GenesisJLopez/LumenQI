@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
@@ -56,7 +56,38 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
+
+  // Handle message editing
+  const handleEditMessage = async (messageId: number, newContent: string) => {
+    try {
+      // Update the message in the database
+      await fetch(`/api/messages/${messageId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newContent })
+      });
+      
+      // Generate a new AI response based on the edited message
+      if (currentConversationId) {
+        sendMessage({
+          type: 'chat_message',
+          content: newContent,
+          conversationId: currentConversationId,
+          isEdit: true
+        });
+      }
+      
+      // Refresh the messages to show the updated content
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+      
+      toast({ title: "Message updated successfully" });
+    } catch (error) {
+      console.error('Error updating message:', error);
+      toast({ title: "Failed to update message", variant: "destructive" });
+    }
+  };
   const { 
     currentEmotion, 
     getEmotionBasedPrompt, 
@@ -573,6 +604,7 @@ export default function Home() {
               currentConversationId={currentConversationId || undefined}
               isSpeaking={isSpeaking}
               isListening={isListening}
+              onEditMessage={handleEditMessage}
             />
             
             {/* Voice Controls - Fixed at Bottom */}

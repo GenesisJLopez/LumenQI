@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
-import { Bot, User, Copy, ThumbsUp, ThumbsDown, Volume2, VolumeX } from 'lucide-react';
+import { Bot, User, Copy, ThumbsUp, ThumbsDown, Volume2, VolumeX, Edit2, Check, X } from 'lucide-react';
 import { FeedbackButtons } from './feedback-buttons';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/hooks/use-toast';
 // Using natural speech system from parent component
 import { cn } from '@/lib/utils';
 import type { Message } from '@shared/schema';
@@ -14,14 +16,17 @@ interface ChatAreaProps {
   currentConversationId?: number;
   isSpeaking?: boolean;
   isListening?: boolean;
+  onEditMessage?: (messageId: number, newContent: string) => void;
 }
 
-export function ChatArea({ messages, isTyping = false, currentConversationId, isSpeaking = false, isListening = false }: ChatAreaProps) {
+export function ChatArea({ messages, isTyping = false, currentConversationId, isSpeaking = false, isListening = false, onEditMessage }: ChatAreaProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [lastMessageId, setLastMessageId] = useState<number | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
   const [isSpeakingMessage, setIsSpeakingMessage] = useState<number | null>(null);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState<string>('');
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive
@@ -142,6 +147,25 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
     }
   };
 
+  // Edit message handlers
+  const handleEditMessage = (messageId: number, content: string) => {
+    setEditingMessageId(messageId);
+    setEditingContent(content);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingMessageId && editingContent.trim() && onEditMessage) {
+      onEditMessage(editingMessageId, editingContent.trim());
+      setEditingMessageId(null);
+      setEditingContent('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingContent('');
+  };
+
   if (!currentConversationId) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center cosmic-bg relative">
@@ -186,16 +210,68 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
                     {message.role === 'assistant' && (
                       <div className="text-sm font-semibold cosmic-text mb-2">Lumen QI</div>
                     )}
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap text-gray-100">
-                      {message.content}
-                    </div>
+                    
+                    {editingMessageId === message.id ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSaveEdit();
+                            } else if (e.key === 'Escape') {
+                              handleCancelEdit();
+                            }
+                          }}
+                          className="flex-1 bg-gray-800 border-gray-600 text-white"
+                          autoFocus
+                        />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleSaveEdit}
+                          className="text-green-400 hover:text-green-300"
+                        >
+                          <Check size={16} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleCancelEdit}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <X size={16} />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-sm leading-relaxed whitespace-pre-wrap text-gray-100">
+                        {message.content}
+                      </div>
+                    )}
+                    
                     <div className="text-xs text-gray-400 mt-2">
                       {formatTime(message.timestamp)}
                     </div>
                   </div>
                 </div>
                 
-                {/* Message Actions - Only show for assistant messages */}
+                {/* Message Actions - Show edit for user messages, copy/speak for assistant messages */}
+                {message.role === 'user' && (
+                  <div className="mt-3 flex gap-1 justify-end">
+                    <div className="flex gap-1 bg-gray-900/90 backdrop-blur-sm rounded-lg px-2 py-1 border border-gray-700">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditMessage(message.id, message.content)}
+                        className="h-8 px-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                        title="Edit message"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
                 {message.role === 'assistant' && (
                   <div className="mt-3 flex gap-1 justify-start">
                     <div className="flex gap-1 bg-gray-900/90 backdrop-blur-sm rounded-lg px-2 py-1 border border-gray-700">

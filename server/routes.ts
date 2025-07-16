@@ -85,6 +85,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/messages/:id", async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const { content } = req.body;
+      
+      if (!content || typeof content !== 'string') {
+        return res.status(400).json({ error: 'Content is required' });
+      }
+      
+      // Update the message in the database
+      const updatedMessage = await storage.updateMessage(messageId, { content });
+      
+      if (!updatedMessage) {
+        return res.status(404).json({ error: 'Message not found' });
+      }
+      
+      res.json(updatedMessage);
+    } catch (error) {
+      console.error('Error updating message:', error);
+      res.status(500).json({ error: 'Failed to update message' });
+    }
+  });
+
   app.post("/api/conversations", async (req, res) => {
     try {
       const validatedData = insertConversationSchema.parse({
@@ -1843,7 +1866,7 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
-  // Start automatic vocabulary updates
+  // Initialize vocabulary system with pre-loaded data
   vocabularyService.startAutoUpdates();
 
   return httpServer;

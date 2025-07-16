@@ -25,6 +25,7 @@ export interface IStorage {
   // Message operations
   getMessagesByConversation(conversationId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+  updateMessage(id: number, updates: Partial<Message>): Promise<Message | undefined>;
   
   // Memory operations
   getMemoriesByUser(userId: number): Promise<Memory[]>;
@@ -147,6 +148,17 @@ export class MemStorage implements IStorage {
     return message;
   }
 
+  async updateMessage(id: number, updates: Partial<Message>): Promise<Message | undefined> {
+    const message = this.messages.get(id);
+    if (!message) {
+      return undefined;
+    }
+    
+    const updatedMessage = { ...message, ...updates };
+    this.messages.set(id, updatedMessage);
+    return updatedMessage;
+  }
+
   async getMemoriesByUser(userId: number): Promise<Memory[]> {
     return Array.from(this.memories.values())
       .filter(memory => memory.userId === userId)
@@ -260,6 +272,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertMessage)
       .returning();
     return message;
+  }
+
+  async updateMessage(id: number, updates: Partial<Message>): Promise<Message | undefined> {
+    const [message] = await db
+      .update(messages)
+      .set(updates)
+      .where(eq(messages.id, id))
+      .returning();
+    return message || undefined;
   }
 
   async getMemoriesByUser(userId: number): Promise<Memory[]> {
