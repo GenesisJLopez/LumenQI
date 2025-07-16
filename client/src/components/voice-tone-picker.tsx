@@ -180,17 +180,17 @@ export function VoiceTonePicker({ currentTone, onToneSelect, isOpen, onClose }: 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+        <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <Volume2 className="h-5 w-5" />
             Playful Voice Tone Picker
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Choose how Lumen's personality comes through in her voice
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="bg-white dark:bg-gray-900 p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {voiceTones.map((tone) => {
               const Icon = tone.icon;
@@ -200,8 +200,8 @@ export function VoiceTonePicker({ currentTone, onToneSelect, isOpen, onClose }: 
               return (
                 <Card 
                   key={tone.id} 
-                  className={`cursor-pointer transition-all hover:shadow-lg ${
-                    isSelected ? 'ring-2 ring-primary' : ''
+                  className={`cursor-pointer transition-all hover:shadow-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 ${
+                    isSelected ? 'ring-2 ring-purple-500 bg-purple-50 dark:bg-purple-900/20' : ''
                   }`}
                   onClick={() => setSelectedTone(tone.id)}
                 >
@@ -211,8 +211,8 @@ export function VoiceTonePicker({ currentTone, onToneSelect, isOpen, onClose }: 
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold">{tone.name}</h3>
-                        <p className="text-xs text-muted-foreground">{tone.description}</p>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">{tone.name}</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{tone.description}</p>
                       </div>
                       {isSelected && (
                         <Badge variant="secondary" className="text-xs">
@@ -221,11 +221,11 @@ export function VoiceTonePicker({ currentTone, onToneSelect, isOpen, onClose }: 
                       )}
                     </div>
                     
-                    <p className="text-sm mb-3 text-muted-foreground">
+                    <p className="text-sm mb-3 text-gray-700 dark:text-gray-300">
                       {tone.personality}
                     </p>
                     
-                    <div className="bg-muted/50 p-2 rounded text-xs mb-3 italic">
+                    <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs mb-3 italic text-gray-800 dark:text-gray-200">
                       "{tone.previewText}"
                     </div>
                     
@@ -265,7 +265,7 @@ export function VoiceTonePicker({ currentTone, onToneSelect, isOpen, onClose }: 
                       </Button>
                     </div>
                     
-                    <div className="mt-2 text-xs text-muted-foreground">
+                    <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
                       Voice: {tone.voiceSettings.voice} • Speed: {tone.voiceSettings.speed}x
                     </div>
                   </CardContent>
@@ -274,15 +274,15 @@ export function VoiceTonePicker({ currentTone, onToneSelect, isOpen, onClose }: 
             })}
           </div>
           
-          <div className="flex justify-between items-center pt-4 border-t">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
               Selected: {voiceTones.find(t => t.id === selectedTone)?.name}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose}>
+              <Button variant="outline" onClick={onClose} className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                 Cancel
               </Button>
-              <Button onClick={handleApplyAndClose}>
+              <Button onClick={handleApplyAndClose} className="bg-purple-600 hover:bg-purple-700 text-white">
                 Apply & Close
               </Button>
             </div>
