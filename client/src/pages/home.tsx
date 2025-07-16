@@ -820,17 +820,7 @@ export default function Home() {
                       <Calendar className="w-4 h-4 mr-2 inline" />
                       Calendar
                     </button>
-                    <button
-                      onClick={() => setActiveTab('camera')}
-                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                        activeTab === 'camera' 
-                          ? 'bg-purple-500/20 text-purple-300' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
-                      }`}
-                    >
-                      <Eye className="w-4 h-4 mr-2 inline" />
-                      Camera Vision
-                    </button>
+
 
                     <button
                       onClick={() => setActiveTab('flow')}
@@ -1100,22 +1090,7 @@ export default function Home() {
                   </div>
                 )}
 
-                {activeTab === 'camera' && (
-                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
-                    <div className="space-y-6 pb-16">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                          Camera Vision System
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                          Enable Lumen to see through your camera and analyze what she observes in real-time
-                        </p>
-                      </div>
-                      
-                      <CameraVision />
-                    </div>
-                  </div>
-                )}
+
 
 
 

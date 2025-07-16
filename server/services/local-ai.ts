@@ -325,7 +325,7 @@ IMPORTANT GUIDELINES:
           return data.models?.map((m: any) => m.name) || [];
         
         case 'openai':
-          return ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'];
+          return ['gpt-4o', 'gpt-4', 'gpt-3.5-turbo'];
         
         case 'local-python':
           const pyResponse = await fetch('http://localhost:8000/models');
