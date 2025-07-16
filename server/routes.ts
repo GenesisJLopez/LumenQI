@@ -858,8 +858,10 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Text is required" });
       }
 
-      // Minimal text cleaning for faster processing
+      // Enhanced text cleaning for natural speech flow
       const cleanText = text
+        .replace(/hey,\s+(Genesis|love)/gi, 'hey $1') // Remove comma pauses before Genesis/love
+        .replace(/,\s+(Genesis|love)/gi, ' $1') // Remove all comma pauses before Genesis/love
         .replace(/[^\w\s.,!?'-]/g, '') // Only keep essential characters
         .trim();
 
