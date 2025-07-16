@@ -1308,9 +1308,9 @@ Respond with only the title, no quotes or additional text.`;
                 role: 'user',
                 content
               }),
-              // Get only last 4 messages for voice mode speed
+              // Get only last 2 messages for voice mode speed
               storage.getMessagesByConversation(conversationId).then(msgs => 
-                msgs.slice(-4).map(msg => ({
+                msgs.slice(-2).map(msg => ({
                   role: msg.role,
                   content: msg.content
                 }))
