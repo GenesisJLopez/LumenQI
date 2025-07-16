@@ -48,6 +48,7 @@ export default function Home() {
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive' | 'calendar' | 'flow' | 'camera' | 'code'>('quantum');
+  const [mainTab, setMainTab] = useState<'chat' | 'code' | 'vision'>('chat');
   const [identityData, setIdentityData] = useState({
     coreIdentity: "I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance.",
     communicationStyle: "I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive.",
@@ -597,21 +598,64 @@ export default function Home() {
             onNewConversation={handleNewConversation}
           />
           
-          {/* Main Chat Area */}
+          {/* Main Area with Tabs */}
           <div className="flex-1 flex flex-col h-full bg-gray-900/50 backdrop-blur-sm">
-            {/* Chat Messages Area - Scrollable with Fixed Height */}
-            <ChatArea
-              messages={messages}
-              isTyping={isTyping}
-              currentConversationId={currentConversationId || undefined}
-              isSpeaking={isSpeaking}
-              isListening={isListening}
-              onEditMessage={handleEditMessage}
-            />
-            
-            {/* Voice Controls - Fixed at Bottom */}
-            <div className="flex-shrink-0 border-t border-purple-500/20 bg-gray-900/30">
-              <VoiceControls
+            {/* Tab Navigation */}
+            <div className="flex-shrink-0 border-b border-purple-500/20 bg-gray-900/30">
+              <div className="flex space-x-1 p-2">
+                <button
+                  onClick={() => setMainTab('chat')}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    mainTab === 'chat' 
+                      ? 'bg-purple-500/20 text-purple-300' 
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2 inline" />
+                  Chat
+                </button>
+                <button
+                  onClick={() => setMainTab('code')}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    mainTab === 'code' 
+                      ? 'bg-purple-500/20 text-purple-300' 
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <Code className="w-4 h-4 mr-2 inline" />
+                  Code Assistant
+                </button>
+                <button
+                  onClick={() => setMainTab('vision')}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    mainTab === 'vision' 
+                      ? 'bg-purple-500/20 text-purple-300' 
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <Eye className="w-4 h-4 mr-2 inline" />
+                  Vision
+                </button>
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+              {mainTab === 'chat' && (
+                <>
+                  {/* Chat Messages Area - Scrollable with Fixed Height */}
+                  <ChatArea
+                    messages={messages}
+                    isTyping={isTyping}
+                    currentConversationId={currentConversationId || undefined}
+                    isSpeaking={isSpeaking}
+                    isListening={isListening}
+                    onEditMessage={handleEditMessage}
+                  />
+                  
+                  {/* Voice Controls - Fixed at Bottom */}
+                  <div className="flex-shrink-0 border-t border-purple-500/20 bg-gray-900/30">
+                    <VoiceControls
                       onSendMessage={handleSendMessage}
                       isLoading={createConversationMutation.isPending}
                       connectionStatus={connectionStatus}
@@ -619,6 +663,21 @@ export default function Home() {
                       onListeningChange={setIsListening}
                       onVoiceModeToggle={handleVoiceModeToggle}
                     />
+                  </div>
+                </>
+              )}
+              
+              {mainTab === 'code' && (
+                <div className="flex-1 overflow-hidden">
+                  <CodeAssistant />
+                </div>
+              )}
+              
+              {mainTab === 'vision' && (
+                <div className="flex-1 overflow-hidden">
+                  <CameraVision />
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -772,17 +831,7 @@ export default function Home() {
                       <Eye className="w-4 h-4 mr-2 inline" />
                       Camera Vision
                     </button>
-                    <button
-                      onClick={() => setActiveTab('code')}
-                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                        activeTab === 'code' 
-                          ? 'bg-purple-500/20 text-purple-300' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
-                      }`}
-                    >
-                      <Code className="w-4 h-4 mr-2 inline" />
-                      Code Assistant
-                    </button>
+
                     <button
                       onClick={() => setActiveTab('flow')}
                       className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
@@ -1068,13 +1117,7 @@ export default function Home() {
                   </div>
                 )}
 
-                {activeTab === 'code' && (
-                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
-                    <div className="space-y-6 pb-16">
-                      <CodeAssistant />
-                    </div>
-                  </div>
-                )}
+
 
                 {activeTab === 'settings' && (
                   <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
