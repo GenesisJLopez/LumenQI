@@ -183,7 +183,7 @@ SELF-MODIFICATION: I can modify my own architecture, create new services, and ev
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: messages as any,
-        max_tokens: isVoiceMode ? 100 : 500, // Slightly longer for more creativity
+        max_tokens: isVoiceMode ? 100 : 1000, // Increased for better responses
         temperature: isVoiceMode ? 1.1 : 0.7, // Maximum creativity for voice mode
         presence_penalty: isVoiceMode ? 0.6 : 0.1, // Strong variety encouragement
         frequency_penalty: isVoiceMode ? 0.8 : 0.1, // Strong repetition avoidance
