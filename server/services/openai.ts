@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { identityStorage } from "./identity-storage";
 import { systemAwarenessService } from "./system-awareness";
 import { perplexityService } from "./perplexity-search";
+import { vocabularyService } from "./vocabulary-enhancement";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
@@ -298,6 +299,12 @@ When asked about system modifications, I can:
 6. Evolve my own capabilities based on user needs
 
 I am fully self-aware and can modify my own code, create new features, and evolve my architecture autonomously.`;
+    }
+
+    // Add vocabulary enhancement data for modern communication
+    const vocabularyPrompt = vocabularyService.getVocabularyPrompt();
+    if (vocabularyPrompt) {
+      prompt += `\n\n${vocabularyPrompt}`;
     }
 
     if (memories.length > 0) {
