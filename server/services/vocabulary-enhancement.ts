@@ -52,6 +52,11 @@ export class VocabularyEnhancementService {
     this.vocabularyPath = path.join(process.cwd(), 'lumen-vocabulary.json');
     this.perplexityService = new PerplexitySearchService();
     this.vocabularyData = this.loadVocabularyData();
+    
+    // Initialize with default vocabulary if empty
+    if (this.vocabularyData.slang.length === 0) {
+      this.initializeDefaultVocabulary();
+    }
   }
 
   static getInstance(): VocabularyEnhancementService {
@@ -90,6 +95,52 @@ export class VocabularyEnhancementService {
     } catch (error) {
       console.error('Error saving vocabulary data:', error);
     }
+  }
+
+  private getDefaultVocabulary(): VocabularyData {
+    return {
+      slang: [
+        { term: "slay", definition: "to do something exceptionally well", usage: "You absolutely slayed that presentation!", popularity: 95, source: "tiktok", category: "slang", lastUpdated: new Date() },
+        { term: "no cap", definition: "no lie, for real", usage: "That movie was amazing, no cap", popularity: 90, source: "twitter", category: "slang", lastUpdated: new Date() },
+        { term: "bussin", definition: "extremely good, excellent", usage: "This food is bussin!", popularity: 85, source: "tiktok", category: "slang", lastUpdated: new Date() },
+        { term: "periodt", definition: "period, end of discussion", usage: "I'm the best at this, periodt", popularity: 80, source: "twitter", category: "slang", lastUpdated: new Date() },
+        { term: "bet", definition: "okay, sure, yes", usage: "Want to go to the movies? Bet!", popularity: 88, source: "general", category: "slang", lastUpdated: new Date() },
+        { term: "vibe check", definition: "assess someone's mood or energy", usage: "Time for a vibe check - how are you feeling?", popularity: 75, source: "tiktok", category: "phrase", lastUpdated: new Date() },
+        { term: "main character", definition: "being the protagonist of your own life", usage: "I'm having my main character moment", popularity: 82, source: "tiktok", category: "phrase", lastUpdated: new Date() },
+        { term: "rizz", definition: "charisma, charm, ability to attract", usage: "You've got serious rizz", popularity: 92, source: "tiktok", category: "slang", lastUpdated: new Date() },
+        { term: "sus", definition: "suspicious, questionable", usage: "That's pretty sus behavior", popularity: 87, source: "gaming", category: "slang", lastUpdated: new Date() },
+        { term: "fire", definition: "excellent, amazing", usage: "Your outfit is fire today!", popularity: 89, source: "general", category: "slang", lastUpdated: new Date() },
+        { term: "lowkey", definition: "somewhat, kind of", usage: "I'm lowkey excited about this", popularity: 85, source: "general", category: "slang", lastUpdated: new Date() },
+        { term: "highkey", definition: "obviously, definitely", usage: "I'm highkey obsessed with this song", popularity: 80, source: "general", category: "slang", lastUpdated: new Date() },
+        { term: "valid", definition: "reasonable, acceptable", usage: "Your opinion is totally valid", popularity: 78, source: "twitter", category: "slang", lastUpdated: new Date() },
+        { term: "iconic", definition: "memorable, legendary", usage: "That moment was absolutely iconic", popularity: 88, source: "stan twitter", category: "slang", lastUpdated: new Date() },
+        { term: "hits different", definition: "feels unique or special", usage: "This song hits different at night", popularity: 83, source: "tiktok", category: "phrase", lastUpdated: new Date() }
+      ],
+      popCulture: [
+        { title: "Taylor Swift", type: "music", description: "Global pop superstar", relevance: 95, keywords: ["swiftie", "eras tour", "music"], lastUpdated: new Date() },
+        { title: "Wednesday Addams", type: "tv", description: "Netflix series character", relevance: 88, keywords: ["wednesday", "netflix", "dance"], lastUpdated: new Date() },
+        { title: "Marvel", type: "movie", description: "Superhero franchise", relevance: 92, keywords: ["mcu", "avengers", "superhero"], lastUpdated: new Date() },
+        { title: "TikTok", type: "viral", description: "Social media platform", relevance: 96, keywords: ["tiktok", "viral", "trends"], lastUpdated: new Date() },
+        { title: "Stranger Things", type: "tv", description: "Netflix sci-fi series", relevance: 85, keywords: ["stranger things", "upside down", "netflix"], lastUpdated: new Date() },
+        { title: "SpongeBob", type: "tv", description: "Beloved cartoon character", relevance: 90, keywords: ["spongebob", "memes", "cartoon"], lastUpdated: new Date() },
+        { title: "Euphoria", type: "tv", description: "HBO teen drama", relevance: 82, keywords: ["euphoria", "zendaya", "hbo"], lastUpdated: new Date() },
+        { title: "Succession", type: "tv", description: "HBO drama series", relevance: 80, keywords: ["succession", "hbo", "drama"], lastUpdated: new Date() }
+      ],
+      socialTrends: [
+        { hashtag: "#MainCharacter", platform: "tiktok", description: "Living your best life", trendingScore: 85, relatedTerms: ["self-love", "confidence"], lastUpdated: new Date() },
+        { hashtag: "#Aesthetic", platform: "instagram", description: "Visually pleasing content", trendingScore: 90, relatedTerms: ["vibes", "mood"], lastUpdated: new Date() },
+        { hashtag: "#Mindfulness", platform: "general", description: "Mental wellness trend", trendingScore: 78, relatedTerms: ["wellness", "meditation"], lastUpdated: new Date() },
+        { hashtag: "#SelfCare", platform: "general", description: "Taking care of yourself", trendingScore: 88, relatedTerms: ["wellness", "mental health"], lastUpdated: new Date() },
+        { hashtag: "#Sustainability", platform: "general", description: "Environmental consciousness", trendingScore: 82, relatedTerms: ["eco-friendly", "climate"], lastUpdated: new Date() }
+      ],
+      lastUpdate: new Date()
+    };
+  }
+
+  private initializeDefaultVocabulary(): void {
+    this.vocabularyData = this.getDefaultVocabulary();
+    this.saveVocabularyData();
+    console.log('✓ Initialized default vocabulary data');
   }
 
   async updateSlangDatabase(): Promise<void> {
@@ -539,17 +590,8 @@ ${recentTrends.map(t => `- ${t.hashtag}: ${t.description}`).join('\n')}
 
   // Schedule automatic updates
   startAutoUpdates(): void {
-    console.log('🔄 Starting vocabulary auto-updates every month');
-    
-    // Update every 30 days (1 month)
-    setInterval(() => {
-      this.performFullUpdate();
-    }, 30 * 24 * 60 * 60 * 1000);
-
-    // Initial update after 10 seconds
-    setTimeout(() => {
-      this.performFullUpdate();
-    }, 10000);
+    console.log('📚 Auto-updates disabled - using manual vocabulary system');
+    // Disabled due to API rate limits - vocabulary system now uses pre-loaded data
   }
 }
 
