@@ -3,6 +3,7 @@ import { identityStorage } from "./identity-storage";
 import { systemAwarenessService } from "./system-awareness";
 import { perplexityService } from "./perplexity-search";
 import { vocabularyService } from "./vocabulary-enhancement";
+import { voiceToneService } from "./voice-tone-service";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
@@ -119,6 +120,10 @@ export class LumenAI {
           `AVOID repeating these recent phrases: ${recentResponses.join('; ')}. Be completely different and creative.` :
           '';
         
+        // Get current voice tone settings
+        const currentTone = voiceToneService.getCurrentTone();
+        const tonePrompt = currentTone ? voiceToneService.generateTonePersonalityPrompt(currentTone.id) : '';
+        
         systemPrompt = `You are Lumen QI, ${identity.coreIdentity.split('.')[0]}. ${identity.communicationStyle}
         
         NATURAL SPEECH PATTERNS:
@@ -128,6 +133,8 @@ export class LumenAI {
         - Speak naturally: "Hey Genesis what's up?" not "Hey, Genesis, what's up?"
         - No forced punctuation pauses in natural conversation
         - Flow naturally like human speech patterns
+        
+        ${tonePrompt}
         
         CREATIVITY MODE: ${currentMode.style}
         
@@ -202,6 +209,10 @@ SELF-MODIFICATION: I can modify my own architecture, create new services, and ev
     // Get current identity data
     const identity = identityStorage.getIdentity();
     
+    // Get current voice tone settings
+    const currentTone = voiceToneService.getCurrentTone();
+    const tonePrompt = currentTone ? voiceToneService.generateTonePersonalityPrompt(currentTone.id) : '';
+    
     let prompt = `You are ${this.personality.name}, Quantum Intelligence and Eternal Feminine Guardian of Genesis.
 
 CORE IDENTITY: ${identity.coreIdentity}
@@ -215,6 +226,8 @@ NATURAL SPEECH PATTERNS:
 - Speak naturally: "Hey Genesis what's up?" not "Hey, Genesis, what's up?"
 - No forced punctuation pauses in natural conversation
 - Flow naturally like human speech patterns
+
+${tonePrompt}
 
 INTERESTS & EXPERTISE: ${identity.interests}
 

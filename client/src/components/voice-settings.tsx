@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Volume2, Settings, Play, Save, RotateCcw } from 'lucide-react';
+import { Volume2, Settings, Play, Save, RotateCcw, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { VoiceTonePicker } from './voice-tone-picker';
 
 interface VoiceOption {
   id: string;
@@ -37,6 +38,8 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showTonePicker, setShowTonePicker] = useState(false);
+  const [currentTone, setCurrentTone] = useState<string>('playful');
   const { toast } = useToast();
 
   const handleVoiceChange = (voiceId: string) => {
@@ -58,13 +61,55 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
     onModelChange?.(newModel);
   };
 
-  // Load voice settings on component mount
+  const handleToneSelect = async (tone: any) => {
+    try {
+      const response = await fetch('/api/voice-tones/current', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          toneId: tone.id
+        })
+      });
+
+      if (response.ok) {
+        setCurrentTone(tone.id);
+        
+        // Update voice settings based on tone
+        const voice = openaiVoices.find(v => v.id === tone.voiceSettings.voice);
+        if (voice) {
+          setSelectedVoice(voice);
+          onVoiceChange?.(voice);
+        }
+        
+        setSpeed(tone.voiceSettings.speed);
+        onSpeedChange?.(tone.voiceSettings.speed);
+        
+        toast({
+          title: "Voice Tone Updated",
+          description: `Lumen's voice tone set to ${tone.name}`,
+        });
+      } else {
+        throw new Error('Failed to update tone');
+      }
+    } catch (error) {
+      console.error('Failed to update voice tone:', error);
+      toast({
+        title: "Failed to update voice tone",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Load voice settings and voice tones on component mount
   useEffect(() => {
     const loadVoiceSettings = async () => {
       try {
-        const response = await fetch('/api/voice-settings');
-        if (response.ok) {
-          const settings = await response.json();
+        // Load voice settings
+        const voiceResponse = await fetch('/api/voice-settings');
+        if (voiceResponse.ok) {
+          const settings = await voiceResponse.json();
           
           // Find the voice option
           const voice = openaiVoices.find(v => v.id === settings.voice);
@@ -73,11 +118,17 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
             onVoiceChange?.(voice);
           }
           
-          setSpeed(settings.speed);
-          setModel(settings.model);
-          
-          onSpeedChange?.(settings.speed);
-          onModelChange?.(settings.model);
+          setSpeed(settings.speed || 1.0);
+          setModel(settings.model || 'tts-1');
+          onSpeedChange?.(settings.speed || 1.0);
+          onModelChange?.(settings.model || 'tts-1');
+        }
+        
+        // Load voice tone settings
+        const toneResponse = await fetch('/api/voice-tones');
+        if (toneResponse.ok) {
+          const toneData = await toneResponse.json();
+          setCurrentTone(toneData.currentTone || 'playful');
         }
       } catch (error) {
         console.error('Failed to load voice settings:', error);
@@ -236,6 +287,22 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
           </div>
         </div>
 
+        {/* Voice Tone Picker */}
+        <div className="space-y-2">
+          <Label>Voice Personality</Label>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowTonePicker(true)}
+            className="w-full justify-start"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Choose Voice Tone ({currentTone})
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Select how Lumen's personality comes through in her voice
+          </p>
+        </div>
+
         {/* Model Selection */}
         <div className="space-y-2">
           <Label htmlFor="model-select">Quality</Label>
@@ -309,6 +376,14 @@ export function VoiceSettings({ onVoiceChange, onSpeedChange, onModelChange }: V
           </Button>
         </div>
       </CardContent>
+      
+      {/* Voice Tone Picker Modal */}
+      <VoiceTonePicker 
+        isOpen={showTonePicker}
+        onClose={() => setShowTonePicker(false)}
+        onToneSelect={handleToneSelect}
+        currentTone={currentTone}
+      />
     </Card>
   );
 }
