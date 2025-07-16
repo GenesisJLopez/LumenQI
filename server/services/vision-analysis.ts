@@ -31,12 +31,39 @@ export class VisionAnalysisService {
       // Handle different image formats properly
       let processedImageData = imageData;
       
-      // If it's already a data URL, use it directly
+      // If it's already a data URL, validate and potentially convert format
       if (imageData.startsWith('data:image/')) {
-        processedImageData = imageData;
+        const formatMatch = imageData.match(/data:image\/([^;]+)/);
+        const format = formatMatch ? formatMatch[1] : 'jpeg';
+        
+        // Ensure we're using a supported format
+        const supportedFormats = ['png', 'jpeg', 'jpg', 'gif', 'webp'];
+        if (!supportedFormats.includes(format.toLowerCase())) {
+          console.log(`Converting unsupported format ${format} to jpeg`);
+          // Replace the mime type with jpeg
+          processedImageData = imageData.replace(/data:image\/[^;]+/, 'data:image/jpeg');
+        } else {
+          // Normalize format name (jpg -> jpeg)
+          if (format.toLowerCase() === 'jpg') {
+            processedImageData = imageData.replace(/data:image\/jpg/, 'data:image/jpeg');
+          } else {
+            processedImageData = imageData;
+          }
+        }
       } else {
-        // If it's just base64, add the proper prefix
+        // If it's just base64, add the proper JPEG prefix
         processedImageData = `data:image/jpeg;base64,${imageData}`;
+      }
+      
+      // Validate the image data
+      if (!processedImageData || !processedImageData.includes('base64,')) {
+        throw new Error('Invalid image data format');
+      }
+      
+      // Additional validation - check if base64 data is valid
+      const base64Data = processedImageData.split('base64,')[1];
+      if (!base64Data || base64Data.length < 100) {
+        throw new Error('Invalid or corrupted image data');
       }
       
       const prompt = mode === 'realtime' 
@@ -93,7 +120,19 @@ export class VisionAnalysisService {
       return analysis;
     } catch (error) {
       console.error('Vision analysis error:', error);
-      throw new Error('Failed to analyze image');
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('invalid_image_format')) {
+          throw new Error("Image format not supported. Please use PNG, JPEG, GIF, or WebP format.");
+        } else if (error.message.includes('image_too_large')) {
+          throw new Error("Image is too large. Please use a smaller image.");
+        } else if (error.message.includes('Invalid image data format')) {
+          throw new Error("Invalid image data received. Please try capturing the image again.");
+        }
+      }
+      
+      throw new Error("Failed to analyze image. Please try again with a different image.");
     }
   }
 
