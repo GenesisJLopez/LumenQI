@@ -17,6 +17,8 @@ import { consciousnessCore } from "./services/consciousness-core";
 import { ollamaIntegration } from "./services/ollama-integration";
 import { perplexityService } from "./services/perplexity-search";
 import { vocabularyService } from "./services/vocabulary-enhancement";
+import { proactiveAI } from "./services/proactive-ai";
+import { naturalConversation } from "./services/natural-conversation";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -889,9 +891,105 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
+  // Proactive AI API endpoints
+  app.post("/api/proactive/reminder", async (req, res) => {
+    try {
+      const { title, description, scheduledTime, reminderType, isRecurring, priority = 'medium' } = req.body;
+      
+      if (!title || !scheduledTime) {
+        return res.status(400).json({ error: "Title and scheduled time are required" });
+      }
+
+      const reminderId = await proactiveAI.createReminder(1, {
+        title,
+        description: description || '',
+        scheduledTime: new Date(scheduledTime),
+        reminderType: reminderType || 'custom',
+        isRecurring: isRecurring || false,
+        priority,
+        isCompleted: false
+      });
+
+      res.json({ success: true, reminderId });
+    } catch (error) {
+      console.error('Error creating reminder:', error);
+      res.status(500).json({ error: "Failed to create reminder" });
+    }
+  });
+
+  app.get("/api/proactive/reminders", async (req, res) => {
+    try {
+      const reminders = proactiveAI.getReminders(1);
+      res.json(reminders);
+    } catch (error) {
+      console.error('Error fetching reminders:', error);
+      res.status(500).json({ error: "Failed to fetch reminders" });
+    }
+  });
+
+  app.get("/api/proactive/stats", async (req, res) => {
+    try {
+      const stats = proactiveAI.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching proactive stats:', error);
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
+  app.post("/api/proactive/enable-device-access", async (req, res) => {
+    try {
+      const success = await proactiveAI.enableDeviceAccess();
+      res.json({ success, message: "Device access enabled" });
+    } catch (error) {
+      console.error('Error enabling device access:', error);
+      res.status(500).json({ error: "Failed to enable device access" });
+    }
+  });
+
+  app.post("/api/proactive/enable-wake-word", async (req, res) => {
+    try {
+      const success = await proactiveAI.enableWakeWord();
+      res.json({ success, message: "Wake word enabled" });
+    } catch (error) {
+      console.error('Error enabling wake word:', error);
+      res.status(500).json({ error: "Failed to enable wake word" });
+    }
+  });
+
+  app.post("/api/proactive/mode", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      proactiveAI.setProactiveMode(enabled);
+      res.json({ success: true, proactiveMode: enabled });
+    } catch (error) {
+      console.error('Error setting proactive mode:', error);
+      res.status(500).json({ error: "Failed to set proactive mode" });
+    }
+  });
+
+  app.delete("/api/proactive/reminder/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await proactiveAI.deleteReminder(id);
+      
+      if (success) {
+        res.json({ success: true, message: "Reminder deleted" });
+      } else {
+        res.status(404).json({ error: "Reminder not found" });
+      }
+    } catch (error) {
+      console.error('Error deleting reminder:', error);
+      res.status(500).json({ error: "Failed to delete reminder" });
+    }
+  });
+
   // WebSocket handling for real-time chat
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection established');
+    
+    // Register this WebSocket with proactive AI
+    proactiveAI.addWebSocket(ws);
 
     ws.on('message', async (data: string) => {
       try {
@@ -941,6 +1039,9 @@ Respond with only the title, no quotes or additional text.`;
           if (!conversationId) {
             throw new Error('Conversation ID is required');
           }
+          
+          // Update proactive AI's last interaction time
+          proactiveAI.updateLastInteraction();
           
           // Optimize for voice mode - minimal context for speed
           const isVoiceMode = message.isVoiceMode || false;

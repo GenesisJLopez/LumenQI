@@ -23,6 +23,7 @@ import { FeedbackButtons } from '@/components/feedback-buttons';
 import { FeedbackLearningDisplay } from '@/components/feedback-learning-display';
 import { SystemArchitecturePanel } from '@/components/system-architecture-panel';
 import { VocabularyEnhancementPanel } from '@/components/vocabulary-enhancement-panel';
+import { ProactiveAIPanel } from '@/components/proactive-ai-panel';
 import { AIConfigPanel } from '@/components/ai-config-panel';
 import { ConsciousnessDashboard } from '@/components/consciousness-dashboard';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
@@ -31,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, Sparkles } from 'lucide-react';
+import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, Sparkles, Bell } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
@@ -42,7 +43,7 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary'>('quantum');
+  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive'>('quantum');
   const [identityData, setIdentityData] = useState({
     coreIdentity: "I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance.",
     communicationStyle: "I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive.",
@@ -702,6 +703,17 @@ export default function Home() {
                       <MessageSquare className="w-4 h-4 mr-2 inline" />
                       Vocabulary
                     </button>
+                    <button
+                      onClick={() => setActiveTab('proactive')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'proactive' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Bell className="w-4 h-4 mr-2 inline" />
+                      Proactive AI
+                    </button>
                   </div>
                 </div>
               </div>
@@ -931,6 +943,14 @@ export default function Home() {
                   <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
                     <div className="space-y-6 pb-16">
                       <VocabularyEnhancementPanel />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'proactive' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <ProactiveAIPanel />
                     </div>
                   </div>
                 )}

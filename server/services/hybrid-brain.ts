@@ -9,6 +9,7 @@ import { simpleLocalAI } from './simple-local-ai';
 import { consciousnessCore } from './consciousness-core';
 import { localAI } from './local-ai';
 import { vocabularyService } from './vocabulary-enhancement';
+import { naturalConversation } from './natural-conversation';
 
 interface HybridBrainConfig {
   autonomyThreshold: number; // When to prefer consciousness over external AI
