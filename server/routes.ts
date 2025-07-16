@@ -19,6 +19,7 @@ import { perplexityService } from "./services/perplexity-search";
 import { vocabularyService } from "./services/vocabulary-enhancement";
 import { proactiveAI } from "./services/proactive-ai";
 import { naturalConversation } from "./services/natural-conversation";
+import { calendarIntegration } from "./services/calendar-integration";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -984,12 +985,165 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
+  // Calendar API endpoints
+  app.post("/api/calendar/enable", async (req, res) => {
+    try {
+      const success = await calendarIntegration.enableCalendarAccess();
+      res.json({ success, message: "Calendar access enabled" });
+    } catch (error) {
+      console.error('Error enabling calendar access:', error);
+      res.status(500).json({ error: "Failed to enable calendar access" });
+    }
+  });
+
+  app.post("/api/calendar/disable", async (req, res) => {
+    try {
+      await calendarIntegration.disableCalendarAccess();
+      res.json({ success: true, message: "Calendar access disabled" });
+    } catch (error) {
+      console.error('Error disabling calendar access:', error);
+      res.status(500).json({ error: "Failed to disable calendar access" });
+    }
+  });
+
+  app.get("/api/calendar/events", async (req, res) => {
+    try {
+      const { startDate, endDate, category, priority } = req.query;
+      
+      const filter: any = {};
+      if (startDate) filter.startDate = new Date(startDate as string);
+      if (endDate) filter.endDate = new Date(endDate as string);
+      if (category) filter.category = category as string;
+      if (priority) filter.priority = priority as string;
+      
+      const events = calendarIntegration.getEvents(filter);
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching calendar events:', error);
+      res.status(500).json({ error: "Failed to fetch calendar events" });
+    }
+  });
+
+  app.get("/api/calendar/events/today", async (req, res) => {
+    try {
+      const events = calendarIntegration.getTodaysEvents();
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching today\'s events:', error);
+      res.status(500).json({ error: "Failed to fetch today's events" });
+    }
+  });
+
+  app.get("/api/calendar/events/upcoming", async (req, res) => {
+    try {
+      const days = req.query.days ? parseInt(req.query.days as string) : 7;
+      const events = calendarIntegration.getUpcomingEvents(days);
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching upcoming events:', error);
+      res.status(500).json({ error: "Failed to fetch upcoming events" });
+    }
+  });
+
+  app.get("/api/calendar/alerts", async (req, res) => {
+    try {
+      const unreadOnly = req.query.unread === 'true';
+      const alerts = calendarIntegration.getAlerts(unreadOnly);
+      res.json(alerts);
+    } catch (error) {
+      console.error('Error fetching calendar alerts:', error);
+      res.status(500).json({ error: "Failed to fetch calendar alerts" });
+    }
+  });
+
+  app.post("/api/calendar/alerts/:id/read", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await calendarIntegration.markAlertAsRead(id);
+      
+      if (success) {
+        res.json({ success: true, message: "Alert marked as read" });
+      } else {
+        res.status(404).json({ error: "Alert not found" });
+      }
+    } catch (error) {
+      console.error('Error marking alert as read:', error);
+      res.status(500).json({ error: "Failed to mark alert as read" });
+    }
+  });
+
+  app.get("/api/calendar/stats", async (req, res) => {
+    try {
+      const stats = calendarIntegration.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching calendar stats:', error);
+      res.status(500).json({ error: "Failed to fetch calendar stats" });
+    }
+  });
+
+  app.post("/api/calendar/events", async (req, res) => {
+    try {
+      const eventData = req.body;
+      const newEvent = await calendarIntegration.addEvent(eventData);
+      res.json(newEvent);
+    } catch (error) {
+      console.error('Error creating calendar event:', error);
+      res.status(500).json({ error: "Failed to create calendar event" });
+    }
+  });
+
+  app.put("/api/calendar/events/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedEvent = await calendarIntegration.updateEvent(id, updates);
+      
+      if (updatedEvent) {
+        res.json(updatedEvent);
+      } else {
+        res.status(404).json({ error: "Event not found" });
+      }
+    } catch (error) {
+      console.error('Error updating calendar event:', error);
+      res.status(500).json({ error: "Failed to update calendar event" });
+    }
+  });
+
+  app.delete("/api/calendar/events/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await calendarIntegration.deleteEvent(id);
+      
+      if (success) {
+        res.json({ success: true, message: "Event deleted" });
+      } else {
+        res.status(404).json({ error: "Event not found" });
+      }
+    } catch (error) {
+      console.error('Error deleting calendar event:', error);
+      res.status(500).json({ error: "Failed to delete calendar event" });
+    }
+  });
+
   // WebSocket handling for real-time chat
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection established');
     
     // Register this WebSocket with proactive AI
     proactiveAI.addWebSocket(ws);
+    
+    // Listen for calendar alerts
+    const handleCalendarAlert = (alert: any) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'calendar_alert',
+          alert
+        }));
+      }
+    };
+    
+    calendarIntegration.on('calendarAlert', handleCalendarAlert);
 
     ws.on('message', async (data: string) => {
       try {
