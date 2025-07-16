@@ -60,7 +60,13 @@ export function useWebSocket(): UseWebSocketReturn {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
     } else {
-      console.error('WebSocket is not connected');
+      console.error('WebSocket is not connected, readyState:', ws.current?.readyState);
+      // Try to reconnect if not connected
+      if (ws.current?.readyState === WebSocket.CLOSED) {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        ws.current = new WebSocket(wsUrl);
+      }
     }
   };
 

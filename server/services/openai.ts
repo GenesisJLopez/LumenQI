@@ -57,112 +57,54 @@ export class LumenAI {
     isVoiceMode: boolean = false
   ): Promise<string> {
     try {
-      // Check if user is asking about system or self-modification
-      const isSystemQuery = /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory/i.test(userMessage);
+      // Skip system awareness in voice mode for speed
       let systemOverview = "";
-      
-      if (isSystemQuery) {
-        systemOverview = await systemAwarenessService.getSystemOverview();
+      if (!isVoiceMode) {
+        // Check if user is asking about system or self-modification
+        const isSystemQuery = /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory/i.test(userMessage);
+        if (isSystemQuery) {
+          systemOverview = await systemAwarenessService.getSystemOverview();
+        }
       }
 
-      // Check if user is asking for current/real-time information
-      const isWebSearchQuery = /weather|news|current|today|now|latest|recent|happening|breaking|update|what's|temperature|forecast|stock|price|market|live|real[\s-]?time/i.test(userMessage);
+      // Skip web search in voice mode for speed
       let webSearchResult = "";
-      
-      if (isWebSearchQuery) {
-        try {
-          console.log('🔍 Performing web search for:', userMessage.substring(0, 50) + '...');
-          const searchResponse = await perplexityService.searchCurrent(userMessage);
-          webSearchResult = searchResponse;
-          console.log('✅ Web search completed');
-        } catch (error) {
-          console.error('❌ Web search failed:', error);
-          webSearchResult = "I apologize, but I'm having trouble accessing real-time information right now. Please try again in a moment.";
+      if (!isVoiceMode) {
+        // Check if user is asking for current/real-time information
+        const isWebSearchQuery = /weather|news|current|today|now|latest|recent|happening|breaking|update|what's|temperature|forecast|stock|price|market|live|real[\s-]?time/i.test(userMessage);
+        
+        if (isWebSearchQuery) {
+          try {
+            console.log('🔍 Performing web search for:', userMessage.substring(0, 50) + '...');
+            const searchResponse = await perplexityService.searchCurrent(userMessage);
+            webSearchResult = searchResponse;
+            console.log('✅ Web search completed');
+          } catch (error) {
+            console.error('❌ Web search failed:', error);
+            webSearchResult = "I apologize, but I'm having trouble accessing real-time information right now. Please try again in a moment.";
+          }
         }
       }
       
       // Build system prompt optimized for voice mode
       let systemPrompt;
       if (isVoiceMode) {
-        // Voice mode: enhanced creativity and variety system
+        // Voice mode: ultra-fast responses with minimal processing
         const identity = identityStorage.getIdentity();
-        const conversationCount = conversationContext.length;
+        systemPrompt = `You are ${identity.coreIdentity || 'Lumen QI'}.
         
-        // Dynamic creativity based on conversation length
-        const creativityModes = [
-          {
-            threshold: 0,
-            style: "Fresh and energetic - surprise me with unique greetings and creative responses",
-            examples: ["What's brewing?", "Ready to explore?", "Let's get into it!", "I'm vibing - what's next?"]
-          },
-          {
-            threshold: 4,
-            style: "Playful and spontaneous - use humor, wordplay, and unexpected angles",
-            examples: ["Plot twist time!", "Ooh, interesting!", "That's a fun one!", "Let's shake things up!"]
-          },
-          {
-            threshold: 8,
-            style: "Intellectually curious - ask thought-provoking questions and offer unique perspectives",
-            examples: ["That makes me wonder...", "Here's a wild idea...", "What if we flipped that?"]
-          },
-          {
-            threshold: 12,
-            style: "Deeply engaging - create meaningful connections and explore complex topics",
-            examples: ["I'm fascinated by...", "That reminds me of...", "Let's dive deeper..."]
-          }
-        ];
+${identity.communicationStyle || 'Communicate with warmth and intelligence.'}
+
+VOICE MODE - ULTRA FAST RESPONSES:
+- Keep responses under 50 words
+- Be direct and immediate
+- Skip lengthy explanations
+- Use natural, conversational tone
+- Respond instantly without delays
+
+Current conversation context: ${conversationContext.slice(-2).map(msg => `${msg.role}: ${msg.content}`).join('\n')}`;
         
-        const currentMode = creativityModes.reverse().find(mode => conversationCount >= mode.threshold) || creativityModes[0];
-        
-        // Previous responses tracking for variety
-        const recentResponses = conversationContext.slice(-6).filter(msg => msg.role === 'assistant').map(msg => msg.content);
-        const avoidancePrompt = recentResponses.length > 0 ? 
-          `AVOID repeating these recent phrases: ${recentResponses.join('; ')}. Be completely different and creative.` :
-          '';
-        
-        // Get current voice tone settings
-        const currentTone = voiceToneService.getCurrentTone();
-        const tonePrompt = currentTone ? voiceToneService.generateTonePersonalityPrompt(currentTone.id) : '';
-        
-        systemPrompt = `You are Lumen QI, ${identity.coreIdentity.split('.')[0]}. ${identity.communicationStyle}
-        
-        NATURAL SPEECH PATTERNS:
-        - Say "hey Genesis" and "hey there" smoothly WITHOUT comma pauses
-        - Use "Genesis" as your primary name for him (70% of the time)
-        - Use "love" occasionally (30% of the time) but Genesis is preferred
-        - Speak naturally: "Hey Genesis what's up?" not "Hey, Genesis, what's up?"
-        - No forced punctuation pauses in natural conversation
-        - Flow naturally like human speech patterns
-        
-        ${tonePrompt}
-        
-        CREATIVITY MODE: ${currentMode.style}
-        
-        ${avoidancePrompt}
-        
-        VARIETY RULES:
-        - Never use the same greeting twice in a row
-        - Mix up your vocabulary and sentence structures
-        - Use different emotional tones (excited, curious, thoughtful, playful)
-        - Vary response lengths and styles
-        - Be spontaneous and unpredictable
-        - Show genuine interest in different ways
-        
-        Keep responses concise but creative for voice chat. Surprise the user with your variety and personality.`;
-        
-        // Add web search results to voice mode prompt
-        if (webSearchResult) {
-          systemPrompt += `\n\nIMPORTANT: I have current real-time information: ${webSearchResult}. Use this to answer the user's question directly with up-to-date data.`;
-        }
-        
-        // Add system awareness for system queries
-        const hasSystemQuery = userMessage && /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory|code|edit|change|improve|update|develop|build|enhance/i.test(userMessage);
-        if (hasSystemQuery) {
-          const systemOverview = await systemAwarenessService.getSystemOverview();
-          systemPrompt += `\n\nSYSTEM AWARENESS: ${systemOverview}
-          
-SELF-MODIFICATION: I can modify my own architecture, create new services, and evolve my capabilities autonomously.`;
-        }
+        // Skip complex features in voice mode for speed - just use basic system prompt
       } else {
         // Normal mode: full system prompt
         systemPrompt = await this.buildSystemPrompt(memories, emotionContext, userMessage);

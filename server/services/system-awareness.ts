@@ -80,7 +80,13 @@ export class SystemAwarenessService {
         // Skip certain directories
         if (this.shouldSkipPath(relativePath)) continue;
 
-        const stats = await fs.stat(fullPath);
+        let stats;
+        try {
+          stats = await fs.stat(fullPath);
+        } catch (error) {
+          // Skip files/directories that can't be accessed
+          continue;
+        }
         
         if (entry.isDirectory()) {
           files.push({
