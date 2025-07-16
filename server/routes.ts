@@ -16,6 +16,7 @@ import { hybridBrain } from "./services/hybrid-brain";
 import { consciousnessCore } from "./services/consciousness-core";
 import { ollamaIntegration } from "./services/ollama-integration";
 import { perplexityService } from "./services/perplexity-search";
+import { vocabularyService } from "./services/vocabulary-enhancement";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -1448,6 +1449,85 @@ Respond with only the title, no quotes or additional text.`;
       });
     }
   });
+
+  // Vocabulary Enhancement API endpoints
+  app.post("/api/vocabulary/update", async (req, res) => {
+    try {
+      console.log('🔄 Manual vocabulary update requested');
+      await vocabularyService.performFullUpdate();
+      const stats = vocabularyService.getVocabularyStats();
+      res.json({ 
+        success: true, 
+        message: 'Vocabulary updated successfully',
+        stats 
+      });
+    } catch (error) {
+      console.error('Vocabulary update error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/vocabulary/stats", async (req, res) => {
+    try {
+      const stats = vocabularyService.getVocabularyStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Vocabulary stats error:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/vocabulary/contextual/:message", async (req, res) => {
+    try {
+      const message = decodeURIComponent(req.params.message);
+      const contextualVocab = vocabularyService.getContextualVocabulary(message);
+      res.json(contextualVocab);
+    } catch (error) {
+      console.error('Contextual vocabulary error:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/vocabulary/learn", async (req, res) => {
+    try {
+      const { trigger, context } = req.body;
+      console.log(`🧠 Learning trigger activated: ${trigger}`);
+      
+      // Intelligent learning based on trigger
+      if (trigger === 'pop_culture') {
+        await vocabularyService.updatePopCultureReferences();
+      } else if (trigger === 'slang') {
+        await vocabularyService.updateSlangDatabase();
+      } else if (trigger === 'trends') {
+        await vocabularyService.updateSocialTrends();
+      } else {
+        await vocabularyService.performFullUpdate();
+      }
+      
+      const stats = vocabularyService.getVocabularyStats();
+      res.json({ 
+        success: true, 
+        message: `Learning completed for ${trigger}`,
+        stats 
+      });
+    } catch (error) {
+      console.error('Vocabulary learning error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Start automatic vocabulary updates
+  vocabularyService.startAutoUpdates();
 
   return httpServer;
 }

@@ -8,6 +8,7 @@ import { lumenAI } from './openai';
 import { simpleLocalAI } from './simple-local-ai';
 import { consciousnessCore } from './consciousness-core';
 import { localAI } from './local-ai';
+import { vocabularyService } from './vocabulary-enhancement';
 
 interface HybridBrainConfig {
   autonomyThreshold: number; // When to prefer consciousness over external AI
@@ -89,6 +90,9 @@ export class HybridBrain {
         if (response) {
           // Learn from this interaction
           this.learnFromInteraction(userQuery, response, context);
+          
+          // Trigger vocabulary learning based on conversation context
+          this.triggerVocabularyLearning(userQuery, response.content);
           
           // Store in history
           this.responseHistory.push({
@@ -288,6 +292,24 @@ export class HybridBrain {
     });
     
     return stats;
+  }
+
+  private async triggerVocabularyLearning(userQuery: string, aiResponse: string): Promise<void> {
+    // Check if vocabulary learning should be triggered
+    const contextualData = vocabularyService.getContextualVocabulary(userQuery);
+    
+    if (contextualData.shouldTriggerLearning && contextualData.suggestedTrigger) {
+      console.log(`🗣️ Triggering vocabulary learning: ${contextualData.suggestedTrigger}`);
+      
+      // Trigger learning asynchronously to avoid blocking response
+      setTimeout(async () => {
+        try {
+          await vocabularyService.triggerLearning(contextualData.suggestedTrigger!, userQuery);
+        } catch (error) {
+          console.error('Error triggering vocabulary learning:', error);
+        }
+      }, 1000);
+    }
   }
 
   // Force evolution (for testing)
