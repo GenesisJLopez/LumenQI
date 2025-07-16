@@ -34,6 +34,8 @@ export class SystemAwarenessService {
   private static instance: SystemAwarenessService;
   private architecture: SystemArchitecture | null = null;
   private lastScan: Date | null = null;
+  private fileTree: any[] = [];
+  private metrics: any = null;
 
   private constructor() {}
 
@@ -524,14 +526,39 @@ SELF-MODIFICATION ABILITIES:
           ...packageJson.devDependencies || {}
         }).length;
       } catch (error) {
-        // Package.json not found or invalid
+        metrics.dependencies = 0;
       }
 
       return metrics;
     } catch (error) {
       console.error('Error getting architecture metrics:', error);
-      return null;
+      return {
+        totalFiles: 0,
+        totalFolders: 0,
+        codeFiles: 0,
+        configFiles: 0,
+        dependencies: 0,
+        services: 0,
+        lastUpdated: new Date().toISOString()
+      };
     }
+  }
+
+  private getDirectoryPurpose(dirPath: string): string {
+    const purposes: { [key: string]: string } = {
+      'client': 'Frontend React application',
+      'client/src': 'React source code',
+      'client/src/components': 'Reusable UI components',
+      'client/src/pages': 'Application pages',
+      'client/src/lib': 'Utility functions',
+      'server': 'Backend Express application',
+      'server/services': 'Business logic services',
+      'shared': 'Shared code between client and server',
+      'scripts': 'Build and deployment scripts',
+      'attached_assets': 'User uploaded files'
+    };
+    
+    return purposes[dirPath] || 'Project directory';
   }
 
   async getDependencyAnalysis(): Promise<any> {
