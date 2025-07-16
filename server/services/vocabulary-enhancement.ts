@@ -539,12 +539,12 @@ ${recentTrends.map(t => `- ${t.hashtag}: ${t.description}`).join('\n')}
 
   // Schedule automatic updates
   startAutoUpdates(): void {
-    console.log('🔄 Starting vocabulary auto-updates every 6 hours');
+    console.log('🔄 Starting vocabulary auto-updates every month');
     
-    // Update every 6 hours
+    // Update every 30 days (1 month)
     setInterval(() => {
       this.performFullUpdate();
-    }, 6 * 60 * 60 * 1000);
+    }, 30 * 24 * 60 * 60 * 1000);
 
     // Initial update after 10 seconds
     setTimeout(() => {
