@@ -2026,6 +2026,78 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
+  // Real-Time Architecture Explorer API endpoints
+  app.get("/api/system/health", async (req, res) => {
+    try {
+      const health = await systemAwarenessService.analyzeSystemHealth();
+      res.json({
+        ...health,
+        lastCheck: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('System health check error:', error);
+      res.status(500).json({ error: "Failed to check system health" });
+    }
+  });
+
+  app.get("/api/system/metrics", async (req, res) => {
+    try {
+      const metrics = await systemAwarenessService.getArchitectureMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error('System metrics error:', error);
+      res.status(500).json({ error: "Failed to get system metrics" });
+    }
+  });
+
+  app.get("/api/system/file-tree", async (req, res) => {
+    try {
+      const fileTree = await systemAwarenessService.getFileTreeStructure();
+      res.json({ fileTree });
+    } catch (error) {
+      console.error('File tree error:', error);
+      res.status(500).json({ error: "Failed to get file tree" });
+    }
+  });
+
+  app.get("/api/system/file/:path", async (req, res) => {
+    try {
+      const filePath = req.params.path.replace(/~/g, '/');
+      const content = await systemAwarenessService.getFileContent(filePath);
+      
+      if (content) {
+        res.json({ content, path: filePath });
+      } else {
+        res.status(404).json({ error: "File not found" });
+      }
+    } catch (error) {
+      console.error('File content error:', error);
+      res.status(500).json({ error: "Failed to read file" });
+    }
+  });
+
+  app.post("/api/system/file/:path", async (req, res) => {
+    try {
+      const filePath = req.params.path.replace(/~/g, '/');
+      const { content } = req.body;
+      
+      if (!content) {
+        return res.status(400).json({ error: "Content is required" });
+      }
+
+      const success = await systemAwarenessService.modifyFile(filePath, content);
+      
+      if (success) {
+        res.json({ success: true, message: "File updated successfully" });
+      } else {
+        res.status(500).json({ error: "Failed to update file" });
+      }
+    } catch (error) {
+      console.error('File modification error:', error);
+      res.status(500).json({ error: "Failed to modify file" });
+    }
+  });
+
   // Code generation endpoints
   app.post("/api/code/generate", async (req, res) => {
     try {

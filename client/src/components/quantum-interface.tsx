@@ -6,7 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CodeGenerator } from '@/components/code-generator';
 import { EmotionDisplay } from '@/components/emotion-display';
-import { Activity, Brain, Cpu, HardDrive, Zap, Mic, Volume2, Code, Globe, Database } from 'lucide-react';
+import { RealTimeArchitectureExplorer } from '@/components/real-time-architecture-explorer';
+import { Activity, Brain, Cpu, HardDrive, Zap, Mic, Volume2, Code, Globe, Database, Monitor } from 'lucide-react';
 
 interface HardwareInfo {
   cpuCores: number;
@@ -209,12 +210,13 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="hardware">Hardware</TabsTrigger>
           <TabsTrigger value="evolution">Evolution</TabsTrigger>
           <TabsTrigger value="voice">Voice</TabsTrigger>
           <TabsTrigger value="code">Code Gen</TabsTrigger>
+          <TabsTrigger value="architecture">Architecture</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 overflow-y-auto max-h-96">
@@ -526,6 +528,24 @@ export function QuantumInterface({ onTTSRequest, onMLAdapt, isElectron }: Quantu
                   // Handle generated code (could save to files, preview, etc.)
                 }}
               />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="architecture" className="space-y-4 overflow-y-auto max-h-96">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Monitor className="w-5 h-5" />
+                Real-Time System Architecture
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-gray-400 mb-4">
+                Comprehensive real-time monitoring and exploration of Lumen QI's system architecture,
+                including file structure, dependencies, and system health metrics.
+              </div>
+              <RealTimeArchitectureExplorer />
             </CardContent>
           </Card>
         </TabsContent>
