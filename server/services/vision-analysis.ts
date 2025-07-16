@@ -28,8 +28,16 @@ export class VisionAnalysisService {
 
   async analyzeImage(imageData: string, mode: 'realtime' | 'detailed' = 'detailed'): Promise<VisionAnalysis> {
     try {
-      // Remove data URL prefix if present
-      const base64Image = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+      // Handle different image formats properly
+      let processedImageData = imageData;
+      
+      // If it's already a data URL, use it directly
+      if (imageData.startsWith('data:image/')) {
+        processedImageData = imageData;
+      } else {
+        // If it's just base64, add the proper prefix
+        processedImageData = `data:image/jpeg;base64,${imageData}`;
+      }
       
       const prompt = mode === 'realtime' 
         ? this.getRealtimePrompt()
@@ -52,7 +60,7 @@ export class VisionAnalysisService {
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
+                  url: processedImageData
                 }
               }
             ]
