@@ -108,7 +108,31 @@ export function CameraVision({ onAnalysisUpdate }: CameraVisionProps) {
     
     ctx.drawImage(video, 0, 0);
     
-    return canvas.toDataURL('image/jpeg', 0.8);
+    // Try multiple formats to ensure compatibility
+    try {
+      // First try JPEG (most compatible)
+      const jpegData = canvas.toDataURL('image/jpeg', 0.8);
+      if (jpegData && jpegData.startsWith('data:image/jpeg')) {
+        return jpegData;
+      }
+      
+      // Fallback to PNG
+      const pngData = canvas.toDataURL('image/png');
+      if (pngData && pngData.startsWith('data:image/png')) {
+        return pngData;
+      }
+      
+      // Last resort - WebP
+      const webpData = canvas.toDataURL('image/webp', 0.8);
+      if (webpData && webpData.startsWith('data:image/webp')) {
+        return webpData;
+      }
+      
+    } catch (error) {
+      console.error('Error capturing frame:', error);
+    }
+    
+    return null;
   };
 
   const analyzeFrame = async (imageData?: string) => {
@@ -132,7 +156,13 @@ export function CameraVision({ onAnalysisUpdate }: CameraVisionProps) {
       });
 
       if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.status}`);
+        // Try to get error message from response body
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Analysis failed: ${response.status}`);
+        } catch (parseError) {
+          throw new Error(`Analysis failed: ${response.status}`);
+        }
       }
 
       const analysis: VisionAnalysis = await response.json();
@@ -145,10 +175,17 @@ export function CameraVision({ onAnalysisUpdate }: CameraVisionProps) {
       }
     } catch (err) {
       console.error('Vision analysis error:', err);
-      setError('Failed to analyze image. Please try again.');
+      
+      // Extract error message from response
+      let errorMessage = 'Failed to analyze image. Please try again.';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
       toast({
         title: "Analysis Error",
-        description: "Failed to analyze camera feed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

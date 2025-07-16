@@ -1988,7 +1988,10 @@ Respond with only the title, no quotes or additional text.`;
       res.json(analysis);
     } catch (error) {
       console.error('Vision analysis error:', error);
-      res.status(500).json({ error: "Failed to analyze image" });
+      
+      // Return the actual error message from the service
+      const errorMessage = error instanceof Error ? error.message : "Failed to analyze image";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
