@@ -125,6 +125,9 @@ export default function Home() {
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ['/api/conversations', currentConversationId, 'messages'],
     enabled: !!currentConversationId,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 0, // Don't cache messages
   });
 
   const { data: memories = [] } = useQuery({
@@ -388,8 +391,15 @@ export default function Home() {
         
       // Force immediate UI refresh for any AI response
       console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
+      
+      // Immediately invalidate cache and refetch
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      
+      // Force refetch with additional delay to ensure database sync
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      }, 50);
       
       // Auto-generate conversation title after first AI response
       if (lastMessage.conversationId) {
