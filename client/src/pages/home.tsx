@@ -372,10 +372,9 @@ export default function Home() {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
         
-        // Auto-speak AI response in voice mode
+        // Auto-speak AI response in voice mode - DON'T start glow yet
         if (isVoiceMode && lastMessage.content) {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
-          setIsSpeaking(true);
           
           // Use optimized TTS for faster response times
           const speakResponse = async () => {
@@ -390,7 +389,7 @@ export default function Home() {
                   text: cleanText,
                   voice: 'nova', // Lumen's natural voice
                   model: 'tts-1', // Fastest model for voice mode
-                  speed: 1.0 // Normal speech speed
+                  speed: 1.2 // Slightly faster speech for quicker responses
                 })
               });
 
@@ -402,7 +401,7 @@ export default function Home() {
                 // Preload audio for instant playback
                 audio.preload = 'auto';
                 
-                // Set speaking state immediately when audio starts playing
+                // Only start glow when audio actually starts playing
                 audio.onplay = () => {
                   setIsSpeaking(true);
                   console.log('Voice response started playing');
