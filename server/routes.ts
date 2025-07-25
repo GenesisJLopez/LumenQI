@@ -1266,9 +1266,16 @@ Respond with only the title, no quotes or additional text.`;
         if (message.type === 'chat_message') {
           const { content, conversationId, emotion, emotionContext, isEdit } = message;
           
-          // Validate that conversationId is provided
-          if (!conversationId) {
-            throw new Error('Conversation ID is required');
+          // Handle null conversationId by creating a new conversation
+          let actualConversationId = conversationId;
+          if (!actualConversationId) {
+            console.log('Creating new conversation for voice mode message');
+            const newConversation = await storage.createConversation({
+              userId: 1,
+              title: content.length > 50 ? content.substring(0, 47) + '...' : content
+            });
+            actualConversationId = newConversation.id;
+            console.log('New conversation created:', actualConversationId);
           }
           
           // Update proactive AI's last interaction time
@@ -1305,14 +1312,14 @@ Respond with only the title, no quotes or additional text.`;
             if (!isEditMessage) {
               // Only save new message if not an edit
               userMessage = await storage.createMessage({
-                conversationId,
+                conversationId: actualConversationId,
                 role: 'user',
                 content
               });
             }
             
             // Get only last 2 messages for voice mode speed
-            messages = await storage.getMessagesByConversation(conversationId).then(msgs => 
+            messages = await storage.getMessagesByConversation(actualConversationId).then(msgs => 
               msgs.slice(-2).map(msg => ({
                 role: msg.role,
                 content: msg.content
@@ -1325,14 +1332,14 @@ Respond with only the title, no quotes or additional text.`;
             if (!isEditMessage) {
               // Only save new message if not an edit
               userMessage = await storage.createMessage({
-                conversationId,
+                conversationId: actualConversationId,
                 role: 'user',
                 content
               });
             }
             
             [messages, memories] = await Promise.all([
-              storage.getMessagesByConversation(conversationId).then(msgs => 
+              storage.getMessagesByConversation(actualConversationId).then(msgs => 
                 msgs.slice(-8).map(msg => ({
                   role: msg.role,
                   content: msg.content
@@ -1395,7 +1402,7 @@ Respond with only the title, no quotes or additional text.`;
             const responseMessage = {
               type: 'ai_response',
               content: aiResponse,
-              conversationId,
+              conversationId: actualConversationId,
               provider: aiSource,
               model: aiSource === 'consciousness' ? 'lumen-consciousness' : (isVoiceMode ? 'gpt-4o-voice' : 'hybrid-brain'),
               source: aiSource // Include brain source (online/offline/hybrid)
@@ -1410,7 +1417,7 @@ Respond with only the title, no quotes or additional text.`;
           Promise.all([
             // Save AI response
             storage.createMessage({
-              conversationId,
+              conversationId: actualConversationId,
               role: 'assistant',
               content: aiResponse
             }),
@@ -1427,13 +1434,13 @@ Respond with only the title, no quotes or additional text.`;
               storage.createMemory({
                 userId: 1,
                 content: `User discussed: ${content.substring(0, 100)}...`,
-                context: `Conversation ${conversationId}`,
+                context: `Conversation ${actualConversationId}`,
                 importance: 2
               }) : Promise.resolve(),
             // Analyze conversation flow in background (without waiting for message save)
             conversationFlowAnalyzer.analyzeMessage({
               id: Date.now(),
-              conversationId,
+              conversationId: actualConversationId,
               role: 'user',
               content,
               createdAt: new Date(),
