@@ -18,6 +18,7 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [speechIntensity, setSpeechIntensity] = useState(0);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -364,14 +365,48 @@ export default function Home() {
     }
   }, [transcript, isVoiceMode, isTyping, isSpeaking]);
 
+  const handleNewConversation = () => {
+    setCurrentConversationId(null);
+  };
+
+  const handleConversationSelect = (conversationId: number) => {
+    setCurrentConversationId(conversationId);
+  };
+
+  const clearMemories = () => {
+    clearMemoriesMutation.mutate();
+  };
+
+  const handleVoiceModeToggle = () => {
+    const newVoiceMode = !isVoiceMode;
+    setIsVoiceMode(newVoiceMode);
+    
+    if (newVoiceMode) {
+      startDetection();
+      setIsListening(true);
+      if (isSupported) {
+        startListening();
+      }
+      console.log('Voice mode activated');
+    } else {
+      setIsListening(false);
+      stopDetection();
+      if (typeof stopListening === 'function') {
+        stopListening();
+      }
+      setIsSpeaking(false);
+      console.log('Voice mode deactivated');
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Sidebar
         conversations={conversations}
         currentConversationId={currentConversationId}
-        onConversationSelect={setCurrentConversationId}
-        onNewConversation={() => setCurrentConversationId(null)}
-        onClearMemories={() => clearMemoriesMutation.mutate()}
+        onConversationSelect={handleConversationSelect}
+        onNewConversation={handleNewConversation}
+        onClearMemories={clearMemories}
         onToggleSettings={() => setShowSettings(!showSettings)}
         showSettings={showSettings}
       />
@@ -387,11 +422,12 @@ export default function Home() {
         />
         
         <VoiceControls
-          isVoiceMode={isVoiceMode}
-          isListening={isListening}
-          isSpeaking={isSpeaking}
-          onToggleVoiceMode={() => setIsVoiceMode(!isVoiceMode)}
-          speechIntensity={0}
+          onSendMessage={handleSendMessage}
+          isLoading={isTyping}
+          connectionStatus={connectionStatus}
+          onSpeakingChange={setIsSpeaking}
+          onListeningChange={setIsListening}
+          onVoiceModeToggle={handleVoiceModeToggle}
         />
       </div>
     </div>
