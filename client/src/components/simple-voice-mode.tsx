@@ -178,6 +178,17 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       conversationId: currentConversationId,
       isVoiceMode: true
     });
+    
+    // Restart listening after a short delay (reduced from 30ms to 10ms)
+    setTimeout(() => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.start();
+        } catch (error) {
+          console.error('Failed to restart recognition:', error);
+        }
+      }
+    }, 10);
   };
 
   const speakText = async (text: string) => {
