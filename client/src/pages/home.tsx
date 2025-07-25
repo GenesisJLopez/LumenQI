@@ -421,11 +421,19 @@ export default function Home() {
 
               if (response.ok) {
                 const audioBlob = await response.blob();
+                console.log('✓ TTS audio blob received, size:', audioBlob.size, 'bytes');
+                
+                if (audioBlob.size === 0) {
+                  throw new Error('Empty audio response from TTS service');
+                }
+                
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
-                // Preload audio for instant playback
+                // Essential audio setup for cross-browser compatibility
                 audio.preload = 'auto';
+                audio.crossOrigin = 'anonymous';
+                audio.volume = 0.8;
                 
                 // Only start glow when audio actually starts playing
                 audio.onplay = () => {
@@ -453,24 +461,103 @@ export default function Home() {
                   }
                 };
                 
-                // Play immediately for fastest response
-                audio.play().catch(error => {
-                  console.error('Audio play failed:', error);
+                // Ensure audio can play by loading it first
+                audio.load();
+                
+                // Play immediately for fastest response with detailed error handling
+                console.log('Attempting to play audio response in voice mode...');
+                
+                // Try to play with user gesture context
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                  playPromise.then(() => {
+                    console.log('✓ Audio playback started successfully');
+                  }).catch(error => {
+                    console.error('❌ Audio play failed:', error);
+                    console.error('Error details:', {
+                      name: error.name,
+                      message: error.message,
+                      code: error.code
+                    });
+                    setIsSpeaking(false);
+                    
+                    // Try fallback browser TTS
+                    console.log('Falling back to browser TTS...');
+                    const utterance = new SpeechSynthesisUtterance(cleanText);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.8;
+                    
+                    utterance.onstart = () => {
+                      console.log('✓ Browser TTS started');
+                      setIsSpeaking(true);
+                    };
+                    
+                    utterance.onend = () => {
+                      console.log('✓ Browser TTS ended');
+                      setIsSpeaking(false);
+                      if (isSupported && isVoiceMode) {
+                        setTimeout(() => startListening(), 10);
+                      }
+                    };
+                    
+                    utterance.onerror = (event) => {
+                      console.error('❌ Browser TTS failed:', event.error);
+                      setIsSpeaking(false);
+                      if (isSupported && isVoiceMode) {
+                        setTimeout(() => startListening(), 10);
+                      }
+                    };
+                    
+                    speechSynthesis.speak(utterance);
+                  });
+                }
+              } else {
+                console.error('❌ TTS API failed with status:', response.status);
+                const errorText = await response.text();
+                console.error('TTS API error details:', errorText);
+                throw new Error(`TTS API failed: ${response.status} - ${errorText}`);
+              }
+            } catch (error) {
+              console.error('❌ OpenAI TTS completely failed:', error);
+              
+              // Immediate fallback to browser TTS for reliability
+              console.log('Using browser TTS fallback...');
+              try {
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+                
+                utterance.onstart = () => {
+                  console.log('✓ Fallback browser TTS started');
+                  setIsSpeaking(true);
+                };
+                
+                utterance.onend = () => {
+                  console.log('✓ Fallback browser TTS ended');
                   setIsSpeaking(false);
-                  // Restart listening on play failure
                   if (isSupported && isVoiceMode) {
                     setTimeout(() => startListening(), 10);
                   }
-                });
-              } else {
-                throw new Error('TTS API failed');
-              }
-            } catch (error) {
-              console.error('OpenAI TTS failed:', error);
-              setIsSpeaking(false);
-              // Always restart listening on any error
-              if (isSupported && isVoiceMode) {
-                setTimeout(() => startListening(), 10);
+                };
+                
+                utterance.onerror = (event) => {
+                  console.error('❌ Fallback TTS also failed:', event.error);
+                  setIsSpeaking(false);
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 10);
+                  }
+                };
+                
+                speechSynthesis.speak(utterance);
+              } catch (fallbackError) {
+                console.error('❌ Both TTS systems failed:', fallbackError);
+                setIsSpeaking(false);
+                if (isSupported && isVoiceMode) {
+                  setTimeout(() => startListening(), 10);
+                }
               }
             }
           };
