@@ -4,6 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
+import { useIntelligentPauseDetection } from '@/hooks/use-intelligent-pause-detection';
 import { useQuantumInterface } from '@/hooks/use-quantum-interface';
 import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { Sidebar } from '@/components/sidebar';
@@ -106,6 +107,23 @@ export default function Home() {
     stopListening, 
     isSupported 
   } = useSpeechRecognition();
+  
+  // Intelligent pause detection for better voice interaction
+  const { 
+    currentAnalysis, 
+    isListening: pauseDetectionActive, 
+    updateSpeechBuffer 
+  } = useIntelligentPauseDetection(
+    isVoiceMode, 
+    (analysis) => {
+      console.log('Pause analysis:', analysis);
+      // Only process if highly confident the user is done speaking
+      if (analysis.isLikelyComplete && analysis.confidence > 0.7) {
+        console.log('High confidence speech completion detected:', analysis);
+        // Could trigger faster response here if needed
+      }
+    }
+  );
   const { 
     hardwareInfo, 
     mlMetrics, 
@@ -482,13 +500,32 @@ export default function Home() {
     }
   }, [lastMessage, queryClient]);
 
-  // Enhanced speech recognition with emotional context
+  // Enhanced speech recognition with intelligent pause detection
   useEffect(() => {
     if (transcript && isVoiceMode && !isTyping) { // Prevent sending while AI is responding
       const trimmedTranscript = transcript.trim();
       if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
         console.log('Voice mode transcript received:', trimmedTranscript);
-        handleSendMessage(trimmedTranscript);
+        
+        // Update pause detection buffer with new speech
+        updateSpeechBuffer(trimmedTranscript);
+        
+        // Check if pause detection suggests speech is complete
+        if (currentAnalysis?.isLikelyComplete && currentAnalysis.confidence > 0.6) {
+          console.log('Pause detection indicates completion - processing immediately');
+          handleSendMessage(trimmedTranscript);
+        } else if (!currentAnalysis || currentAnalysis.confidence < 0.4) {
+          // No strong pause indicators - use default timing
+          handleSendMessage(trimmedTranscript);
+        } else {
+          console.log('Pause detection indicates incomplete speech - waiting for more input');
+          // Wait a bit longer for more speech if likely incomplete
+          setTimeout(() => {
+            if (!isTyping) {
+              handleSendMessage(trimmedTranscript);
+            }
+          }, 800);
+        }
         
         // Clear transcript to prevent duplication
         if (typeof stopListening === 'function') {
@@ -501,7 +538,7 @@ export default function Home() {
         }
       }
     }
-  }, [transcript, isVoiceMode, isTyping]);
+  }, [transcript, isVoiceMode, isTyping, currentAnalysis, updateSpeechBuffer]);
 
   // Load identity on startup
   useEffect(() => {
@@ -614,6 +651,31 @@ export default function Home() {
               className="w-48 h-48 mx-auto"
             />
           </div>
+          
+          {/* Pause Detection Status */}
+          {pauseDetectionActive && currentAnalysis && (
+            <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20 text-center">
+              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 text-white">
+                <div className="text-sm text-gray-300">Speech Analysis</div>
+                <div className={`text-lg font-medium ${
+                  currentAnalysis.speechPattern === 'complete' ? 'text-green-400' :
+                  currentAnalysis.speechPattern === 'incomplete' ? 'text-yellow-400' :
+                  currentAnalysis.speechPattern === 'thinking' ? 'text-blue-400' :
+                  'text-gray-400'
+                }`}>
+                  {currentAnalysis.speechPattern.charAt(0).toUpperCase() + currentAnalysis.speechPattern.slice(1)}
+                </div>
+                <div className="text-xs text-gray-400">
+                  Confidence: {Math.round(currentAnalysis.confidence * 100)}%
+                </div>
+                {currentAnalysis.pauseDuration > 0 && (
+                  <div className="text-xs text-gray-500">
+                    Pause: {Math.round(currentAnalysis.pauseDuration)}ms
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Exit Voice Mode Button */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
