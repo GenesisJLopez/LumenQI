@@ -119,12 +119,12 @@
     },
     {
       "term": "examples",
-      "definition": "- **Rizz**: Charisma or flirting skills.",
-      "usage": "\"examples\" - - **Rizz**: Charisma or flirting skills.",
+      "definition": "- **The Ick**: A sudden feeling of repulsion or cringe toward someone or something, especially in dating.",
+      "usage": "\"examples\" - - **The Ick**: A sudden feeling of repulsion or cringe toward someone or something, especially in dating.",
       "popularity": 0.7,
       "source": "web_search",
       "category": "slang",
-      "lastUpdated": "2025-07-25T06:53:08.802Z"
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
     },
     {
       "term": "Response",
@@ -218,12 +218,12 @@
     },
     {
       "term": "Example",
-      "definition": "** \"This pizza slaps!\"",
-      "usage": "\"Example\" - ** \"This pizza slaps!\"",
+      "definition": "“Can’t go out tonight… cossie livs.”",
+      "usage": "\"Example\" - “Can’t go out tonight… cossie livs.”",
       "popularity": 0.7,
       "source": "web_search",
       "category": "slang",
-      "lastUpdated": "2025-07-25T06:53:21.576Z"
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
     },
     {
       "term": "Discord",
@@ -514,13 +514,13 @@
       "lastUpdated": "2025-07-25T06:53:08.802Z"
     },
     {
-      "term": "Expressions",
-      "definition": "– “That slaps” /“Hits different”: Something very good/unique.[4]",
-      "usage": "\"Expressions\" - – “That slaps” /“Hits different”: Something very good/unique.[4]",
+      "term": "expressions",
+      "definition": "- **Rizz:** Charisma/flirting skill.",
+      "usage": "\"expressions\" - - **Rizz:** Charisma/flirting skill.",
       "popularity": 0.7,
       "source": "web_search",
       "category": "slang",
-      "lastUpdated": "2025-07-25T06:53:08.802Z"
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
     },
     {
       "term": "Drip",
@@ -557,6 +557,87 @@
       "source": "web_search",
       "category": "slang",
       "lastUpdated": "2025-07-25T06:53:21.576Z"
+    },
+    {
+      "term": "baby",
+      "definition": "talking to his dog and I got the ick.”[2]",
+      "usage": "\"baby\" - talking to his dog and I got the ick.”[2]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "out",
+      "definition": "let me know if it slays!” [2]",
+      "usage": "\"out\" - let me know if it slays!” [2]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "excellent",
+      "definition": "usually music but also events/content.",
+      "usage": "\"excellent\" - usually music but also events/content.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "issues",
+      "definition": "used when things are unaffordable.[1]",
+      "usage": "\"issues\" - used when things are unaffordable.[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "users",
+      "definition": "and increasingly among older generations trying to keep up![1][2]",
+      "usage": "\"users\" - and increasingly among older generations trying to keep up![1][2]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "Sus",
+      "definition": "** Suspicious/sketchy behavior.",
+      "usage": "\"Sus\" - ** Suspicious/sketchy behavior.",
+      "popularity": 0.9,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "Banger",
+      "definition": "** Something excellent—usually music but also events/content.",
+      "usage": "\"Banger\" - ** Something excellent—usually music but also events/content.",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "conversations",
+      "definition": "- **Cossie Livs:** Short for cost of living issues—used when things are unaffordable.[1]",
+      "usage": "\"conversations\" - - **Cossie Livs:** Short for cost of living issues—used when things are unaffordable.[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "shorthand",
+      "definition": "– **Menty B:** Mental breakdown.[1]",
+      "usage": "\"shorthand\" - – **Menty B:** Mental breakdown.[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-25T07:51:58.544Z"
     }
   ],
   "popCulture": [
@@ -1469,7 +1550,57 @@
         "fashionnova)[1]"
       ],
       "lastUpdated": "2025-07-16T08:28:26.993Z"
+    },
+    {
+      "hashtag": "#nothingbeatsajet2holiday",
+      "platform": "general",
+      "description": "Trending hashtag: #nothingbeatsajet2holiday",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "nothingbeatsajet2holiday"
+      ],
+      "lastUpdated": "2025-07-25T07:52:00.714Z"
+    },
+    {
+      "hashtag": "#WitchTok",
+      "platform": "general",
+      "description": "Trending hashtag: #WitchTok",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "witchtok"
+      ],
+      "lastUpdated": "2025-07-25T07:52:00.714Z"
+    },
+    {
+      "hashtag": "#Olympics2025",
+      "platform": "general",
+      "description": "Trending hashtag: #Olympics2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "olympics2025"
+      ],
+      "lastUpdated": "2025-07-25T07:52:00.714Z"
+    },
+    {
+      "hashtag": "#TeamUSA",
+      "platform": "general",
+      "description": "Trending hashtag: #TeamUSA",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "teamusa"
+      ],
+      "lastUpdated": "2025-07-25T07:52:00.714Z"
+    },
+    {
+      "hashtag": "#Paris2025",
+      "platform": "general",
+      "description": "Trending hashtag: #Paris2025",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "paris2025"
+      ],
+      "lastUpdated": "2025-07-25T07:52:00.714Z"
     }
   ],
-  "lastUpdate": "2025-07-25T06:53:02.674Z"
+  "lastUpdate": "2025-07-25T07:52:01.717Z"
 }

@@ -357,19 +357,20 @@ export default function Home() {
     queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
   };
 
-  // Process incoming WebSocket messages
+  // Process incoming WebSocket messages  
   useEffect(() => {
-    if (lastMessage) {
-      console.log('Received WebSocket message:', lastMessage);
-      
-      if (lastMessage.type === 'typing') {
-        setIsTyping(lastMessage.isTyping);
-        return;
-      }
-      
-      if (lastMessage.type === 'ai_response') {
-        console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
-        setIsTyping(false);
+    if (!lastMessage) return;
+    
+    console.log('Received WebSocket message:', lastMessage);
+    
+    if (lastMessage.type === 'typing') {
+      setIsTyping(lastMessage.isTyping);
+      return;
+    }
+    
+    if (lastMessage.type === 'ai_response') {
+      console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
+      setIsTyping(false);
         
         // Auto-speak AI response in voice mode
         if (isVoiceMode && lastMessage.content) {
@@ -453,9 +454,15 @@ export default function Home() {
           speakResponse();
         }
         
-        // Immediate UI refresh for any AI response
+        // Force immediate UI refresh for any AI response
+        console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
         queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
         queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        
+        // Double refresh for reliability
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        }, 50);
         
         // Auto-generate conversation title after first AI response
         if (lastMessage.conversationId) {
@@ -469,8 +476,12 @@ export default function Home() {
         toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
         return;
       }
+      
+    // Handle flow_analysis messages (ignore them)
+    if (lastMessage.type === 'flow_analysis') {
+      return;
     }
-  }, [lastMessage]);
+  }, [lastMessage, queryClient]);
 
   // Enhanced speech recognition with emotional context
   useEffect(() => {
