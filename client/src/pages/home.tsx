@@ -108,22 +108,17 @@ export default function Home() {
     isSupported 
   } = useSpeechRecognition();
   
-  // Intelligent pause detection for better voice interaction
-  const { 
-    currentAnalysis, 
-    isListening: pauseDetectionActive, 
-    updateSpeechBuffer 
-  } = useIntelligentPauseDetection(
-    isVoiceMode, 
-    (analysis) => {
-      console.log('Pause analysis:', analysis);
-      // Only process if highly confident the user is done speaking
-      if (analysis.isLikelyComplete && analysis.confidence > 0.7) {
-        console.log('High confidence speech completion detected:', analysis);
-        // Could trigger faster response here if needed
-      }
-    }
-  );
+  // Pause detection disabled temporarily to fix duplication issues
+  // const { 
+  //   currentAnalysis, 
+  //   isListening: pauseDetectionActive, 
+  //   updateSpeechBuffer 
+  // } = useIntelligentPauseDetection(
+  //   false, // Disabled
+  //   (analysis) => {
+  //     console.log('Pause analysis:', analysis);
+  //   }
+  // );
   const { 
     hardwareInfo, 
     mlMetrics, 
@@ -322,8 +317,21 @@ export default function Home() {
     setCurrentConversationId(conversationId);
   };
 
+  const [lastSentMessage, setLastSentMessage] = useState<string>('');
+  const [lastSentTime, setLastSentTime] = useState<number>(0);
+  
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
+
+    // Prevent duplicate messages within 2 seconds
+    const now = Date.now();
+    if (content === lastSentMessage && (now - lastSentTime) < 2000) {
+      console.log('Duplicate message prevented:', content);
+      return;
+    }
+    
+    setLastSentMessage(content);
+    setLastSentTime(now);
 
     let conversationId = currentConversationId;
 
@@ -407,7 +415,7 @@ export default function Home() {
                   text: cleanText,
                   voice: 'nova', // Lumen's natural voice
                   model: 'tts-1', // Fastest model for voice mode
-                  speed: 1.2 // Slightly faster speech for quicker responses
+                  speed: 1.0 // Natural speech speed
                 })
               });
 
@@ -500,45 +508,29 @@ export default function Home() {
     }
   }, [lastMessage, queryClient]);
 
-  // Enhanced speech recognition with intelligent pause detection
+  // Enhanced speech recognition - simplified to prevent duplication
   useEffect(() => {
-    if (transcript && isVoiceMode && !isTyping) { // Prevent sending while AI is responding
+    if (transcript && isVoiceMode && !isTyping && !isSpeaking) { // Prevent sending while AI is responding or speaking
       const trimmedTranscript = transcript.trim();
       if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
         console.log('Voice mode transcript received:', trimmedTranscript);
         
-        // Update pause detection buffer with new speech
-        updateSpeechBuffer(trimmedTranscript);
+        // Simple, immediate processing to prevent duplicates
+        handleSendMessage(trimmedTranscript);
         
-        // Check if pause detection suggests speech is complete
-        if (currentAnalysis?.isLikelyComplete && currentAnalysis.confidence > 0.6) {
-          console.log('Pause detection indicates completion - processing immediately');
-          handleSendMessage(trimmedTranscript);
-        } else if (!currentAnalysis || currentAnalysis.confidence < 0.4) {
-          // No strong pause indicators - use default timing
-          handleSendMessage(trimmedTranscript);
-        } else {
-          console.log('Pause detection indicates incomplete speech - waiting for more input');
-          // Wait a bit longer for more speech if likely incomplete
-          setTimeout(() => {
-            if (!isTyping) {
-              handleSendMessage(trimmedTranscript);
-            }
-          }, 800);
-        }
-        
-        // Clear transcript to prevent duplication
+        // Clear transcript immediately to prevent duplication
         if (typeof stopListening === 'function') {
-          // Reset speech recognition state
+          stopListening();
+          // Restart listening after a short delay
           setTimeout(() => {
-            if (isVoiceMode && isSupported && !isTyping) {
+            if (isVoiceMode && isSupported && !isTyping && !isSpeaking) {
               startListening();
             }
-          }, 100);
+          }, 50);
         }
       }
     }
-  }, [transcript, isVoiceMode, isTyping, currentAnalysis, updateSpeechBuffer]);
+  }, [transcript, isVoiceMode, isTyping, isSpeaking]);
 
   // Load identity on startup
   useEffect(() => {
@@ -652,30 +644,7 @@ export default function Home() {
             />
           </div>
           
-          {/* Pause Detection Status */}
-          {pauseDetectionActive && currentAnalysis && (
-            <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20 text-center">
-              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 text-white">
-                <div className="text-sm text-gray-300">Speech Analysis</div>
-                <div className={`text-lg font-medium ${
-                  currentAnalysis.speechPattern === 'complete' ? 'text-green-400' :
-                  currentAnalysis.speechPattern === 'incomplete' ? 'text-yellow-400' :
-                  currentAnalysis.speechPattern === 'thinking' ? 'text-blue-400' :
-                  'text-gray-400'
-                }`}>
-                  {currentAnalysis.speechPattern.charAt(0).toUpperCase() + currentAnalysis.speechPattern.slice(1)}
-                </div>
-                <div className="text-xs text-gray-400">
-                  Confidence: {Math.round(currentAnalysis.confidence * 100)}%
-                </div>
-                {currentAnalysis.pauseDuration > 0 && (
-                  <div className="text-xs text-gray-500">
-                    Pause: {Math.round(currentAnalysis.pauseDuration)}ms
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
           
           {/* Exit Voice Mode Button */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
