@@ -1,4 +1,4 @@
-// Clean working version of home.tsx with voice mode audio fixed
+// This is a backup - working on restoring the main file
 import { useState, useCallback, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Sidebar } from "@/components/sidebar";
@@ -49,75 +49,124 @@ export default function Home() {
 
   const { 
     currentEmotion, 
+    getEmotionBasedPrompt, 
     startDetection, 
-    stopDetection 
+    stopDetection, 
+    isAnalyzing,
+    detectEmotionFromText
   } = useEmotionDetection();
 
   const { 
+    isListening: speechIsListening, 
     transcript, 
-    isListening: speechListening, 
-    isSupported, 
     startListening, 
-    stopListening 
+    stopListening, 
+    isSupported 
   } = useSpeechRecognition();
 
-  const { data: conversations = [] } = useQuery({
+  const { 
+    hardwareInfo, 
+    mlMetrics
+  } = useQuantumInterface();
+
+  // Get conversations and messages
+  const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ['/api/conversations'],
   });
 
-  const { data: messages = [] } = useQuery({
+  const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ['/api/conversations', currentConversationId, 'messages'],
     enabled: !!currentConversationId,
   });
 
-  const clearMemoriesMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/memories', { method: 'DELETE' });
-      if (!response.ok) {
-        throw new Error('Failed to clear memories');
-      }
+  // Create conversation mutation
+  const createConversationMutation = useMutation({
+    mutationFn: async (data: { title: string; userId: number }) => {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create conversation');
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: "Memories cleared successfully" });
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
     },
-    onError: () => {
-      toast({ title: "Failed to clear memories", variant: "destructive" });
-    }
   });
 
-  const handleSendMessage = useCallback(async (content: string) => {
+  // Clear memories mutation
+  const clearMemoriesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/memories', {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to clear memories');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/memories'] });
+      toast({ title: "Memories cleared successfully" });
+    },
+  });
+
+  const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
-    
-    console.log('handleSendMessage called with:', { content, conversationId: currentConversationId, isVoiceMode });
-    
-    try {
-      setIsTyping(true);
-      
-      if (isVoiceMode) {
-        console.log('Sending voice mode message');
+
+    console.log('Sending NEW message:', content);
+
+    let conversationId = currentConversationId;
+
+    // Create new conversation if none exists
+    if (!conversationId) {
+      try {
+        const newConversation = await createConversationMutation.mutateAsync({
+          title: content.slice(0, 50) + (content.length > 50 ? '...' : ''),
+          userId: 1,
+        });
+        conversationId = newConversation.id;
+        setCurrentConversationId(conversationId);
+      } catch (error) {
+        toast({ title: "Failed to create conversation", variant: "destructive" });
+        return;
       }
-      
-      // Send the message via WebSocket with emotion data if available
-      const messageData = {
-        content: content.trim(),
-        conversationId: currentConversationId,
-        isVoiceMode,
-        ...(currentEmotion && { emotion: currentEmotion })
-      };
-      
-      sendMessage(messageData);
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setIsTyping(false);
-      toast({ 
-        title: "Failed to send message", 
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: "destructive" 
+    }
+
+    // Send message immediately for faster response
+    console.log('handleSendMessage called with:', { content, conversationId, isVoiceMode });
+    
+    if (isVoiceMode) {
+      console.log('Sending voice mode message');
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        isVoiceMode: true,
+      });
+    } else {
+      console.log('Sending normal mode message');
+      const textEmotion = detectEmotionFromText(content);
+      const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
+
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        emotion: textEmotion,
+        emotionContext,
       });
     }
-  }, [currentConversationId, isVoiceMode, currentEmotion, sendMessage, toast]);
+
+    // Immediately trigger a refresh after sending - this ensures we see both user and AI messages
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+    }, 100);
+    
+    // Also trigger another refresh after expected AI response time
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+    }, 2000);
+  };
 
   // Process incoming WebSocket messages  
   useEffect(() => {
@@ -196,7 +245,177 @@ export default function Home() {
           speechSynthesis.speak(utterance);
           console.log('🎵 Voice response queued for playback');
         }, 100);
+        
+        return; // Skip the old TTS code below
       }
+          const cleanText = lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim();
+          
+          try {
+            console.log('🎵 Attempting OpenAI TTS for voice response...');
+            const response = await fetch('/api/tts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: cleanText,
+                voice: 'nova',
+                model: 'tts-1-hd',
+                speed: 1.0
+              })
+            });
+
+            if (response.ok) {
+              const audioBlob = await response.blob();
+              console.log('✓ TTS audio blob received, size:', audioBlob.size, 'bytes');
+              
+              if (audioBlob.size === 0) {
+                throw new Error('Empty audio response from TTS service');
+              }
+              
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const audio = new Audio(audioUrl);
+              
+              audio.preload = 'auto';
+              audio.volume = 0.9;
+              
+              // Setup audio handlers
+              audio.oncanplaythrough = () => {
+                console.log('🎵 Audio ready to play, starting playback...');
+                setIsSpeaking(true);
+                
+                // Force play with user gesture context
+                const playAudio = async () => {
+                  try {
+                    // If audio wasn't enabled yet, try to enable it now
+                    if (!audioEnabled) {
+                      console.log('Attempting to enable audio with TTS response...');
+                      setAudioEnabled(true);
+                    }
+                    
+                    await audio.play();
+                    console.log('✅ Audio playing successfully');
+                  } catch (error) {
+                    console.log('❌ Audio play failed, using browser TTS:', error.name);
+                    setIsSpeaking(false);
+                    URL.revokeObjectURL(audioUrl);
+                    useBrowserTTS();
+                  }
+                };
+                
+                playAudio();
+              };
+              
+              audio.onended = () => {
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+                console.log('🎵 Voice response ended, restarting listening');
+                if (isSupported && isVoiceMode) {
+                  setTimeout(() => startListening(), 300);
+                }
+              };
+              
+              audio.onerror = (e) => {
+                console.error('❌ Audio error occurred:', e);
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+                useBrowserTTS();
+              };
+              
+              const useBrowserTTS = () => {
+                console.log('🎵 Using browser TTS as backup...');
+                
+                // Cancel any existing speech
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+                
+                // Try to get a female voice
+                const voices = speechSynthesis.getVoices();
+                const femaleVoice = voices.find(voice => 
+                  voice.name.includes('Female') || 
+                  voice.name.includes('Samantha') || 
+                  voice.name.includes('Karen') ||
+                  voice.name.includes('Zira')
+                );
+                if (femaleVoice) {
+                  utterance.voice = femaleVoice;
+                }
+                
+                utterance.onstart = () => {
+                  console.log('✅ Browser TTS started successfully');
+                  setIsSpeaking(true);
+                };
+                
+                utterance.onend = () => {
+                  console.log('✅ Browser TTS completed');
+                  setIsSpeaking(false);
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 300);
+                  }
+                };
+                
+                utterance.onerror = (event) => {
+                  console.error('❌ Browser TTS error:', event.error);
+                  setIsSpeaking(false);
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 300);
+                  }
+                };
+                
+                setTimeout(() => {
+                  speechSynthesis.speak(utterance);
+                  console.log('🎵 Browser TTS utterance queued');
+                }, 100);
+              };
+              
+              // Load audio - this will trigger onloadeddata
+              audio.load();
+              
+            } else {
+              console.error('❌ TTS API failed with status:', response.status);
+              throw new Error(`TTS API failed: ${response.status}`);
+            }
+          } catch (error) {
+            console.error('❌ OpenAI TTS failed:', error);
+            
+            // Immediate fallback to browser TTS
+            console.log('🎵 Using browser TTS as primary fallback...');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.8;
+            
+            utterance.onstart = () => {
+              console.log('✓ Fallback browser TTS started');
+              setIsSpeaking(true);
+            };
+            
+            utterance.onend = () => {
+              console.log('✓ Fallback browser TTS ended');
+              setIsSpeaking(false);
+              if (isSupported && isVoiceMode) {
+                setTimeout(() => startListening(), 300);
+              }
+            };
+            
+            utterance.onerror = (event) => {
+              console.error('❌ All TTS systems failed:', event.error);
+              setIsSpeaking(false);
+              if (isSupported && isVoiceMode) {
+                setTimeout(() => startListening(), 300);
+              }
+            };
+            
+            speechSynthesis.speak(utterance);
+          }
+        };
+
+        speakResponse();
+      }
+      
+      return;
     }
     
     if (lastMessage.type === 'error') {
@@ -209,7 +428,7 @@ export default function Home() {
     if (lastMessage.type === 'flow_analysis') {
       return;
     }
-  }, [lastMessage, queryClient, isVoiceMode, isSupported, startListening, toast]);
+  }, [lastMessage, queryClient]);
 
   // Enhanced speech recognition - simplified to prevent duplication
   useEffect(() => {
@@ -231,14 +450,7 @@ export default function Home() {
         }
       }
     }
-  }, [transcript, isVoiceMode, isTyping, isSpeaking, handleSendMessage, stopListening, startListening, isSupported]);
-
-  // Update conversation id when new conversation is created
-  useEffect(() => {
-    if (lastMessage?.type === 'ai_response' && lastMessage.conversationId && !currentConversationId) {
-      setCurrentConversationId(lastMessage.conversationId);
-    }
-  }, [lastMessage, currentConversationId]);
+  }, [transcript, isVoiceMode, isTyping, isSpeaking]);
 
   const handleNewConversation = () => {
     setCurrentConversationId(null);
@@ -318,6 +530,8 @@ export default function Home() {
             <p className="text-lg text-gray-300">
               {isSpeaking ? "Speaking..." : isListening ? "Listening..." : "Ready for voice input"}
             </p>
+            
+
           </div>
           
           {/* Recent Messages in Voice Mode */}
