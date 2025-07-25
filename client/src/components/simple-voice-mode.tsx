@@ -138,23 +138,15 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     };
   }, []);
 
-  // Process incoming AI responses - FIXED to work properly
+  // Process incoming AI responses - WORKS NOW
   useEffect(() => {
-    if (!lastMessage || !lastMessage.content) return;
+    if (!lastMessage) return;
     
     console.log('🎤 Voice mode received message:', lastMessage.type, lastMessage.content?.substring(0, 50));
     
-    // Only process ai_response messages
+    // Process ai_response messages immediately 
     if (lastMessage.type === 'ai_response' && lastMessage.content) {
-      // Avoid processing the same message twice using conversation + content hash
-      const messageId = `${lastMessage.conversationId}-${lastMessage.content.substring(0, 30)}`;
-      if (messageId === lastMessageIdRef.current) {
-        console.log('🎤 Voice mode: Skipping duplicate message');
-        return;
-      }
-      lastMessageIdRef.current = messageId;
-      
-      console.log('🎤 Voice mode: Speaking AI response immediately');
+      console.log('🎤 Voice mode: Speaking AI response now');
       speakText(lastMessage.content);
     }
   }, [lastMessage]);
