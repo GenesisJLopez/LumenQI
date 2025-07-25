@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { cn } from '@/lib/utils';
 import lumenLogo from '@assets/lumen-logo (Small)_1753450894008.png';
+import { deviceAccess, enhancedVoice } from '@/lib/device-access';
 
 interface SimpleVoiceModeProps {
   onExit: () => void;
@@ -20,7 +21,40 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
   const timeoutRef = useRef<NodeJS.Timeout>();
   const lastMessageIdRef = useRef<string>('');
 
-  // Initialize speech recognition
+  // Initialize comprehensive device access and speech recognition
+  useEffect(() => {
+    const initializeDeviceAccess = async () => {
+      console.log('🍎 Initializing Lumen with full device access...');
+      
+      // Request all device permissions for Apple app readiness
+      await deviceAccess.prepareForAppleApp();
+      
+      // Get environment information
+      const envInfo = await deviceAccess.getEnvironmentInfo();
+      console.log('📱 Device Environment:', envInfo);
+      
+      // Initialize enhanced voice recognition
+      const voiceReady = await enhancedVoice.initialize();
+      if (voiceReady) {
+        console.log('🎤 Enhanced voice recognition ready');
+        startListening();
+      } else {
+        console.error('❌ Voice recognition failed to initialize');
+      }
+    };
+
+    initializeDeviceAccess();
+    
+    return () => {
+      enhancedVoice.stop();
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  // Legacy speech recognition fallback (will be replaced by enhanced version)
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
