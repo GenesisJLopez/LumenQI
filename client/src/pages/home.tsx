@@ -140,63 +140,91 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
         
-      // Auto-speak AI response in voice mode - use browser TTS for reliability
+      // Auto-speak AI response in voice mode - use OpenAI TTS for natural voice
       if (isVoiceMode && lastMessage.content) {
         console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
         
-        const cleanText = lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim();
-        console.log('🎵 Using browser TTS for immediate voice response');
+        setIsSpeaking(true);
         
-        // Cancel any existing speech
-        speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.rate = 0.9;
-        utterance.pitch = 1.1;
-        utterance.volume = 1.0;
-        
-        // Get available voices and use the best female voice
-        const voices = speechSynthesis.getVoices();
-        const femaleVoice = voices.find(voice => 
-          voice.name.includes('Samantha') || 
-          voice.name.includes('Karen') ||
-          voice.name.includes('Zira') ||
-          voice.name.includes('Female') ||
-          voice.name.includes('Google US English') ||
-          voice.lang.includes('en-US')
-        );
-        
-        if (femaleVoice) {
-          utterance.voice = femaleVoice;
-          console.log('Using voice:', femaleVoice.name);
-        }
-        
-        utterance.onstart = () => {
-          console.log('✅ Voice response started - Lumen is speaking');
-          setIsSpeaking(true);
-        };
-        
-        utterance.onend = () => {
-          console.log('✅ Voice response completed - restarting listening');
-          setIsSpeaking(false);
-          if (isSupported && isVoiceMode) {
-            setTimeout(() => startListening(), 500);
+        // Use OpenAI TTS for Lumen's natural voice
+        const playVoiceResponse = async () => {
+          try {
+            console.log('🎵 Using OpenAI TTS for Lumen\'s voice');
+            
+            const response = await fetch('/api/tts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                text: lastMessage.content,
+                voice: 'nova' // Lumen's voice
+              })
+            });
+            
+            if (response.ok) {
+              const audioBlob = await response.blob();
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const audio = new Audio(audioUrl);
+              
+              audio.onplay = () => {
+                console.log('✅ OpenAI TTS voice response started - Lumen is speaking');
+                setIsSpeaking(true);
+              };
+              
+              audio.onended = () => {
+                console.log('✅ Voice response completed - restarting listening');
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+                if (isSupported && isVoiceMode) {
+                  setTimeout(() => startListening(), 300);
+                }
+              };
+              
+              audio.onerror = () => {
+                console.error('❌ OpenAI TTS error - falling back to browser TTS');
+                setIsSpeaking(false);
+                // Fallback to browser TTS
+                useBrowserTTS(lastMessage.content);
+              };
+              
+              await audio.play();
+            } else {
+              console.error('❌ TTS API error - falling back to browser TTS');
+              useBrowserTTS(lastMessage.content);
+            }
+          } catch (error) {
+            console.error('❌ TTS request failed - falling back to browser TTS:', error);
+            useBrowserTTS(lastMessage.content);
           }
         };
         
-        utterance.onerror = (event) => {
-          console.error('❌ Voice synthesis error:', event.error);
-          setIsSpeaking(false);
-          if (isSupported && isVoiceMode) {
-            setTimeout(() => startListening(), 500);
-          }
-        };
-        
-        // Speak immediately
-        setTimeout(() => {
+        // Fallback browser TTS function
+        const useBrowserTTS = (text: string) => {
+          speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text.replace(/[^\w\s.,!?-]/g, '').trim());
+          utterance.rate = 0.9;
+          utterance.pitch = 1.1;
+          utterance.volume = 1.0;
+          
+          const voices = speechSynthesis.getVoices();
+          const femaleVoice = voices.find(voice => 
+            voice.name.includes('Karen') || 
+            voice.name.includes('Samantha')
+          ) || voices.find(voice => voice.lang.startsWith('en'));
+          
+          if (femaleVoice) utterance.voice = femaleVoice;
+          
+          utterance.onstart = () => setIsSpeaking(true);
+          utterance.onend = () => {
+            setIsSpeaking(false);
+            if (isSupported && isVoiceMode) {
+              setTimeout(() => startListening(), 500);
+            }
+          };
+          
           speechSynthesis.speak(utterance);
-          console.log('🎵 Voice response queued for playback');
-        }, 100);
+        };
+        
+        playVoiceResponse();
       }
     }
     
