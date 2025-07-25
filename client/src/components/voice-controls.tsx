@@ -114,7 +114,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
         {/* Cosmic Input */}
         <div className="relative">
           <div className="flex items-center gap-3 p-4 cosmic-input rounded-3xl shadow-lg">
-            {/* Voice Mode Button */}
+            {/* Voice Mode Toggle Button */}
             <Button
               variant="ghost"
               size="sm"

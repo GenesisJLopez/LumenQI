@@ -10,6 +10,8 @@ import { useSpeechRecognition } from "@/hooks/use-speech";
 import { useEmotionDetection } from "@/hooks/use-emotion-detection";
 import { useQuantumInterface } from "@/hooks/use-quantum-interface";
 import type { Conversation, Message } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
@@ -405,6 +407,70 @@ export default function Home() {
       console.log('Voice mode deactivated');
     }
   };
+
+  if (isVoiceMode) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center z-50">
+        <div className="text-center">
+          {/* Lumen Logo with Cosmic Effects */}
+          <div className="relative mb-8">
+            <div className={cn(
+              "w-48 h-48 mx-auto rounded-full transition-all duration-300",
+              isSpeaking ? "animate-pulse bg-purple-500/20" : isListening ? "bg-blue-500/20" : "bg-gray-500/20"
+            )}>
+              <div className="w-full h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 p-1">
+                <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
+                  <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                    L
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Cosmic Glow Effects */}
+            {(isSpeaking || isListening) && (
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-xl animate-pulse" />
+            )}
+          </div>
+          
+          {/* Status Text */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-white mb-2">Voice Mode Active</h2>
+            <p className="text-lg text-gray-300">
+              {isSpeaking ? "Speaking..." : isListening ? "Listening..." : "Ready for voice input"}
+            </p>
+          </div>
+          
+          {/* Recent Messages in Voice Mode */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="space-y-4 max-h-60 overflow-y-auto">
+              {messages.slice(-3).map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    "p-3 rounded-lg",
+                    message.role === 'user' 
+                      ? "bg-blue-600/20 text-blue-100 ml-8" 
+                      : "bg-purple-600/20 text-purple-100 mr-8"
+                  )}
+                >
+                  <p className="text-sm">{message.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Exit Voice Mode Button */}
+          <Button
+            onClick={handleVoiceModeToggle}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full"
+          >
+            Exit Voice Mode
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
