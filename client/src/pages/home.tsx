@@ -367,6 +367,7 @@ export default function Home() {
       }
       
       if (lastMessage.type === 'ai_response') {
+        console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
         setIsTyping(false);
         
         // Auto-speak AI response in voice mode

@@ -1390,15 +1390,20 @@ Respond with only the title, no quotes or additional text.`;
           const responseTime = Date.now() - responseStartTime;
 
           // Send response back to client immediately with provider info
+          console.log(`Sending ai_response via WebSocket: ${aiResponse ? aiResponse.substring(0, 50) + '...' : 'NO RESPONSE'}`);
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({
+            const responseMessage = {
               type: 'ai_response',
               content: aiResponse,
               conversationId,
               provider: aiSource,
               model: aiSource === 'consciousness' ? 'lumen-consciousness' : (isVoiceMode ? 'gpt-4o-voice' : 'hybrid-brain'),
               source: aiSource // Include brain source (online/offline/hybrid)
-            }));
+            };
+            ws.send(JSON.stringify(responseMessage));
+            console.log('ai_response sent successfully via WebSocket');
+          } else {
+            console.error('WebSocket not open, cannot send ai_response');
           }
 
           // Background operations (don't await these to improve response time)
