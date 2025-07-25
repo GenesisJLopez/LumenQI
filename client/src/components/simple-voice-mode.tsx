@@ -16,14 +16,14 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
   const [speechIntensity, setSpeechIntensity] = useState(0);
   
   const { sendMessage, lastMessage } = useWebSocket();
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
   const lastMessageIdRef = useRef<string>('');
 
   // Initialize speech recognition
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       
       const recognition = recognitionRef.current;
@@ -34,7 +34,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       // Custom grammar to better recognize "Lumen"
       if ('webkitSpeechGrammarList' in window) {
         const grammar = '#JSGF V1.0; grammar names; public <name> = lumen | Lumen | LUMEN;';
-        const speechRecognitionList = new window.webkitSpeechGrammarList();
+        const speechRecognitionList = new (window as any).webkitSpeechGrammarList();
         speechRecognitionList.addFromString(grammar, 1);
         recognition.grammars = speechRecognitionList;
       }
@@ -43,7 +43,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         setIsListening(true);
       };
       
-      recognition.onresult = (event) => {
+      recognition.onresult = (event: any) => {
         let finalTranscript = '';
         let interimTranscript = '';
         
@@ -77,7 +77,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         }
       };
       
-      recognition.onerror = (event) => {
+      recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
         // Auto-restart on error
@@ -113,7 +113,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     // Check for both ai_response and normal messages
     if ((lastMessage.type === 'ai_response' || lastMessage.type === 'message') && lastMessage.content) {
       // Avoid processing the same message twice
-      const messageId = `${lastMessage.timestamp}-${lastMessage.content.substring(0, 20)}`;
+      const messageId = `${Date.now()}-${lastMessage.content.substring(0, 20)}`;
       if (messageId === lastMessageIdRef.current) return;
       lastMessageIdRef.current = messageId;
       
@@ -138,8 +138,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     sendMessage({
       type: 'chat_message',
       content: message,
-      conversationId: currentConversationId,
-      isVoiceMode: true
+      conversationId: currentConversationId
     });
   };
 
