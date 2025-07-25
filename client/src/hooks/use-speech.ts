@@ -41,8 +41,6 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
           setTranscript(finalTranscript.trim());
           // Stop listening after getting a complete phrase
           recognition.stop();
-          // Clear transcript after a short delay to prevent duplication
-          setTimeout(() => setTranscript(''), 100);
         }
       };
 

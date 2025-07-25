@@ -1264,7 +1264,7 @@ Respond with only the title, no quotes or additional text.`;
         }
         
         if (message.type === 'chat_message') {
-          const { content, conversationId, emotion, emotionContext } = message;
+          const { content, conversationId, emotion, emotionContext, isEdit } = message;
           
           // Validate that conversationId is provided
           if (!conversationId) {
@@ -1276,6 +1276,7 @@ Respond with only the title, no quotes or additional text.`;
           
           // Optimize for voice mode - minimal context for speed
           const isVoiceMode = message.isVoiceMode || false;
+          const isEditMessage = isEdit || false;
           
           // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
@@ -1301,31 +1302,36 @@ Respond with only the title, no quotes or additional text.`;
           
           if (isVoiceMode) {
             // Ultra-fast voice mode: minimal context, parallel processing
-            [userMessage, messages] = await Promise.all([
-              // Save user message
-              storage.createMessage({
+            if (!isEditMessage) {
+              // Only save new message if not an edit
+              userMessage = await storage.createMessage({
                 conversationId,
                 role: 'user',
                 content
-              }),
-              // Get only last 2 messages for voice mode speed
-              storage.getMessagesByConversation(conversationId).then(msgs => 
-                msgs.slice(-2).map(msg => ({
-                  role: msg.role,
-                  content: msg.content
-                }))
-              )
-            ]);
+              });
+            }
+            
+            // Get only last 2 messages for voice mode speed
+            messages = await storage.getMessagesByConversation(conversationId).then(msgs => 
+              msgs.slice(-2).map(msg => ({
+                role: msg.role,
+                content: msg.content
+              }))
+            );
             // Skip memories in voice mode for speed
             memories = [];
           } else {
             // Normal mode: full context
-            [userMessage, messages, memories] = await Promise.all([
-              storage.createMessage({
+            if (!isEditMessage) {
+              // Only save new message if not an edit
+              userMessage = await storage.createMessage({
                 conversationId,
                 role: 'user',
                 content
-              }),
+              });
+            }
+            
+            [messages, memories] = await Promise.all([
               storage.getMessagesByConversation(conversationId).then(msgs => 
                 msgs.slice(-8).map(msg => ({
                   role: msg.role,

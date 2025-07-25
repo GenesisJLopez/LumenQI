@@ -387,7 +387,7 @@ export default function Home() {
                   text: cleanText,
                   voice: 'nova', // Lumen's natural voice
                   model: 'tts-1', // Fastest model for voice mode
-                  speed: 1.2 // Faster speech for voice mode
+                  speed: 1.0 // Normal speech speed
                 })
               });
 
@@ -475,9 +475,15 @@ export default function Home() {
       if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
         console.log('Voice mode transcript received:', trimmedTranscript);
         handleSendMessage(trimmedTranscript);
-        // Clear transcript after processing to prevent duplication
-        if (typeof transcript === 'string') {
-          // Reset transcript in speech recognition hook if available
+        
+        // Clear transcript to prevent duplication
+        if (typeof stopListening === 'function') {
+          // Reset speech recognition state
+          setTimeout(() => {
+            if (isVoiceMode && isSupported) {
+              startListening();
+            }
+          }, 100);
         }
       }
     }
