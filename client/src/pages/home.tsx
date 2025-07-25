@@ -195,13 +195,14 @@ export default function Home() {
           const cleanText = lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim();
           
           try {
+            console.log('🎵 Attempting OpenAI TTS for voice response...');
             const response = await fetch('/api/tts', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 text: cleanText,
                 voice: 'nova',
-                model: 'tts-1',
+                model: 'tts-1-hd',
                 speed: 1.0
               })
             });
@@ -218,45 +219,38 @@ export default function Home() {
               const audio = new Audio(audioUrl);
               
               audio.preload = 'auto';
-              audio.crossOrigin = 'anonymous';
-              audio.volume = 0.8;
+              audio.volume = 0.9;
               
-              audio.onplay = () => {
+              // Create user interaction event to enable autoplay
+              const playAudio = () => {
                 setIsSpeaking(true);
-                console.log('Voice response started playing');
-              };
-              
-              audio.onended = () => {
-                setIsSpeaking(false);
-                URL.revokeObjectURL(audioUrl);
-                console.log('Voice response ended, restarting listening');
-                if (isSupported && isVoiceMode) {
-                  setTimeout(() => startListening(), 10);
-                }
-              };
-              
-              audio.onerror = () => {
-                setIsSpeaking(false);
-                URL.revokeObjectURL(audioUrl);
-                console.error('Audio playback failed');
-                if (isSupported && isVoiceMode) {
-                  setTimeout(() => startListening(), 10);
-                }
-              };
-              
-              // Load and play audio
-              audio.load();
-              console.log('Attempting to play audio response in voice mode...');
-              
-              try {
-                await audio.play();
-                console.log('✓ Audio playback started successfully');
-              } catch (error) {
-                console.error('❌ Audio play failed:', error);
-                setIsSpeaking(false);
+                console.log('🎵 Voice response started playing');
                 
-                // Fallback to browser TTS
-                console.log('Falling back to browser TTS...');
+                audio.onended = () => {
+                  setIsSpeaking(false);
+                  URL.revokeObjectURL(audioUrl);
+                  console.log('🎵 Voice response ended, restarting listening');
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 300);
+                  }
+                };
+                
+                audio.onerror = () => {
+                  console.error('❌ Audio playback failed, using browser TTS');
+                  setIsSpeaking(false);
+                  URL.revokeObjectURL(audioUrl);
+                  useBrowserTTS();
+                };
+                
+                // Force audio play
+                audio.play().catch((error) => {
+                  console.error('❌ Audio autoplay blocked:', error);
+                  useBrowserTTS();
+                });
+              };
+              
+              const useBrowserTTS = () => {
+                console.log('🎵 Using browser TTS fallback...');
                 const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.rate = 1.0;
                 utterance.pitch = 1.0;
@@ -271,7 +265,7 @@ export default function Home() {
                   console.log('✓ Browser TTS ended');
                   setIsSpeaking(false);
                   if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 10);
+                    setTimeout(() => startListening(), 300);
                   }
                 };
                 
@@ -279,58 +273,53 @@ export default function Home() {
                   console.error('❌ Browser TTS failed:', event.error);
                   setIsSpeaking(false);
                   if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 10);
+                    setTimeout(() => startListening(), 300);
                   }
                 };
                 
                 speechSynthesis.speak(utterance);
-              }
+              };
+              
+              // Load and attempt to play immediately
+              audio.load();
+              playAudio();
+              
             } else {
               console.error('❌ TTS API failed with status:', response.status);
-              const errorText = await response.text();
-              console.error('TTS API error details:', errorText);
-              throw new Error(`TTS API failed: ${response.status} - ${errorText}`);
+              throw new Error(`TTS API failed: ${response.status}`);
             }
           } catch (error) {
-            console.error('❌ OpenAI TTS completely failed:', error);
+            console.error('❌ OpenAI TTS failed:', error);
             
-            // Fallback to browser TTS
-            console.log('Using browser TTS fallback...');
-            try {
-              const utterance = new SpeechSynthesisUtterance(cleanText);
-              utterance.rate = 1.0;
-              utterance.pitch = 1.0;
-              utterance.volume = 0.8;
-              
-              utterance.onstart = () => {
-                console.log('✓ Fallback browser TTS started');
-                setIsSpeaking(true);
-              };
-              
-              utterance.onend = () => {
-                console.log('✓ Fallback browser TTS ended');
-                setIsSpeaking(false);
-                if (isSupported && isVoiceMode) {
-                  setTimeout(() => startListening(), 10);
-                }
-              };
-              
-              utterance.onerror = (event) => {
-                console.error('❌ Fallback TTS also failed:', event.error);
-                setIsSpeaking(false);
-                if (isSupported && isVoiceMode) {
-                  setTimeout(() => startListening(), 10);
-                }
-              };
-              
-              speechSynthesis.speak(utterance);
-            } catch (fallbackError) {
-              console.error('❌ Both TTS systems failed:', fallbackError);
+            // Immediate fallback to browser TTS
+            console.log('🎵 Using browser TTS as primary fallback...');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.8;
+            
+            utterance.onstart = () => {
+              console.log('✓ Fallback browser TTS started');
+              setIsSpeaking(true);
+            };
+            
+            utterance.onend = () => {
+              console.log('✓ Fallback browser TTS ended');
               setIsSpeaking(false);
               if (isSupported && isVoiceMode) {
-                setTimeout(() => startListening(), 10);
+                setTimeout(() => startListening(), 300);
               }
-            }
+            };
+            
+            utterance.onerror = (event) => {
+              console.error('❌ All TTS systems failed:', event.error);
+              setIsSpeaking(false);
+              if (isSupported && isVoiceMode) {
+                setTimeout(() => startListening(), 300);
+              }
+            };
+            
+            speechSynthesis.speak(utterance);
           }
         };
 
@@ -410,27 +399,28 @@ export default function Home() {
 
   if (isVoiceMode) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
         <div className="text-center">
-          {/* Lumen Logo with Cosmic Effects */}
+          {/* Your Lumen Logo with Cosmic Effects */}
           <div className="relative mb-8">
             <div className={cn(
-              "w-48 h-48 mx-auto rounded-full transition-all duration-300",
-              isSpeaking ? "animate-pulse bg-purple-500/20" : isListening ? "bg-blue-500/20" : "bg-gray-500/20"
+              "w-48 h-48 mx-auto rounded-full transition-all duration-300 relative",
+              isSpeaking ? "animate-pulse" : isListening ? "ring-2 ring-blue-500/50" : ""
             )}>
-              <div className="w-full h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 p-1">
-                <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
-                  <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-                    L
-                  </div>
-                </div>
-              </div>
+              <img 
+                src="/attached_assets/lumen-logo (Small)_1752439896786.png" 
+                alt="Lumen QI"
+                className="w-full h-full object-contain rounded-full"
+              />
+              
+              {/* Cosmic Glow Effects */}
+              {isSpeaking && (
+                <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-xl animate-pulse" />
+              )}
+              {isListening && (
+                <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-lg animate-pulse" />
+              )}
             </div>
-            
-            {/* Cosmic Glow Effects */}
-            {(isSpeaking || isListening) && (
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 blur-xl animate-pulse" />
-            )}
           </div>
           
           {/* Status Text */}
