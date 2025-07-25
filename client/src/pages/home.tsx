@@ -364,6 +364,7 @@ export default function Home() {
       
       if (lastMessage.type === 'typing') {
         setIsTyping(lastMessage.isTyping);
+        return;
       }
       
       if (lastMessage.type === 'ai_response') {
@@ -452,30 +453,24 @@ export default function Home() {
           speakResponse();
         }
         
-        // Force immediate UI refresh - always refresh for any AI response
+        // Immediate UI refresh for any AI response
         queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
         queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
         
-        // Additional refresh for voice mode
-        if (isVoiceMode) {
-          // Force a second refresh to ensure voice mode messages appear
-          setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-          }, 100);
-        }
-        
         // Auto-generate conversation title after first AI response
-        if (lastMessage.conversationId && messages.length <= 2) {
+        if (lastMessage.conversationId) {
           generateConversationTitle(lastMessage.conversationId);
         }
+        return;
       }
       
       if (lastMessage.type === 'error') {
         setIsTyping(false);
         toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
+        return;
       }
     }
-  }, [lastMessage, currentConversationId, isVoiceMode, messages]);
+  }, [lastMessage]);
 
   // Enhanced speech recognition with emotional context
   useEffect(() => {
