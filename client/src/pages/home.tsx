@@ -350,10 +350,7 @@ export default function Home() {
         type: 'chat_message',
         content,
         conversationId,
-        isVoiceMode: true,
-        // Skip emotion processing in voice mode for instant response
-        emotion: undefined,
-        emotionContext: undefined,
+        isVoiceMode: true
       });
     } else {
       console.log('Sending normal mode message');

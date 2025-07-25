@@ -144,11 +144,14 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     
     console.log('🎤 Voice mode received message:', lastMessage.type, lastMessage.content?.substring(0, 50));
     
-    // Check for both ai_response and normal messages
-    if ((lastMessage.type === 'ai_response' || lastMessage.type === 'message') && lastMessage.content) {
-      // Avoid processing the same message twice
-      const messageId = `${Date.now()}-${lastMessage.content.substring(0, 20)}`;
-      if (messageId === lastMessageIdRef.current) return;
+    // Only process ai_response messages
+    if (lastMessage.type === 'ai_response' && lastMessage.content) {
+      // Avoid processing the same message twice using conversation + content hash
+      const messageId = `${lastMessage.conversationId}-${lastMessage.content.substring(0, 30)}`;
+      if (messageId === lastMessageIdRef.current) {
+        console.log('🎤 Voice mode: Skipping duplicate message');
+        return;
+      }
       lastMessageIdRef.current = messageId;
       
       console.log('🎤 Voice mode: Speaking AI response immediately');
@@ -168,11 +171,12 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     
     console.log('🎤 Voice mode: Sending message:', message);
     
-    // Send message via WebSocket
+    // Send message via WebSocket with voice mode flag
     sendMessage({
       type: 'chat_message',
       content: message,
-      conversationId: currentConversationId
+      conversationId: currentConversationId,
+      isVoiceMode: true
     });
   };
 
