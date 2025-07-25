@@ -186,7 +186,23 @@ export default function Home() {
                 useBrowserTTS(lastMessage.content);
               };
               
-              await audio.play();
+              // Try to play audio with better error handling
+              try {
+                await audio.play();
+                console.log('🎵 OpenAI TTS audio started playing');
+              } catch (playError) {
+                console.error('❌ Audio autoplay blocked:', playError);
+                // Try again with user interaction context
+                setTimeout(async () => {
+                  try {
+                    await audio.play();
+                    console.log('🎵 OpenAI TTS audio started playing (retry)');
+                  } catch (retryError) {
+                    console.error('❌ Audio retry failed, falling back to browser TTS');
+                    useBrowserTTS(lastMessage.content);
+                  }
+                }, 100);
+              }
             } else {
               console.error('❌ TTS API error - falling back to browser TTS');
               useBrowserTTS(lastMessage.content);
@@ -224,7 +240,11 @@ export default function Home() {
           speechSynthesis.speak(utterance);
         };
         
-        playVoiceResponse();
+        // Try OpenAI TTS with immediate fallback if it fails
+        playVoiceResponse().catch((error) => {
+          console.error('❌ Voice response function failed:', error);
+          useBrowserTTS(lastMessage.content);
+        });
       }
     }
     
