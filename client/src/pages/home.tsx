@@ -4,7 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
-import { useIntelligentPauseDetection } from '@/hooks/use-intelligent-pause-detection';
+import { SimpleVoiceMode } from '@/components/simple-voice-mode';
 import { useQuantumInterface } from '@/hooks/use-quantum-interface';
 import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { Sidebar } from '@/components/sidebar';
@@ -108,17 +108,7 @@ export default function Home() {
     isSupported 
   } = useSpeechRecognition();
   
-  // Pause detection disabled temporarily to fix duplication issues
-  // const { 
-  //   currentAnalysis, 
-  //   isListening: pauseDetectionActive, 
-  //   updateSpeechBuffer 
-  // } = useIntelligentPauseDetection(
-  //   false, // Disabled
-  //   (analysis) => {
-  //     console.log('Pause analysis:', analysis);
-  //   }
-  // );
+
   const { 
     hardwareInfo, 
     mlMetrics, 
@@ -390,7 +380,7 @@ export default function Home() {
     console.log('Received WebSocket message:', lastMessage);
     
     if (lastMessage.type === 'typing') {
-      setIsTyping(lastMessage.isTyping);
+      setIsTyping(lastMessage.isTyping || false);
       return;
     }
     
@@ -398,183 +388,10 @@ export default function Home() {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
         
-        // Auto-speak AI response in voice mode - DON'T start glow yet
-        if (isVoiceMode && lastMessage.content) {
-          console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
-          
-          // Use optimized TTS for faster response times
-          const speakResponse = async () => {
-            const cleanText = lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim();
-            
-            try {
-              // Use faster TTS API call with immediate response
-              const response = await fetch('/api/tts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  text: cleanText,
-                  voice: 'nova', // Lumen's natural voice
-                  model: 'tts-1', // Fastest model for voice mode
-                  speed: 1.0 // Natural speech speed
-                })
-              });
-
-              if (response.ok) {
-                const audioBlob = await response.blob();
-                console.log('✓ TTS audio blob received, size:', audioBlob.size, 'bytes');
-                
-                if (audioBlob.size === 0) {
-                  throw new Error('Empty audio response from TTS service');
-                }
-                
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl);
-                
-                // Essential audio setup for cross-browser compatibility
-                audio.preload = 'auto';
-                audio.crossOrigin = 'anonymous';
-                audio.volume = 0.8;
-                
-                // Only start glow when audio actually starts playing
-                audio.onplay = () => {
-                  setIsSpeaking(true);
-                  console.log('Voice response started playing');
-                };
-                
-                audio.onended = () => {
-                  setIsSpeaking(false);
-                  URL.revokeObjectURL(audioUrl);
-                  console.log('Voice response ended, restarting listening');
-                  // Restart listening immediately with no delay
-                  if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 10);
-                  }
-                };
-                
-                audio.onerror = () => {
-                  setIsSpeaking(false);
-                  URL.revokeObjectURL(audioUrl);
-                  console.error('Audio playback failed');
-                  // Restart listening even on error
-                  if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 10);
-                  }
-                };
-                
-                // Ensure audio can play by loading it first
-                audio.load();
-                
-                // Play immediately for fastest response with detailed error handling
-                console.log('Attempting to play audio response in voice mode...');
-                
-                // Try to play with user gesture context
-                const playPromise = audio.play();
-                
-                if (playPromise !== undefined) {
-                  playPromise.then(() => {
-                    console.log('✓ Audio playback started successfully');
-                  }).catch(error => {
-                    console.error('❌ Audio play failed:', error);
-                    console.error('Error details:', {
-                      name: error.name,
-                      message: error.message,
-                      code: error.code
-                    });
-                    setIsSpeaking(false);
-                    
-                    // Try fallback browser TTS
-                    console.log('Falling back to browser TTS...');
-                    const utterance = new SpeechSynthesisUtterance(cleanText);
-                    utterance.rate = 1.0;
-                    utterance.pitch = 1.0;
-                    utterance.volume = 0.8;
-                    
-                    utterance.onstart = () => {
-                      console.log('✓ Browser TTS started');
-                      setIsSpeaking(true);
-                    };
-                    
-                    utterance.onend = () => {
-                      console.log('✓ Browser TTS ended');
-                      setIsSpeaking(false);
-                      if (isSupported && isVoiceMode) {
-                        setTimeout(() => startListening(), 10);
-                      }
-                    };
-                    
-                    utterance.onerror = (event) => {
-                      console.error('❌ Browser TTS failed:', event.error);
-                      setIsSpeaking(false);
-                      if (isSupported && isVoiceMode) {
-                        setTimeout(() => startListening(), 10);
-                      }
-                    };
-                    
-                    speechSynthesis.speak(utterance);
-                  });
-                }
-              } else {
-                console.error('❌ TTS API failed with status:', response.status);
-                const errorText = await response.text();
-                console.error('TTS API error details:', errorText);
-                throw new Error(`TTS API failed: ${response.status} - ${errorText}`);
-              }
-            } catch (error) {
-              console.error('❌ OpenAI TTS completely failed:', error);
-              
-              // Immediate fallback to browser TTS for reliability
-              console.log('Using browser TTS fallback...');
-              try {
-                const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.rate = 1.0;
-                utterance.pitch = 1.0;
-                utterance.volume = 0.8;
-                
-                utterance.onstart = () => {
-                  console.log('✓ Fallback browser TTS started');
-                  setIsSpeaking(true);
-                };
-                
-                utterance.onend = () => {
-                  console.log('✓ Fallback browser TTS ended');
-                  setIsSpeaking(false);
-                  if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 10);
-                  }
-                };
-                
-                utterance.onerror = (event) => {
-                  console.error('❌ Fallback TTS also failed:', event.error);
-                  setIsSpeaking(false);
-                  if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 10);
-                  }
-                };
-                
-                speechSynthesis.speak(utterance);
-              } catch (fallbackError) {
-                console.error('❌ Both TTS systems failed:', fallbackError);
-                setIsSpeaking(false);
-                if (isSupported && isVoiceMode) {
-                  setTimeout(() => startListening(), 10);
-                }
-              }
-            }
-          };
-
-          // Play response immediately in voice mode without delay
-          speakResponse();
-        }
-        
         // Force immediate UI refresh for any AI response
         console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
         queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
         queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-        
-        // Double refresh for reliability
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-        }, 50);
         
         // Auto-generate conversation title after first AI response
         if (lastMessage.conversationId) {
@@ -595,29 +412,7 @@ export default function Home() {
     }
   }, [lastMessage, queryClient]);
 
-  // Enhanced speech recognition - simplified to prevent duplication
-  useEffect(() => {
-    if (transcript && isVoiceMode && !isTyping && !isSpeaking) { // Prevent sending while AI is responding or speaking
-      const trimmedTranscript = transcript.trim();
-      if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
-        console.log('Voice mode transcript received:', trimmedTranscript);
-        
-        // Simple, immediate processing to prevent duplicates
-        handleSendMessage(trimmedTranscript);
-        
-        // Clear transcript immediately to prevent duplication
-        if (typeof stopListening === 'function') {
-          stopListening();
-          // Restart listening after a short delay
-          setTimeout(() => {
-            if (isVoiceMode && isSupported && !isTyping && !isSpeaking) {
-              startListening();
-            }
-          }, 50);
-        }
-      }
-    }
-  }, [transcript, isVoiceMode, isTyping, isSpeaking]);
+
 
   // Load identity on startup
   useEffect(() => {
@@ -654,35 +449,9 @@ export default function Home() {
     };
   }, [isVoiceMode, currentConversationId, sendMessage]);
 
-  // Enhanced voice mode toggle
+  // Simple voice mode toggle
   const handleVoiceModeToggle = () => {
-    const newVoiceMode = !isVoiceMode;
-    setIsVoiceMode(newVoiceMode);
-    
-    // Emit event to trigger emotion detection
-    const voiceModeEvent = new CustomEvent('voiceModeChanged', {
-      detail: { active: newVoiceMode }
-    });
-    window.dispatchEvent(voiceModeEvent);
-    
-    if (newVoiceMode) {
-      // Entering voice mode
-      startDetection();
-      setIsListening(true);
-      if (isSupported) {
-        startListening();
-      }
-      console.log('Voice mode activated - emotion detection should start automatically');
-    } else {
-      // Exiting voice mode
-      setIsListening(false);
-      stopDetection();
-      import('@/lib/natural-speech').then(({ naturalSpeech }) => {
-        naturalSpeech.stop();
-      });
-      setIsSpeaking(false);
-      console.log('Voice mode deactivated - emotion detection should stop automatically');
-    }
+    setIsVoiceMode(!isVoiceMode);
   };
 
   const handleVoiceListenToggle = () => {
@@ -704,45 +473,12 @@ export default function Home() {
 
   return (
     <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
-      {/* Voice Mode - Full Screen Interface */}
+      {/* Voice Mode - Brand New Simple Implementation */}
       {isVoiceMode ? (
-        <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
-          {/* Cosmic glow positioned exactly behind logo - slightly bigger */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div 
-              className={cn(
-                "w-56 h-56 rounded-full transition-all duration-300",
-                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
-              )}
-              style={isSpeaking ? {
-                animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
-                opacity: 0.3 + (speechIntensity * 0.2),
-                transform: `scale(${1 + speechIntensity * 0.02})`
-              } : {}}
-            ></div>
-          </div>
-          
-          {/* Logo - centered and bigger */}
-          <div className="relative z-10">
-            <img 
-              src={lumenLogo} 
-              alt="Lumen" 
-              className="w-48 h-48 mx-auto"
-            />
-          </div>
-          
-
-          
-          {/* Exit Voice Mode Button */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-            <Button
-              onClick={handleVoiceModeToggle}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
-            >
-              Exit Voice Mode
-            </Button>
-          </div>
-        </div>
+        <SimpleVoiceMode 
+          onExit={handleVoiceModeToggle}
+          currentConversationId={currentConversationId || undefined}
+        />
       ) : (
         <>
           {/* Sidebar */}
