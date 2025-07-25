@@ -169,12 +169,8 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
                 }}
                 ref={(textarea) => {
                   if (textarea) {
-                    const adjustHeight = () => {
-                      textarea.style.height = '48px';
-                      textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
-                    };
-                    textarea.addEventListener('input', adjustHeight);
-                    return () => textarea.removeEventListener('input', adjustHeight);
+                    textarea.style.height = '48px';
+                    textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
                   }
                 }}
               />
