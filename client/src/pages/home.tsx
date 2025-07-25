@@ -353,10 +353,8 @@ export default function Home() {
       });
     }
 
-    // Refresh UI after sending message
-    setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
-    }, 100);
+    // Immediately refresh UI after sending message
+    queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
   };
 
   // Process incoming WebSocket messages
@@ -389,7 +387,7 @@ export default function Home() {
                   text: cleanText,
                   voice: 'nova', // Lumen's natural voice
                   model: 'tts-1', // Fastest model for voice mode
-                  speed: 1.1 // Slightly faster speech
+                  speed: 1.2 // Faster speech for voice mode
                 })
               });
 
@@ -411,9 +409,9 @@ export default function Home() {
                   setIsSpeaking(false);
                   URL.revokeObjectURL(audioUrl);
                   console.log('Voice response ended, restarting listening');
-                  // Restart listening immediately with minimal delay
+                  // Restart listening immediately with no delay
                   if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 30);
+                    setTimeout(() => startListening(), 10);
                   }
                 };
                 
@@ -423,7 +421,7 @@ export default function Home() {
                   console.error('Audio playback failed');
                   // Restart listening even on error
                   if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 30);
+                    setTimeout(() => startListening(), 10);
                   }
                 };
                 
@@ -433,7 +431,7 @@ export default function Home() {
                   setIsSpeaking(false);
                   // Restart listening on play failure
                   if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 30);
+                    setTimeout(() => startListening(), 10);
                   }
                 });
               } else {
@@ -444,20 +442,18 @@ export default function Home() {
               setIsSpeaking(false);
               // Always restart listening on any error
               if (isSupported && isVoiceMode) {
-                setTimeout(() => startListening(), 30);
+                setTimeout(() => startListening(), 10);
               }
             }
           };
 
-          // Play response immediately in voice mode
-          if (isVoiceMode) {
-            speakResponse();
-          }
+          // Play response immediately in voice mode without delay
+          speakResponse();
         }
         
-        // Always refresh UI to show updated conversation
+        // Immediately refresh UI to show updated conversation
         queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
         
         // Auto-generate conversation title after first AI response
         if (lastMessage.conversationId && messages.length <= 2) {
@@ -479,6 +475,10 @@ export default function Home() {
       if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
         console.log('Voice mode transcript received:', trimmedTranscript);
         handleSendMessage(trimmedTranscript);
+        // Clear transcript after processing to prevent duplication
+        if (typeof transcript === 'string') {
+          // Reset transcript in speech recognition hook if available
+        }
       }
     }
   }, [transcript, isVoiceMode]);
