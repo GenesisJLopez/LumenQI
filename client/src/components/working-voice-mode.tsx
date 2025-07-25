@@ -98,18 +98,26 @@ export default function WorkingVoiceMode({
 
   // Process AI responses
   useEffect(() => {
-    if (!lastMessage || lastMessage.type !== 'ai_response' || !lastMessage.content) {
+    console.log('🎤 Last message received:', lastMessage);
+    
+    if (!lastMessage || !lastMessage.content) {
+      return;
+    }
+
+    // Check if it's an AI response (either role 'assistant' or type 'ai_response')
+    if (lastMessage.role !== 'assistant' && lastMessage.type !== 'ai_response') {
       return;
     }
 
     // Avoid processing the same message twice
-    const messageKey = `${lastMessage.conversationId}-${lastMessage.content.substring(0, 20)}`;
+    const messageKey = `${lastMessage.conversationId || 'unknown'}-${lastMessage.content.substring(0, 20)}`;
     if (messageKey === lastMessageRef.current) {
       return;
     }
     lastMessageRef.current = messageKey;
 
     console.log('🎤 Processing AI response for speech:', lastMessage.content.substring(0, 50));
+    setStatus('Speaking...');
     speakResponse(lastMessage.content);
   }, [lastMessage]);
 
@@ -132,7 +140,7 @@ export default function WorkingVoiceMode({
   const processVoiceMessage = (message: string) => {
     if (!currentConversationId || !message.trim()) return;
 
-    setStatus('Processing...');
+    setStatus('Processing response...');
     setIsListening(false);
     
     // Stop listening while processing
@@ -142,6 +150,7 @@ export default function WorkingVoiceMode({
 
     console.log('🎤 Sending voice message:', message);
     
+    // Send message and wait for response
     sendMessage({
       type: 'chat_message',
       content: message,
