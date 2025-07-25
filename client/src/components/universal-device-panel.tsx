@@ -14,6 +14,7 @@ import {
   type DeviceContext,
   AppleNativeBridge 
 } from '@/lib/universal-device-toolkit';
+import { DeviceIntegrationWizard } from '@/components/device-integration-wizard';
 
 export function UniversalDevicePanel() {
   const [capabilities, setCapabilities] = useState<DeviceIntegrationCapabilities | null>(null);
@@ -196,13 +197,18 @@ export function UniversalDevicePanel() {
             </Button>
           </div>
 
-          <Tabs defaultValue="capabilities" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs defaultValue="wizard" className="w-full">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="wizard">Setup Wizard</TabsTrigger>
               <TabsTrigger value="capabilities">Capabilities</TabsTrigger>
               <TabsTrigger value="realtime">Real-time</TabsTrigger>
               <TabsTrigger value="environment">Environment</TabsTrigger>
               <TabsTrigger value="apple">Apple Ready</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="wizard" className="space-y-4">
+              <DeviceIntegrationWizard />
+            </TabsContent>
 
             <TabsContent value="capabilities" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
