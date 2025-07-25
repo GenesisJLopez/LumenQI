@@ -41,6 +41,8 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
           setTranscript(finalTranscript.trim());
           // Stop listening after getting a complete phrase
           recognition.stop();
+          // Clear transcript after a short delay to prevent duplication
+          setTimeout(() => setTranscript(''), 100);
         }
       };
 
@@ -68,7 +70,7 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
       try {
-        setTranscript('');
+        setTranscript(''); // Clear previous transcript
         recognitionRef.current.start();
       } catch (error) {
         console.error('Error starting speech recognition:', error);
