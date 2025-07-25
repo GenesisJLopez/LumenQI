@@ -153,9 +153,30 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Message Lumen QI..."
-                className="min-h-[24px] max-h-32 bg-transparent border-0 text-gray-100 placeholder-gray-400 focus:ring-0 focus:border-0 resize-none p-0"
+                className="min-h-[48px] max-h-32 bg-transparent border-0 text-gray-100 placeholder-gray-400 focus:ring-0 focus:border-0 resize-none p-2 leading-relaxed"
                 rows={1}
                 disabled={isLoading}
+                style={{
+                  height: 'auto',
+                  minHeight: '48px',
+                  resize: 'none',
+                  overflow: 'hidden'
+                }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = '48px';
+                  target.style.height = Math.min(target.scrollHeight, 128) + 'px';
+                }}
+                ref={(textarea) => {
+                  if (textarea) {
+                    const adjustHeight = () => {
+                      textarea.style.height = '48px';
+                      textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
+                    };
+                    textarea.addEventListener('input', adjustHeight);
+                    return () => textarea.removeEventListener('input', adjustHeight);
+                  }
+                }}
               />
             </div>
 

@@ -325,7 +325,10 @@ export default function Home() {
     }
 
     // Send message immediately for faster response
+    console.log('handleSendMessage called with:', { content, conversationId, isVoiceMode });
+    
     if (isVoiceMode) {
+      console.log('Sending voice mode message');
       sendMessage({
         type: 'chat_message',
         content,
@@ -336,6 +339,7 @@ export default function Home() {
         emotionContext: undefined,
       });
     } else {
+      console.log('Sending normal mode message');
       // Normal mode with full emotion processing
       const textEmotion = detectEmotionFromText(content);
       const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
@@ -372,20 +376,20 @@ export default function Home() {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
           setIsSpeaking(true);
           
-          // Use OpenAI TTS for Lumen's natural voice with optimized performance
+          // Use optimized TTS for faster response times
           const speakResponse = async () => {
             const cleanText = lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim();
             
             try {
-              // Use optimized TTS API call with faster model
+              // Use faster TTS API call with immediate response
               const response = await fetch('/api/tts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   text: cleanText,
                   voice: 'nova', // Lumen's natural voice
-                  model: 'tts-1', // Faster model for voice mode
-                  speed: 1.0
+                  model: 'tts-1', // Fastest model for voice mode
+                  speed: 1.1 // Slightly faster speech
                 })
               });
 
@@ -394,46 +398,61 @@ export default function Home() {
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
                 
+                // Preload audio for instant playback
+                audio.preload = 'auto';
+                
                 // Set speaking state immediately when audio starts playing
                 audio.onplay = () => {
                   setIsSpeaking(true);
+                  console.log('Voice response started playing');
                 };
                 
                 audio.onended = () => {
                   setIsSpeaking(false);
                   URL.revokeObjectURL(audioUrl);
-                  // Restart listening immediately
+                  console.log('Voice response ended, restarting listening');
+                  // Restart listening immediately with minimal delay
                   if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 100);
+                    setTimeout(() => startListening(), 30);
                   }
                 };
                 
                 audio.onerror = () => {
                   setIsSpeaking(false);
                   URL.revokeObjectURL(audioUrl);
+                  console.error('Audio playback failed');
                   // Restart listening even on error
                   if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 100);
+                    setTimeout(() => startListening(), 30);
                   }
                 };
                 
-                // Play immediately without waiting for full load
-                audio.play().catch(console.error);
+                // Play immediately for fastest response
+                audio.play().catch(error => {
+                  console.error('Audio play failed:', error);
+                  setIsSpeaking(false);
+                  // Restart listening on play failure
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 30);
+                  }
+                });
               } else {
                 throw new Error('TTS API failed');
               }
             } catch (error) {
               console.error('OpenAI TTS failed:', error);
               setIsSpeaking(false);
-              // Always restart listening
+              // Always restart listening on any error
               if (isSupported && isVoiceMode) {
-                setTimeout(() => startListening(), 100);
+                setTimeout(() => startListening(), 30);
               }
             }
           };
 
-          // Only use OpenAI TTS in voice mode - no browser fallback
-          speakResponse();
+          // Play response immediately in voice mode
+          if (isVoiceMode) {
+            speakResponse();
+          }
         }
         
         // Always refresh UI to show updated conversation
@@ -457,7 +476,8 @@ export default function Home() {
   useEffect(() => {
     if (transcript && isVoiceMode) {
       const trimmedTranscript = transcript.trim();
-      if (trimmedTranscript) {
+      if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
+        console.log('Voice mode transcript received:', trimmedTranscript);
         handleSendMessage(trimmedTranscript);
       }
     }
