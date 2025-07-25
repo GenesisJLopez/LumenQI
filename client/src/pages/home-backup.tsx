@@ -154,7 +154,7 @@ export default function Home() {
     }
 
     // Immediately refresh UI after sending message
-    queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+    queryClient.invalidateQuiries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
   };
 
   // Process incoming WebSocket messages  
