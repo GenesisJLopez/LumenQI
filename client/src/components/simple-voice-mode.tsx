@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { cn } from '@/lib/utils';
-import lumenLogo from '@/assets/lumen-logo.svg';
+import lumenLogo from '@assets/lumen-logo (Small)_1753450894008.png';
 
 interface SimpleVoiceModeProps {
   onExit: () => void;
@@ -104,17 +104,20 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     };
   }, []);
 
-  // Process incoming AI responses
+  // Process incoming AI responses - FIXED to work properly
   useEffect(() => {
     if (!lastMessage || !lastMessage.content) return;
     
-    // Avoid processing the same message twice
-    const messageId = lastMessage.timestamp || lastMessage.content;
-    if (messageId === lastMessageIdRef.current) return;
-    lastMessageIdRef.current = messageId;
+    console.log('🎤 Voice mode received message:', lastMessage.type, lastMessage.content?.substring(0, 50));
     
-    if (lastMessage.type === 'ai_response' && lastMessage.content) {
-      console.log('🎤 Voice mode: Processing AI response:', lastMessage.content.substring(0, 50) + '...');
+    // Check for both ai_response and normal messages
+    if ((lastMessage.type === 'ai_response' || lastMessage.type === 'message') && lastMessage.content) {
+      // Avoid processing the same message twice
+      const messageId = `${lastMessage.timestamp}-${lastMessage.content.substring(0, 20)}`;
+      if (messageId === lastMessageIdRef.current) return;
+      lastMessageIdRef.current = messageId;
+      
+      console.log('🎤 Voice mode: Speaking AI response immediately');
       speakText(lastMessage.content);
     }
   }, [lastMessage]);
@@ -274,7 +277,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         <div 
           className={cn(
             "w-56 h-56 rounded-full transition-all duration-300",
-            isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+            isSpeaking ? 'cosmic-pulse-speaking' : 'cosmic-pulse-listening'
           )}
           style={isSpeaking ? {
             animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
