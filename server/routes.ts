@@ -1351,27 +1351,40 @@ Respond with only the title, no quotes or additional text.`;
           const responseStartTime = Date.now();
           let aiResponse, aiSource;
           
-          if (isVoiceMode) {
-            // Direct OpenAI call for voice mode - bypass hybrid brain for speed
-            aiResponse = await lumenAI.generateResponse(
-              content,
-              messages,
-              memories,
-              enhancedEmotionContext,
-              isVoiceMode
-            );
-            aiSource = 'online';
-          } else {
-            // Use hybrid brain for normal mode
-            const brainResponse = await hybridBrain.generateResponse(
-              content,
-              enhancedEmotionContext,
-              messages,
-              memories,
-              isVoiceMode
-            );
-            aiResponse = brainResponse.content;
-            aiSource = brainResponse.source;
+          console.log(`Processing ${isVoiceMode ? 'voice mode' : 'normal'} message: "${content}"`);
+          
+          try {
+            if (isVoiceMode) {
+              // Direct OpenAI call for voice mode - bypass hybrid brain for speed
+              console.log('Calling OpenAI for voice mode response...');
+              aiResponse = await lumenAI.generateResponse(
+                content,
+                messages,
+                memories,
+                enhancedEmotionContext,
+                isVoiceMode
+              );
+              aiSource = 'online';
+              console.log('OpenAI voice mode response generated:', aiResponse ? 'SUCCESS' : 'FAILED');
+            } else {
+              // Use hybrid brain for normal mode
+              console.log('Calling hybrid brain for normal mode response...');
+              const brainResponse = await hybridBrain.generateResponse(
+                content,
+                enhancedEmotionContext,
+                messages,
+                memories,
+                isVoiceMode
+              );
+              aiResponse = brainResponse.content;
+              aiSource = brainResponse.source;
+              console.log('Hybrid brain response generated:', aiResponse ? 'SUCCESS' : 'FAILED');
+            }
+          } catch (error) {
+            console.error('AI generation error:', error);
+            // Fallback response
+            aiResponse = "I'm sorry, I'm having trouble processing your message right now. Please try again.";
+            aiSource = 'fallback';
           }
           
           const responseTime = Date.now() - responseStartTime;
