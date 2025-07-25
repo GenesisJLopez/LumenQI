@@ -154,8 +154,15 @@ export default function Home() {
       });
     }
 
-    // Immediately refresh UI after sending message
-    queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+    // Immediately trigger a refresh after sending - this ensures we see both user and AI messages
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+    }, 100);
+    
+    // Also trigger another refresh after expected AI response time
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+    }, 2000);
   };
 
   // Process incoming WebSocket messages  
@@ -172,6 +179,11 @@ export default function Home() {
     if (lastMessage.type === 'ai_response') {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
+      
+      // Force immediate UI refresh for the AI response
+      console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
         
       // Auto-speak AI response in voice mode
       if (isVoiceMode && lastMessage.content) {
@@ -322,11 +334,6 @@ export default function Home() {
 
         speakResponse();
       }
-      
-      // Force immediate UI refresh for any AI response
-      console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
       
       return;
     }
