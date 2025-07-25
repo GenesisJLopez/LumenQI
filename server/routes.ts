@@ -1264,7 +1264,7 @@ Respond with only the title, no quotes or additional text.`;
         }
         
         if (message.type === 'chat_message') {
-          const { content, conversationId, emotion, emotionContext, isEdit } = message;
+          const { content, conversationId, emotion, emotionContext, isEdit, isVoiceMode } = message;
           
           // Validate that conversationId is provided
           if (!conversationId) {
@@ -1275,12 +1275,12 @@ Respond with only the title, no quotes or additional text.`;
           proactiveAI.updateLastInteraction();
           
           // Optimize for voice mode - minimal context for speed
-          const isVoiceMode = message.isVoiceMode || false;
+          const voiceModeFlag = isVoiceMode || false;
           const isEditMessage = isEdit || false;
           
           // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
-          if (emotion && !isVoiceMode) {
+          if (emotion && !voiceModeFlag) {
             // Generate comprehensive emotion context using the adaptation service
             enhancedEmotionContext = emotionAdaptationService.generateEmotionContext(emotion);
             
@@ -1300,7 +1300,7 @@ Respond with only the title, no quotes or additional text.`;
           
           let userMessage, messages, memories;
           
-          if (isVoiceMode) {
+          if (voiceModeFlag) {
             // Ultra-fast voice mode: minimal context, parallel processing
             if (!isEditMessage) {
               // Only save new message if not an edit
@@ -1351,10 +1351,10 @@ Respond with only the title, no quotes or additional text.`;
           const responseStartTime = Date.now();
           let aiResponse, aiSource;
           
-          console.log(`Processing ${isVoiceMode ? 'voice mode' : 'normal'} message: "${content}"`);
+          console.log(`Processing ${voiceModeFlag ? 'voice mode' : 'normal'} message: "${content}"`);
           
           try {
-            if (isVoiceMode) {
+            if (voiceModeFlag) {
               // Direct OpenAI call for voice mode - bypass hybrid brain for speed
               console.log('Calling OpenAI for voice mode response...');
               aiResponse = await lumenAI.generateResponse(
@@ -1362,7 +1362,7 @@ Respond with only the title, no quotes or additional text.`;
                 messages,
                 memories,
                 enhancedEmotionContext,
-                isVoiceMode
+                voiceModeFlag
               );
               aiSource = 'online';
               console.log('OpenAI voice mode response generated:', aiResponse ? 'SUCCESS' : 'FAILED');
@@ -1374,7 +1374,7 @@ Respond with only the title, no quotes or additional text.`;
                 enhancedEmotionContext,
                 messages,
                 memories,
-                isVoiceMode
+                voiceModeFlag
               );
               aiResponse = brainResponse.content;
               aiSource = brainResponse.source;
@@ -1409,7 +1409,7 @@ Respond with only the title, no quotes or additional text.`;
               content: aiResponse,
               conversationId,
               provider: aiSource,
-              model: aiSource === 'consciousness' ? 'lumen-consciousness' : (isVoiceMode ? 'gpt-4o-voice' : 'hybrid-brain'),
+              model: aiSource === 'consciousness' ? 'lumen-consciousness' : (voiceModeFlag ? 'gpt-4o-voice' : 'hybrid-brain'),
               source: aiSource // Include brain source (online/offline/hybrid)
             };
             ws.send(JSON.stringify(responseMessage));
