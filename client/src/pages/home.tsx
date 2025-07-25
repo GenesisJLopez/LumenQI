@@ -452,10 +452,16 @@ export default function Home() {
           speakResponse();
         }
         
-        // Force immediate UI refresh for voice mode
-        if (isVoiceMode || lastMessage.conversationId === currentConversationId) {
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        // Force immediate UI refresh - always refresh for any AI response
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        
+        // Additional refresh for voice mode
+        if (isVoiceMode) {
+          // Force a second refresh to ensure voice mode messages appear
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+          }, 100);
         }
         
         // Auto-generate conversation title after first AI response
@@ -469,7 +475,7 @@ export default function Home() {
         toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
       }
     }
-  }, [lastMessage, currentConversationId, isVoiceMode]);
+  }, [lastMessage, currentConversationId, isVoiceMode, messages]);
 
   // Enhanced speech recognition with emotional context
   useEffect(() => {
