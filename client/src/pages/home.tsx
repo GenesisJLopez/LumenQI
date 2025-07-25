@@ -4,7 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
-import { SimpleVoiceMode } from '@/components/simple-voice-mode';
+import WorkingVoiceMode from '@/components/working-voice-mode';
 import { useQuantumInterface } from '@/hooks/use-quantum-interface';
 import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { Sidebar } from '@/components/sidebar';
@@ -483,9 +483,11 @@ export default function Home() {
     <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
       {/* Voice Mode - Brand New Simple Implementation */}
       {isVoiceMode ? (
-        <SimpleVoiceMode 
+        <WorkingVoiceMode 
           onExit={handleVoiceModeToggle}
           currentConversationId={currentConversationId || undefined}
+          sendMessage={sendMessage}
+          lastMessage={lastMessage}
         />
       ) : (
         <>
