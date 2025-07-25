@@ -21,6 +21,7 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
+  const [audioEnabled, setAudioEnabled] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -221,32 +222,47 @@ export default function Home() {
               audio.preload = 'auto';
               audio.volume = 0.9;
               
-              // Create user interaction event to enable autoplay
-              const playAudio = () => {
+              // Setup audio handlers
+              audio.onloadeddata = () => {
+                console.log('🎵 Audio loaded, attempting autoplay...');
                 setIsSpeaking(true);
-                console.log('🎵 Voice response started playing');
                 
-                audio.onended = () => {
-                  setIsSpeaking(false);
-                  URL.revokeObjectURL(audioUrl);
-                  console.log('🎵 Voice response ended, restarting listening');
-                  if (isSupported && isVoiceMode) {
-                    setTimeout(() => startListening(), 300);
-                  }
-                };
+                // Try to play immediately
+                const playPromise = audio.play();
                 
-                audio.onerror = () => {
-                  console.error('❌ Audio playback failed, using browser TTS');
-                  setIsSpeaking(false);
-                  URL.revokeObjectURL(audioUrl);
-                  useBrowserTTS();
-                };
-                
-                // Force audio play
-                audio.play().catch((error) => {
-                  console.error('❌ Audio autoplay blocked:', error);
-                  useBrowserTTS();
-                });
+                if (playPromise !== undefined) {
+                  playPromise
+                    .then(() => {
+                      console.log('✅ Audio started playing successfully');
+                    })
+                    .catch((error) => {
+                      console.log('❌ Autoplay failed, using browser TTS:', error.name);
+                      setIsSpeaking(false);
+                      URL.revokeObjectURL(audioUrl);
+                      // Only use browser TTS if audio is enabled
+                      if (audioEnabled) {
+                        useBrowserTTS();
+                      } else {
+                        console.log('Audio not enabled - user needs to click Enable Audio button');
+                      }
+                    });
+                }
+              };
+              
+              audio.onended = () => {
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+                console.log('🎵 Voice response ended, restarting listening');
+                if (isSupported && isVoiceMode) {
+                  setTimeout(() => startListening(), 300);
+                }
+              };
+              
+              audio.onerror = (e) => {
+                console.error('❌ Audio error occurred:', e);
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+                useBrowserTTS();
               };
               
               const useBrowserTTS = () => {
@@ -280,9 +296,8 @@ export default function Home() {
                 speechSynthesis.speak(utterance);
               };
               
-              // Load and attempt to play immediately
+              // Load audio - this will trigger onloadeddata
               audio.load();
-              playAudio();
               
             } else {
               console.error('❌ TTS API failed with status:', response.status);
@@ -382,6 +397,7 @@ export default function Home() {
     if (newVoiceMode) {
       startDetection();
       setIsListening(true);
+      setAudioEnabled(false); // Reset audio permission when entering voice mode
       if (isSupported) {
         startListening();
       }
@@ -397,6 +413,18 @@ export default function Home() {
     }
   };
 
+  const enableAudio = async () => {
+    try {
+      // Play a short silent audio to enable autoplay
+      const audio = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAA');
+      await audio.play();
+      setAudioEnabled(true);
+      console.log('✅ Audio context enabled for voice mode');
+    } catch (error) {
+      console.log('Audio permission still required');
+    }
+  };
+
   if (isVoiceMode) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
@@ -408,7 +436,7 @@ export default function Home() {
               isSpeaking ? "animate-pulse" : isListening ? "ring-2 ring-blue-500/50" : ""
             )}>
               <img 
-                src="/attached_assets/lumen-logo (Small)_1752439896786.png" 
+                src="/attached_assets/lumen-logo (Small)_1753467027342.png" 
                 alt="Lumen QI"
                 className="w-full h-full object-contain rounded-full"
               />
@@ -429,6 +457,23 @@ export default function Home() {
             <p className="text-lg text-gray-300">
               {isSpeaking ? "Speaking..." : isListening ? "Listening..." : "Ready for voice input"}
             </p>
+            
+            {/* Audio Enable Button */}
+            {!audioEnabled && (
+              <div className="mt-4">
+                <Button
+                  onClick={enableAudio}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
+                >
+                  🔊 Enable Audio
+                </Button>
+                <p className="text-sm text-gray-400 mt-2">Click to hear Lumen's voice responses</p>
+              </div>
+            )}
+            
+            {audioEnabled && (
+              <p className="text-sm text-green-400 mt-2">✅ Audio enabled - you can hear responses</p>
+            )}
           </div>
           
           {/* Recent Messages in Voice Mode */}
