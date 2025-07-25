@@ -1264,18 +1264,24 @@ Respond with only the title, no quotes or additional text.`;
         }
         
         if (message.type === 'chat_message') {
+          console.log('Processing chat_message:', message);
           const { content, conversationId, emotion, emotionContext, isEdit } = message;
           
           // Handle null conversationId by creating a new conversation
           let actualConversationId = conversationId;
           if (!actualConversationId) {
             console.log('Creating new conversation for voice mode message');
-            const newConversation = await storage.createConversation({
-              userId: 1,
-              title: content.length > 50 ? content.substring(0, 47) + '...' : content
-            });
-            actualConversationId = newConversation.id;
-            console.log('New conversation created:', actualConversationId);
+            try {
+              const newConversation = await storage.createConversation({
+                userId: 1,
+                title: content.length > 50 ? content.substring(0, 47) + '...' : content
+              });
+              actualConversationId = newConversation.id;
+              console.log('New conversation created:', actualConversationId);
+            } catch (convError) {
+              console.error('Failed to create conversation:', convError);
+              throw convError;
+            }
           }
           
           // Update proactive AI's last interaction time
@@ -1305,7 +1311,7 @@ Respond with only the title, no quotes or additional text.`;
             });
           }
           
-          let userMessage, messages, memories;
+          let userMessage: any, messages: any[], memories: any[];
           
           if (isVoiceMode) {
             // Ultra-fast voice mode: minimal context, parallel processing
@@ -1443,7 +1449,7 @@ Respond with only the title, no quotes or additional text.`;
               conversationId: actualConversationId,
               role: 'user',
               content,
-              createdAt: new Date(),
+              timestamp: new Date(),
               metadata: emotion ? { emotion } : undefined
             }, aiSource, responseTime).catch(error => {
               console.error('Flow analysis error:', error);
