@@ -452,9 +452,11 @@ export default function Home() {
           speakResponse();
         }
         
-        // Immediately refresh UI to show updated conversation
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        // Force immediate UI refresh for voice mode
+        if (isVoiceMode || lastMessage.conversationId === currentConversationId) {
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        }
         
         // Auto-generate conversation title after first AI response
         if (lastMessage.conversationId && messages.length <= 2) {
@@ -467,11 +469,11 @@ export default function Home() {
         toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
       }
     }
-  }, [lastMessage, currentConversationId]);
+  }, [lastMessage, currentConversationId, isVoiceMode]);
 
   // Enhanced speech recognition with emotional context
   useEffect(() => {
-    if (transcript && isVoiceMode) {
+    if (transcript && isVoiceMode && !isTyping) { // Prevent sending while AI is responding
       const trimmedTranscript = transcript.trim();
       if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
         console.log('Voice mode transcript received:', trimmedTranscript);
@@ -481,14 +483,14 @@ export default function Home() {
         if (typeof stopListening === 'function') {
           // Reset speech recognition state
           setTimeout(() => {
-            if (isVoiceMode && isSupported) {
+            if (isVoiceMode && isSupported && !isTyping) {
               startListening();
             }
           }, 100);
         }
       }
     }
-  }, [transcript, isVoiceMode]);
+  }, [transcript, isVoiceMode, isTyping]);
 
   // Load identity on startup
   useEffect(() => {
