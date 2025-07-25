@@ -1376,8 +1376,8 @@ Respond with only the title, no quotes or additional text.`;
               type: 'ai_response',
               content: aiResponse,
               conversationId,
-              provider: brainResponse.source,
-              model: brainResponse.source === 'consciousness' ? 'lumen-consciousness' : 'hybrid-brain',
+              provider: aiSource,
+              model: aiSource === 'consciousness' ? 'lumen-consciousness' : (isVoiceMode ? 'gpt-4o-voice' : 'hybrid-brain'),
               source: aiSource // Include brain source (online/offline/hybrid)
             }));
           }
