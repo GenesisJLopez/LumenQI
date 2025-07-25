@@ -73,7 +73,9 @@ export default function WorkingVoiceMode({
 
     recognition.onend = () => {
       setIsListening(false);
-      if (!isSpeaking) {
+      setStatus('Ready to listen...');
+      // Only restart if not processing or speaking
+      if (!isSpeaking && status !== 'Processing...') {
         setTimeout(() => startListening(), 500);
       }
     };
@@ -121,6 +123,7 @@ export default function WorkingVoiceMode({
     if (!currentConversationId || !message.trim()) return;
 
     setStatus('Processing...');
+    setIsListening(false);
     
     // Stop listening while processing
     if (recognitionRef.current) {
@@ -205,65 +208,23 @@ export default function WorkingVoiceMode({
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
-      {/* Cosmic background effect */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial from-purple-900/20 via-black to-black animate-pulse" />
-        {/* Floating particles */}
-        {[...Array(50)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full opacity-60 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${10 + Math.random() * 20}s`
-            }}
-          />
-        ))}
-      </div>
+      {/* Simple clean background */}
+      <div className="absolute inset-0 bg-black" />
 
-      {/* Main content */}
+      {/* Main content - just the logo */}
       <div className="relative z-10 flex flex-col items-center">
-        {/* Lumen logo with glow effect */}
+        {/* Simple Lumen logo - no animations */}
         <div className="relative mb-8">
-          <div className={`absolute inset-0 bg-gradient-radial from-purple-400/30 to-transparent rounded-full transition-all duration-300 ${
-            isSpeaking ? 'w-64 h-64 animate-pulse' : isListening ? 'w-48 h-48' : 'w-32 h-32'
-          }`} />
           <img 
             src="/attached_assets/lumen-logo%20(Small)_1753450894008.png" 
             alt="Lumen" 
-            className="relative w-32 h-32 object-contain filter brightness-110"
+            className="w-32 h-32 object-contain"
           />
         </div>
 
-        {/* Status text */}
-        <div className="text-white text-xl mb-4 text-center">
+        {/* Simple status text */}
+        <div className="text-white text-lg mb-4 text-center">
           {status}
-        </div>
-
-        {/* Transcript display */}
-        {transcript && (
-          <div className="text-purple-300 text-lg mb-4 text-center max-w-md">
-            "{transcript}"
-          </div>
-        )}
-
-        {/* Voice indicators */}
-        <div className="flex items-center space-x-4 mb-8">
-          <div className={`w-4 h-4 rounded-full transition-colors ${
-            isListening ? 'bg-green-400 animate-pulse' : 'bg-gray-600'
-          }`} />
-          <span className="text-white text-sm">
-            {isListening ? 'Listening' : 'Not listening'}
-          </span>
-          
-          <div className={`w-4 h-4 rounded-full transition-colors ${
-            isSpeaking ? 'bg-blue-400 animate-pulse' : 'bg-gray-600'
-          }`} />
-          <span className="text-white text-sm">
-            {isSpeaking ? 'Speaking' : 'Silent'}
-          </span>
         </div>
       </div>
 
