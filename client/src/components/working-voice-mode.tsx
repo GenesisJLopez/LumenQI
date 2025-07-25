@@ -67,16 +67,20 @@ export default function WorkingVoiceMode({
     recognition.onerror = (event) => {
       console.error('🎤 Speech recognition error:', event.error);
       setIsListening(false);
-      setStatus('Error occurred, restarting...');
-      setTimeout(() => startListening(), 1000);
+      if (event.error !== 'aborted') {
+        setStatus('Error occurred, restarting...');
+        setTimeout(() => startListening(), 2000);
+      } else {
+        setStatus('Ready to listen...');
+      }
     };
 
     recognition.onend = () => {
       setIsListening(false);
-      setStatus('Ready to listen...');
-      // Only restart if not processing or speaking
+      // Only restart if we're not processing or speaking
       if (!isSpeaking && status !== 'Processing...') {
-        setTimeout(() => startListening(), 500);
+        setStatus('Ready to listen...');
+        setTimeout(() => startListening(), 1000);
       }
     };
 
@@ -110,11 +114,17 @@ export default function WorkingVoiceMode({
   }, [lastMessage]);
 
   const startListening = () => {
-    if (recognitionRef.current && !isListening && !isSpeaking) {
+    if (recognitionRef.current && !isListening && !isSpeaking && status !== 'Processing...') {
       try {
         recognitionRef.current.start();
       } catch (error) {
         console.error('Failed to start recognition:', error);
+        // Don't restart if there's an error to prevent loops
+        setTimeout(() => {
+          if (!isListening && !isSpeaking) {
+            setStatus('Ready to listen...');
+          }
+        }, 2000);
       }
     }
   };
@@ -216,7 +226,7 @@ export default function WorkingVoiceMode({
         {/* Simple Lumen logo - no animations */}
         <div className="relative mb-8">
           <img 
-            src="/attached_assets/lumen-logo%20(Small)_1753450894008.png" 
+            src="/attached_assets/lumen-logo%20(Small)_1753457783202.png" 
             alt="Lumen" 
             className="w-32 h-32 object-contain"
           />
