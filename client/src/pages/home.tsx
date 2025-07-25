@@ -100,6 +100,7 @@ export default function Home() {
       
       // Send the message via WebSocket with emotion data if available
       const messageData = {
+        type: 'chat_message',
         content: content.trim(),
         conversationId: currentConversationId,
         isVoiceMode,

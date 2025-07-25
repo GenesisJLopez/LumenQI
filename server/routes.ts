@@ -1226,6 +1226,7 @@ Respond with only the title, no quotes or additional text.`;
       try {
         const message = JSON.parse(data);
         console.log('Received WebSocket message:', message);
+      console.log('Message type:', message.type, 'Expected: chat_message');
         
         if (message.type === 'emotion_update') {
           const { emotion, confidence, features, timestamp, conversationId } = message;
