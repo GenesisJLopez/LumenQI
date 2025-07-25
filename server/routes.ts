@@ -1389,7 +1389,19 @@ Respond with only the title, no quotes or additional text.`;
           
           const responseTime = Date.now() - responseStartTime;
 
-          // Send response back to client immediately with provider info
+          // Save AI response BEFORE sending WebSocket message
+          try {
+            await storage.createMessage({
+              conversationId,
+              role: 'assistant',
+              content: aiResponse
+            });
+            console.log('AI response saved to database successfully');
+          } catch (error) {
+            console.error('Failed to save AI response to database:', error);
+          }
+
+          // Send response back to client after saving to database
           console.log(`Sending ai_response via WebSocket: ${aiResponse ? aiResponse.substring(0, 50) + '...' : 'NO RESPONSE'}`);
           if (ws.readyState === WebSocket.OPEN) {
             const responseMessage = {
@@ -1408,12 +1420,6 @@ Respond with only the title, no quotes or additional text.`;
 
           // Background operations (don't await these to improve response time)
           Promise.all([
-            // Save AI response
-            storage.createMessage({
-              conversationId,
-              role: 'assistant',
-              content: aiResponse
-            }),
             // Process personality evolution in background with enhanced emotion data
             personalityEvolution.processInteraction({
               userId: 1,
