@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useWebSocket } from '@/hooks/use-websocket';
+import { cn } from '@/lib/utils';
 import lumenLogo from '@/assets/lumen-logo.svg';
 
 interface SimpleVoiceModeProps {
@@ -9,10 +10,10 @@ interface SimpleVoiceModeProps {
 }
 
 export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceModeProps) {
-  const [isListening, setIsListening] = useState(false);
+  const [isListening, setIsListening] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [status, setStatus] = useState('Ready to listen...');
+  const [speechIntensity, setSpeechIntensity] = useState(0);
   
   const { sendMessage, lastMessage } = useWebSocket();
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -40,7 +41,6 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       
       recognition.onstart = () => {
         setIsListening(true);
-        setStatus('Listening...');
       };
       
       recognition.onresult = (event) => {
@@ -79,16 +79,21 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       
       recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        setStatus('Error: ' + event.error);
         setIsListening(false);
+        // Auto-restart on error
+        setTimeout(() => startListening(), 1000);
       };
       
       recognition.onend = () => {
         setIsListening(false);
+        // Auto-restart listening when not speaking
         if (!isSpeaking) {
-          setStatus('Click to start listening');
+          setTimeout(() => startListening(), 500);
         }
       };
+      
+      // Auto-start listening when voice mode loads
+      setTimeout(() => startListening(), 1000);
     }
     
     return () => {
@@ -117,7 +122,6 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
   const processMessage = async (message: string) => {
     if (!currentConversationId || !message.trim()) return;
     
-    setStatus('Processing your message...');
     setTranscript('');
     
     // Stop listening while processing
@@ -138,7 +142,11 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
 
   const speakText = async (text: string) => {
     setIsSpeaking(true);
-    setStatus('Speaking...');
+    
+    // Simulate speech intensity for glow effect
+    const intensityInterval = setInterval(() => {
+      setSpeechIntensity(Math.random() * 0.8 + 0.2);
+    }, 100);
     
     try {
       // Clean text for speech
@@ -171,13 +179,15 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
             
             audio.onended = () => {
               setIsSpeaking(false);
-              setStatus('Ready to listen...');
+              setSpeechIntensity(0);
+              clearInterval(intensityInterval);
               URL.revokeObjectURL(audioUrl);
               startListening();
             };
             
             audio.onerror = () => {
               console.error('Audio playback failed, using browser TTS');
+              clearInterval(intensityInterval);
               useBrowserTTS(cleanText);
             };
             
@@ -190,12 +200,14 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       }
       
       // Fallback to browser TTS
+      clearInterval(intensityInterval);
       useBrowserTTS(cleanText);
       
     } catch (error) {
       console.error('Speech synthesis failed:', error);
       setIsSpeaking(false);
-      setStatus('Ready to listen...');
+      setSpeechIntensity(0);
+      clearInterval(intensityInterval);
       startListening();
     }
   };
@@ -224,14 +236,14 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     utterance.onend = () => {
       console.log('🎤 Browser TTS ended');
       setIsSpeaking(false);
-      setStatus('Ready to listen...');
+      setSpeechIntensity(0);
       startListening();
     };
     
     utterance.onerror = (event) => {
       console.error('Browser TTS failed:', event.error);
       setIsSpeaking(false);
-      setStatus('Ready to listen...');
+      setSpeechIntensity(0);
       startListening();
     };
     
@@ -255,59 +267,34 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     clearTimeout(timeoutRef.current);
   };
 
-  const handleToggleListening = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  };
-
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 relative">
-      {/* Logo */}
-      <div className="relative z-10 mb-8">
+    <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
+      {/* Cosmic glow positioned exactly behind logo */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div 
+          className={cn(
+            "w-56 h-56 rounded-full transition-all duration-300",
+            isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+          )}
+          style={isSpeaking ? {
+            animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
+            opacity: 0.3 + (speechIntensity * 0.2),
+            transform: `scale(${1 + speechIntensity * 0.02})`
+          } : {}}
+        ></div>
+      </div>
+      
+      {/* Logo - centered and bigger */}
+      <div className="relative z-10">
         <img 
           src={lumenLogo} 
           alt="Lumen" 
-          className={`w-48 h-48 mx-auto transition-all duration-300 ${
-            isSpeaking ? 'animate-pulse' : isListening ? 'opacity-80' : 'opacity-100'
-          }`}
+          className="w-48 h-48 mx-auto"
         />
       </div>
       
-      {/* Status */}
-      <div className="text-center mb-8">
-        <div className="text-2xl font-medium text-white mb-2">
-          {isSpeaking ? 'Speaking...' : isListening ? 'Listening...' : 'Voice Mode'}
-        </div>
-        <div className="text-gray-400 text-lg">
-          {status}
-        </div>
-        {transcript && (
-          <div className="text-purple-300 text-sm mt-2 max-w-md">
-            "{transcript}"
-          </div>
-        )}
-      </div>
-      
-      {/* Controls */}
-      <div className="flex space-x-4 mb-8">
-        <Button
-          onClick={handleToggleListening}
-          disabled={isSpeaking}
-          className={`px-6 py-3 ${
-            isListening 
-              ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-green-500 hover:bg-green-600'
-          }`}
-        >
-          {isListening ? 'Stop Listening' : 'Start Listening'}
-        </Button>
-      </div>
-      
-      {/* Exit Button */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+      {/* Exit Voice Mode Button */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <Button
           onClick={onExit}
           className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
