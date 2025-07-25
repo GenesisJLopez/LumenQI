@@ -389,17 +389,17 @@ export default function Home() {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
         
-        // Force immediate UI refresh for any AI response
-        console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-        
-        // Auto-generate conversation title after first AI response
-        if (lastMessage.conversationId) {
-          generateConversationTitle(lastMessage.conversationId);
-        }
-        return;
+      // Force immediate UI refresh for any AI response
+      console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      
+      // Auto-generate conversation title after first AI response
+      if (lastMessage.conversationId) {
+        generateConversationTitle(lastMessage.conversationId);
       }
+      return;
+    }
       
       if (lastMessage.type === 'error') {
         setIsTyping(false);
