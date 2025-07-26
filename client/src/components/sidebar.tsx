@@ -189,7 +189,10 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
               size="sm" 
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800" 
               title="Settings"
-              onClick={onToggleSettings}
+              onClick={() => {
+                console.log('Settings button clicked');
+                onToggleSettings();
+              }}
             >
               <Database className="h-4 w-4 text-gray-500" />
             </Button>

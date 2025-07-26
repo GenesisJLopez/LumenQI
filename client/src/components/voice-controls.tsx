@@ -110,7 +110,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
             {/* Central Lumen Logo with Synchronized Glow */}
             <div className="relative flex items-center justify-center">
               <img 
-                src="/attached_assets/lumen-logo%20(Small)_1753555540990.png" 
+                src="/attached_assets/lumen-logo%20(Small)_1753558944338.png" 
                 alt="Lumen QI"
                 className="w-48 h-48 object-contain z-10 relative"
               />

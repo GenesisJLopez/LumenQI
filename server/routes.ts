@@ -1268,8 +1268,23 @@ Respond with only the title, no quotes or additional text.`;
           console.log('Processing chat_message:', message);
           const { content, conversationId, emotion, emotionContext, isEdit } = message;
           
-          // FIXED: Only create new conversation when absolutely necessary (not for every voice message)
+          // CRITICAL FIX: Voice mode conversation continuity 
           let actualConversationId = conversationId;
+          
+          if (!actualConversationId && message.isVoiceMode) {
+            // For voice mode, try to continue the most recent conversation
+            console.log('Voice mode: Finding existing conversation to continue...');
+            try {
+              const conversations = await storage.getConversations(1);
+              if (conversations.length > 0) {
+                actualConversationId = conversations[0].id;
+                console.log('Voice mode: Continuing conversation:', actualConversationId);
+              }
+            } catch (error) {
+              console.log('Could not find existing conversations, will create new one');
+            }
+          }
+          
           if (!actualConversationId) {
             console.log('Creating new conversation (first message)');
             try {
