@@ -76,11 +76,16 @@ export function useHttpCommunication(): UseHttpCommunicationReturn {
       
       // Set the AI response as the last message
       if (responseData.content) {
-        setLastMessage({
-          type: 'ai_response',
+        const aiResponse = {
+          type: 'ai_response' as const,
           content: responseData.content,
           conversationId: message.conversationId
-        });
+        };
+        setLastMessage(aiResponse);
+        console.log('✅ HTTP: AI response received:', responseData.content.substring(0, 50) + '...');
+        
+        // Clear loading state 
+        setIsLoading(false);
       }
 
       setConnectionStatus('connected');

@@ -163,13 +163,18 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     
     console.log('🎤 Voice mode: Sending message:', message);
     
-    // Send message via HTTP with voice mode flag
-    await sendMessage({
-      type: 'chat_message',
-      content: message,
-      conversationId: currentConversationId,
-      isVoiceMode: true
-    });
+    try {
+      // Send message via HTTP with voice mode flag
+      await sendMessage({
+        type: 'chat_message',
+        content: message,
+        conversationId: currentConversationId,
+        isVoiceMode: true
+      });
+      console.log('✅ Voice message sent successfully');
+    } catch (error) {
+      console.error('❌ Failed to send voice message:', error);
+    }
     
     // Restart listening after a short delay (reduced from 30ms to 10ms)
     setTimeout(() => {
