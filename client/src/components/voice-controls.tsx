@@ -110,7 +110,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
             {/* Central Lumen Logo with Synchronized Glow */}
             <div className="relative flex items-center justify-center">
               <img 
-                src="/attached_assets/lumen-logo (Small)_1753555540990.png" 
+                src="/attached_assets/lumen-logo%20(Small)_1753555540990.png" 
                 alt="Lumen QI"
                 className="w-48 h-48 object-contain z-10 relative"
               />
@@ -119,11 +119,11 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
               {isSpeaking && (
                 <div className="absolute inset-0 w-48 h-48">
                   {/* Outer glow ring with speech rhythm */}
-                  <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-xl glow-pulse"></div>
+                  <div className="absolute -inset-4 rounded-full bg-purple-500/50 speaking-glow"></div>
                   {/* Inner glow ring with speech rhythm */}
-                  <div className="absolute inset-4 rounded-full bg-blue-400/40 blur-lg glow-pulse-inner"></div>
+                  <div className="absolute -inset-2 rounded-full bg-blue-400/60 speaking-glow" style={{animationDelay: '0.1s'}}></div>
                   {/* Core glow with speech rhythm */}
-                  <div className="absolute inset-8 rounded-full bg-white/20 blur-md glow-pulse-core"></div>
+                  <div className="absolute inset-2 rounded-full bg-white/40 speaking-glow" style={{animationDelay: '0.2s'}}></div>
                 </div>
               )}
               
