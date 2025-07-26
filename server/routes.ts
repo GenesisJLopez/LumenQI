@@ -23,7 +23,7 @@ import { calendarIntegration } from "./services/calendar-integration";
 import { conversationFlowAnalyzer } from "./services/conversation-flow-analyzer";
 import { voiceToneService } from "./services/voice-tone-service";
 import { visionAnalysisService } from "./services/vision-analysis";
-import { codeGenerationService } from "./services/code-generation";
+import { codeGenerationService, type CodeGenerationRequest } from "./services/code-generation";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -252,7 +252,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Missing required fields: type and description" });
       }
 
-      const result = await lumenCodeGenerator.generateCode(request);
+      const result = await codeGenerationService.generateProject(request);
       res.json(result);
     } catch (error) {
       console.error('Code generation error:', error);
@@ -268,7 +268,15 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const result = await lumenCodeGenerator.generateWebsite(description, features || []);
+      const request: CodeGenerationRequest = {
+        projectName: 'Website',
+        description,
+        type: 'website',
+        language: 'typescript',
+        framework: 'react',
+        requirements: { responsive: true, accessible: true }
+      };
+      const result = await codeGenerationService.generateProject(request);
       res.json(result);
     } catch (error) {
       console.error('Website generation error:', error);
@@ -284,7 +292,14 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const result = await lumenCodeGenerator.generateApplication(description, framework);
+      const request: CodeGenerationRequest = {
+        projectName: 'Application',
+        description,
+        type: 'app',
+        language: 'typescript',
+        framework: framework || 'react'
+      };
+      const result = await codeGenerationService.generateProject(request);
       res.json(result);
     } catch (error) {
       console.error('Application generation error:', error);
@@ -300,7 +315,14 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const result = await lumenCodeGenerator.generateAPIEndpoint(description, method);
+      const request: CodeGenerationRequest = {
+        projectName: 'API',
+        description,
+        type: 'api',
+        language: 'typescript',
+        framework: 'express'
+      };
+      const result = await codeGenerationService.generateProject(request);
       res.json(result);
     } catch (error) {
       console.error('API generation error:', error);
@@ -316,7 +338,14 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const result = await lumenCodeGenerator.generateDatabaseSchema(description);
+      const request: CodeGenerationRequest = {
+        projectName: 'Database',
+        description,
+        type: 'database',
+        language: 'sql',
+        framework: 'postgresql'
+      };
+      const result = await codeGenerationService.generateProject(request);
       res.json(result);
     } catch (error) {
       console.error('Database schema generation error:', error);
@@ -332,7 +361,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Code is required" });
       }
 
-      const explanation = await lumenCodeGenerator.explainCode(code, context);
+      const explanation = await codeGenerationService.explainCode(code, 'typescript');
       res.json({ explanation });
     } catch (error) {
       console.error('Code explanation error:', error);
@@ -348,7 +377,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Code is required" });
       }
 
-      const suggestions = await lumenCodeGenerator.suggestImprovements(code, type);
+      const suggestions = await codeGenerationService.optimizeCode(code, 'typescript', 'react');
       res.json({ suggestions });
     } catch (error) {
       console.error('Code improvement error:', error);
@@ -364,7 +393,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Code and error message are required" });
       }
 
-      const solution = await lumenCodeGenerator.debugCode(code, errorMsg);
+      const solution = await codeGenerationService.debugCode(code, 'typescript', 'react', errorMsg);
       res.json({ solution });
     } catch (error) {
       console.error('Code debugging error:', error);
@@ -931,6 +960,7 @@ Respond with only the title, no quotes or additional text.`;
       }
 
       const reminderId = await proactiveAI.createReminder(1, {
+        userId: 1,
         title,
         description: description || '',
         scheduledTime: new Date(scheduledTime),
