@@ -302,9 +302,14 @@ export default function Home() {
         
         handleSendMessage(trimmedTranscript);
         
-        // Clear transcript immediately to prevent duplication
+        // Restart voice listening with minimal delay (optimized)
         if (typeof stopListening === 'function') {
           stopListening();
+          setTimeout(() => {
+            if (isVoiceMode && isSupported && !isTyping && !isSpeaking) {
+              startListening();
+            }
+          }, 10); // Ultra-fast restart
         }
       }
     }
@@ -379,7 +384,7 @@ export default function Home() {
               isSpeaking ? "animate-pulse" : isListening ? "ring-2 ring-blue-500/50" : ""
             )}>
               <img 
-                src="/attached_assets/lumen-logo (Small)_1753467027342.png" 
+                src="/attached_assets/lumen-logo (Small)_1753555540990.png" 
                 alt="Lumen QI"
                 className="w-full h-full object-contain rounded-full"
               />

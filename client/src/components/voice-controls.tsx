@@ -104,7 +104,52 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
   return (
     <div className="p-6 border-t border-gray-200 dark:border-gray-700 cosmic-bg">
       <div className="max-w-4xl mx-auto">
-        {/* Cosmic Input */}
+        {/* Voice Mode Full Screen Interface */}
+        {isListening && (
+          <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+            {/* Central Lumen Logo with Synchronized Glow */}
+            <div className="relative flex items-center justify-center">
+              <img 
+                src="/attached_assets/lumen-logo (Small)_1753555540990.png" 
+                alt="Lumen QI"
+                className="w-48 h-48 object-contain z-10 relative"
+              />
+              
+              {/* Synchronized Glow Effect - Only when speaking */}
+              {isSpeaking && (
+                <div className="absolute inset-0 w-48 h-48">
+                  {/* Outer glow ring with speech rhythm */}
+                  <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-xl glow-pulse"></div>
+                  {/* Inner glow ring with speech rhythm */}
+                  <div className="absolute inset-4 rounded-full bg-blue-400/40 blur-lg glow-pulse-inner"></div>
+                  {/* Core glow with speech rhythm */}
+                  <div className="absolute inset-8 rounded-full bg-white/20 blur-md glow-pulse-core"></div>
+                </div>
+              )}
+              
+              {/* Cosmic particles background */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-purple-400 rounded-full animate-pulse opacity-60"></div>
+                <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-blue-400 rounded-full animate-pulse opacity-40 animation-delay-1000"></div>
+                <div className="absolute bottom-1/4 left-3/4 w-1 h-1 bg-white rounded-full animate-pulse opacity-50 animation-delay-2000"></div>
+              </div>
+            </div>
+            
+            {/* Exit Voice Mode Button */}
+            <Button
+              variant="ghost"
+              className="absolute bottom-8 right-8 text-white bg-black/50 hover:bg-black/70 border-white/20"
+              onClick={() => {
+                stopListening();
+                onVoiceModeToggle?.();
+              }}
+            >
+              Exit Voice Mode
+            </Button>
+          </div>
+        )}
+        
+        {/* Normal Chat Input */}
         <div className="relative">
           <div className="flex items-center gap-3 p-4 cosmic-input rounded-3xl shadow-lg">
             {/* Voice Mode Toggle Button */}

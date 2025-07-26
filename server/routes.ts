@@ -1268,10 +1268,10 @@ Respond with only the title, no quotes or additional text.`;
           console.log('Processing chat_message:', message);
           const { content, conversationId, emotion, emotionContext, isEdit } = message;
           
-          // Handle null conversationId by creating a new conversation
+          // FIXED: Only create new conversation when absolutely necessary (not for every voice message)
           let actualConversationId = conversationId;
           if (!actualConversationId) {
-            console.log('Creating new conversation for voice mode message');
+            console.log('Creating new conversation (first message)');
             try {
               const newConversation = await storage.createConversation({
                 userId: 1,
@@ -1283,6 +1283,8 @@ Respond with only the title, no quotes or additional text.`;
               console.error('Failed to create conversation:', convError);
               throw convError;
             }
+          } else {
+            console.log('Continuing existing conversation:', actualConversationId);
           }
           
           // Update proactive AI's last interaction time
