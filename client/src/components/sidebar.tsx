@@ -14,9 +14,12 @@ interface SidebarProps {
   currentConversationId?: number;
   onConversationSelect: (id: number) => void;
   onNewConversation: () => void;
+  onClearMemories?: () => void;
+  onToggleSettings?: () => void;
+  showSettings?: boolean;
 }
 
-export function Sidebar({ currentConversationId, onConversationSelect, onNewConversation }: SidebarProps) {
+export function Sidebar({ currentConversationId, onConversationSelect, onNewConversation, onClearMemories, onToggleSettings, showSettings }: SidebarProps) {
   const { toast } = useToast();
   const [editingConversationId, setEditingConversationId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
@@ -186,7 +189,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
               size="sm" 
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800" 
               title="Settings"
-              onClick={() => window.dispatchEvent(new CustomEvent('openSettings'))}
+              onClick={onToggleSettings}
             >
               <Database className="h-4 w-4 text-gray-500" />
             </Button>
@@ -194,7 +197,7 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
         </div>
         
         <Button 
-          onClick={() => onNewConversation(true)}
+          onClick={() => onNewConversation()}
           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg"
         >
           <Plus className="h-4 w-4 mr-2" />

@@ -453,22 +453,7 @@ export default function Home() {
         showSettings={showSettings}
       />
       
-      {/* Central Lumen Logo - positioned as requested */}
-      <div className={cn(
-        "lumen-central-logo",
-        (isSpeaking || isListening) && "active"
-      )}>
-        <img 
-          src="/attached_assets/lumen-logo (Small)_1753467027342.png" 
-          alt="Lumen QI"
-          className={cn(
-            "w-full h-full object-contain",
-            isSpeaking && "lumen-logo-speaking",
-            isListening && "lumen-logo-listening",
-            !isSpeaking && !isListening && "lumen-logo-idle"
-          )}
-        />
-      </div>
+
       
       <div className="flex-1 flex flex-col">
         <ChatArea
@@ -489,6 +474,51 @@ export default function Home() {
           onVoiceModeToggle={handleVoiceModeToggle}
         />
       </div>
+      
+      {/* Settings Modal - Restored */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto m-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Lumen Settings</h2>
+              <button 
+                onClick={() => setShowSettings(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Voice & Personality Settings</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Customize Lumen's voice, personality, and response style for a more natural conversation experience.
+                </p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    Voice settings are managed through the system configuration. 
+                    Lumen's personality automatically adapts based on your interactions.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Memory Management</h3>
+                <button 
+                  onClick={clearMemories}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
+                >
+                  Clear All Memories
+                </button>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  This will clear all stored conversation memories and context.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
