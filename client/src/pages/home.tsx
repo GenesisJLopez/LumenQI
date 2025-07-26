@@ -99,11 +99,11 @@ export default function Home() {
         console.log('Sending voice mode message');
       }
       
-      // Send the message via WebSocket with emotion data if available
+      // CRITICAL FIX: Always provide conversationId for voice mode continuity
       const messageData = {
         type: 'chat_message',
         content: content.trim(),
-        conversationId: currentConversationId || undefined,
+        conversationId: currentConversationId, // Don't send undefined - let server handle null
         isVoiceMode,
         ...(currentEmotion && { emotion: currentEmotion })
       };
@@ -139,10 +139,12 @@ export default function Home() {
       // Force immediate UI refresh for the AI response
       console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
       
-      // Update current conversation if needed
-      if (lastMessage.conversationId && currentConversationId !== lastMessage.conversationId) {
-        console.log('Setting current conversation to:', lastMessage.conversationId);
-        setCurrentConversationId(lastMessage.conversationId);
+      // CRITICAL: Always update conversation ID from AI response for voice mode continuity
+      if (lastMessage.conversationId) {
+        if (currentConversationId !== lastMessage.conversationId) {
+          console.log('Voice mode: Setting current conversation to:', lastMessage.conversationId);
+          setCurrentConversationId(lastMessage.conversationId);
+        }
       }
       
       // Invalidate queries to refresh messages
@@ -384,16 +386,20 @@ export default function Home() {
               isSpeaking ? "animate-pulse" : isListening ? "ring-2 ring-blue-500/50" : ""
             )}>
               <img 
-                src="/attached_assets/lumen-logo (Small)_1753555540990.png" 
+                src="/attached_assets/lumen-logo%20(Small)_1753555540990.png" 
                 alt="Lumen QI"
                 className="w-full h-full object-contain rounded-full"
               />
               
-              {/* Cosmic Glow Effects */}
+              {/* Cosmic Glow Effects - SYNCHRONIZED with speech */}
               {isSpeaking && (
-                <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-xl animate-pulse" />
+                <>
+                  <div className="absolute -inset-4 rounded-full bg-purple-500/50 speaking-glow" />
+                  <div className="absolute -inset-2 rounded-full bg-blue-400/60 speaking-glow" style={{animationDelay: '0.1s'}} />
+                  <div className="absolute inset-2 rounded-full bg-white/40 speaking-glow" style={{animationDelay: '0.2s'}} />
+                </>
               )}
-              {isListening && (
+              {isListening && !isSpeaking && (
                 <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-lg animate-pulse" />
               )}
             </div>
