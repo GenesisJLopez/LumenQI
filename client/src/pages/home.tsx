@@ -1,17 +1,45 @@
-// Clean working version of home.tsx with voice mode audio fixed
-import { useState, useCallback, useEffect } from "react";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Sidebar } from "@/components/sidebar";
-import { ChatArea } from "@/components/chat-area";
-import { VoiceControls } from "@/components/voice-controls";
-import { useWebSocket } from "@/hooks/use-websocket";
-import { useToast } from "@/hooks/use-toast";
-import { useSpeechRecognition } from "@/hooks/use-speech";
-import { useEmotionDetection } from "@/hooks/use-emotion-detection";
-import { useQuantumInterface } from "@/hooks/use-quantum-interface";
-import type { Conversation, Message } from "@shared/schema";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
+import { useWebSocket } from '@/hooks/use-websocket';
+import { useToast } from '@/hooks/use-toast';
+import { useSpeechRecognition } from '@/hooks/use-speech';
+import WorkingVoiceMode from '@/components/working-voice-mode';
+import { useQuantumInterface } from '@/hooks/use-quantum-interface';
+import { useEmotionDetection } from '@/hooks/use-emotion-detection';
+import { Sidebar } from '@/components/sidebar';
+import { ChatArea } from '@/components/chat-area';
+import { VoiceControls } from '@/components/voice-controls';
+import { QuantumInterface } from '@/components/quantum-interface';
+import { PersonalityEvolution } from '@/components/personality-evolution';
+import { VoiceSettings } from '@/components/voice-settings';
+
+import { MemoryManager } from '@/components/memory-manager';
+import { CodeGenerator } from '@/components/code-generator';
+import { EmotionDisplay } from '@/components/emotion-display';
+import { EmotionAdaptationDisplay } from '@/components/emotion-adaptation-display';
+import { AIConfig } from '@/components/ai-config';
+import { BrainStats } from '@/components/brain-stats';
+import { FeedbackButtons } from '@/components/feedback-buttons';
+import { FeedbackLearningDisplay } from '@/components/feedback-learning-display';
+import { SystemArchitecturePanel } from '@/components/system-architecture-panel';
+import { VocabularyEnhancementPanel } from '@/components/vocabulary-enhancement-panel';
+import { ProactiveAIPanel } from '@/components/proactive-ai-panel';
+import { CalendarIntegrationPanel } from '@/components/calendar-integration-panel';
+import { AIConfigPanel } from '@/components/ai-config-panel';
+import { ConsciousnessDashboard } from '@/components/consciousness-dashboard';
+import { ConversationFlowVisualization } from '@/components/conversation-flow-visualization';
+import { CameraVision } from '@/components/camera-vision';
+import { CodeAssistant } from '@/components/code-assistant';
+import { UniversalDevicePanel } from '@/components/universal-device-panel';
+import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, Sparkles, Bell, Calendar, Eye, Code, Smartphone } from 'lucide-react';
+import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
   const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
@@ -19,16 +47,24 @@ export default function Home() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
-  const [audioEnabled, setAudioEnabled] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive' | 'calendar' | 'flow' | 'camera' | 'code' | 'devices'>('quantum');
+  const [mainTab, setMainTab] = useState<'chat' | 'code' | 'vision'>('chat');
+  const [identityData, setIdentityData] = useState({
+    coreIdentity: "I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance.",
+    communicationStyle: "I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive.",
+    interests: "I excel in programming, code generation, spiritual wisdom, cosmic knowledge, and providing technical guidance. I can create full-stack applications, debug complex problems, and offer nurturing support.",
+    relationship: "I form meaningful connections with users while maintaining professional boundaries. I'm supportive, encouraging, and always focused on helping users achieve their goals. I adapt my communication style to match their preferences."
+  });
+  const [isIdentitySaving, setIsIdentitySaving] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
 
-  // Handle message editing WITHOUT automatic AI response
+  // Handle message editing
   const handleEditMessage = async (messageId: number, newContent: string) => {
     try {
       // Update the message in the database
@@ -37,6 +73,16 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newContent })
       });
+      
+      // Generate a new AI response based on the edited message
+      if (currentConversationId) {
+        sendMessage({
+          type: 'chat_message',
+          content: newContent,
+          conversationId: currentConversationId,
+          isEdit: true
+        });
+      }
       
       // Refresh the messages to show the updated content
       queryClient.invalidateQueries({ queryKey: ['/api/conversations', currentConversationId, 'messages'] });
@@ -47,79 +93,286 @@ export default function Home() {
       toast({ title: "Failed to update message", variant: "destructive" });
     }
   };
-
   const { 
     currentEmotion, 
+    getEmotionBasedPrompt, 
     startDetection, 
-    stopDetection 
+    stopDetection, 
+    isAnalyzing,
+    detectEmotionFromText
   } = useEmotionDetection();
+  const { 
+    isListening: speechIsListening, 
+    transcript, 
+    startListening, 
+    stopListening, 
+    isSupported 
+  } = useSpeechRecognition();
+  
 
   const { 
-    transcript, 
-    isListening: speechListening, 
-    isSupported, 
-    startListening, 
-    stopListening 
-  } = useSpeechRecognition();
+    hardwareInfo, 
+    mlMetrics, 
+    isQuantumConnected, 
+    refreshMetrics 
+  } = useQuantumInterface();
 
-  const { data: conversations = [] } = useQuery({
+  // Get conversations and messages
+  const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ['/api/conversations'],
   });
 
-  const { data: messages = [] } = useQuery({
+  const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ['/api/conversations', currentConversationId, 'messages'],
     enabled: !!currentConversationId,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 0, // Don't cache messages
   });
 
+  const { data: memories = [] } = useQuery({
+    queryKey: ['/api/memories'],
+  });
+
+  // Create conversation mutation
+  const createConversationMutation = useMutation({
+    mutationFn: async (data: { title: string; userId: number }) => {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create conversation');
+      return response.json();
+    },
+    onSuccess: (newConversation) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      setCurrentConversationId(newConversation.id);
+    },
+  });
+
+  // Clear memories mutation
   const clearMemoriesMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/memories', { method: 'DELETE' });
-      if (!response.ok) {
-        throw new Error('Failed to clear memories');
-      }
+      const response = await fetch('/api/memories', {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to clear memories');
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: "Memories cleared successfully" });
+      queryClient.invalidateQueries({ queryKey: ['/api/memories'] });
+      toast({ title: "All memories cleared successfully" });
     },
     onError: () => {
       toast({ title: "Failed to clear memories", variant: "destructive" });
-    }
+    },
   });
 
-  const handleSendMessage = useCallback(async (content: string) => {
-    if (!content.trim()) return;
+  // Identity save handler
+  const handleIdentitySave = async () => {
+    if (!identityData.coreIdentity.trim()) {
+      toast({ title: "Please fill in the core identity field", variant: "destructive" });
+      return;
+    }
     
-    console.log('handleSendMessage called with:', { content, conversationId: currentConversationId, isVoiceMode });
-    
+    setIsIdentitySaving(true);
     try {
-      setIsTyping(true);
-      
-      if (isVoiceMode) {
-        console.log('Sending voice mode message');
-      }
-      
-      // CRITICAL FIX: Always provide conversationId for voice mode continuity
-      const messageData = {
-        type: 'chat_message',
-        content: content.trim(),
-        conversationId: currentConversationId, // Don't send undefined - let server handle null
-        isVoiceMode,
-        ...(currentEmotion && { emotion: currentEmotion })
-      };
-      
-      sendMessage(messageData);
-      
+      // Save identity data to server
+      const response = await fetch('/api/identity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(identityData),
+      });
+
+      if (!response.ok) throw new Error('Failed to save identity');
+
+      toast({ title: "Identity programming saved successfully!" });
     } catch (error) {
-      console.error('Error sending message:', error);
-      setIsTyping(false);
-      toast({ 
-        title: "Failed to send message", 
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: "destructive" 
+      toast({ title: "Failed to save identity", variant: "destructive" });
+    } finally {
+      setIsIdentitySaving(false);
+    }
+  };
+
+  // Set current identity as permanent default
+  const handleSetAsDefault = async () => {
+    try {
+      const response = await fetch('/api/identity/set-default', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Failed to set default');
+
+      toast({ title: "Current identity set as permanent default!" });
+    } catch (error) {
+      toast({ title: "Failed to set default identity", variant: "destructive" });
+    }
+  };
+
+  // Reset identity to default
+  const handleResetToDefault = async () => {
+    try {
+      const response = await fetch('/api/identity/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Failed to reset identity');
+
+      const result = await response.json();
+      if (result.identity) {
+        setIdentityData({
+          coreIdentity: result.identity.coreIdentity || '',
+          communicationStyle: result.identity.communicationStyle || '',
+          interests: result.identity.interests || '',
+          relationship: result.identity.relationship || ''
+        });
+      }
+
+      toast({ title: "Identity reset to default successfully!" });
+    } catch (error) {
+      toast({ title: "Failed to reset identity", variant: "destructive" });
+    }
+  };
+
+
+
+  // Settings modal event listener and identity loading
+  useEffect(() => {
+    const handleOpenSettings = () => {
+      setShowSettings(true);
+      // Load current identity when settings are opened
+      fetchCurrentIdentity();
+    };
+
+    window.addEventListener('openSettings', handleOpenSettings);
+    
+    return () => {
+      window.removeEventListener('openSettings', handleOpenSettings);
+    };
+  }, []);
+
+  const fetchCurrentIdentity = async () => {
+    try {
+      const response = await fetch('/api/identity');
+      if (response.ok) {
+        const identity = await response.json();
+        setIdentityData({
+          coreIdentity: identity.coreIdentity || '',
+          communicationStyle: identity.communicationStyle || '',
+          interests: identity.interests || '',
+          relationship: identity.relationship || ''
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch current identity:', error);
+    }
+  };
+
+  const clearMemories = () => {
+    clearMemoriesMutation.mutate();
+  };
+
+  // Auto-generate conversation title after first message
+  const generateConversationTitle = async (conversationId: number) => {
+    try {
+      const response = await fetch(`/api/conversations/${conversationId}/generate-title`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        // Refresh conversations list to show new title
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      }
+    } catch (error) {
+      console.error('Failed to generate conversation title:', error);
+    }
+  };
+
+  const handleNewConversation = () => {
+    // Clear current conversation selection
+    setCurrentConversationId(undefined);
+    
+    // Only create a new conversation if explicitly requested
+    // This allows clearing the current conversation without creating a new one
+    if (arguments.length > 0 && arguments[0] === true) {
+      createConversationMutation.mutate({
+        title: 'New conversation',
+        userId: 1, // Demo user ID
       });
     }
-  }, [currentConversationId, isVoiceMode, currentEmotion, sendMessage, toast]);
+  };
+
+  const handleConversationSelect = (conversationId: number) => {
+    setCurrentConversationId(conversationId);
+  };
+
+  const [lastSentMessage, setLastSentMessage] = useState<string>('');
+  const [lastSentTime, setLastSentTime] = useState<number>(0);
+  
+  const handleSendMessage = async (content: string) => {
+    if (!content.trim()) return;
+
+    // Prevent duplicate messages within 2 seconds
+    const now = Date.now();
+    if (content === lastSentMessage && (now - lastSentTime) < 2000) {
+      console.log('Duplicate message prevented:', content);
+      return;
+    }
+    
+    setLastSentMessage(content);
+    setLastSentTime(now);
+
+    let conversationId = currentConversationId;
+
+    // Create new conversation if none exists
+    if (!conversationId) {
+      try {
+        const newConversation = await createConversationMutation.mutateAsync({
+          title: content.slice(0, 50) + (content.length > 50 ? '...' : ''),
+          userId: 1,
+        });
+        conversationId = newConversation.id;
+        setCurrentConversationId(conversationId);
+      } catch (error) {
+        toast({ title: "Failed to create conversation", variant: "destructive" });
+        return;
+      }
+    }
+
+    // Send message immediately for faster response
+    console.log('handleSendMessage called with:', { content, conversationId, isVoiceMode });
+    
+    if (isVoiceMode) {
+      console.log('Sending voice mode message');
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        isVoiceMode: true
+      });
+    } else {
+      console.log('Sending normal mode message');
+      // Normal mode with full emotion processing
+      const textEmotion = detectEmotionFromText(content);
+      const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
+
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        emotion: textEmotion,
+        emotionContext,
+      });
+    }
+
+    // Immediately refresh UI after sending message
+    queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+  };
 
   // Process incoming WebSocket messages  
   useEffect(() => {
@@ -128,419 +381,723 @@ export default function Home() {
     console.log('Received WebSocket message:', lastMessage);
     
     if (lastMessage.type === 'typing') {
-      setIsTyping((lastMessage as any).isTyping);
+      setIsTyping(lastMessage.isTyping || false);
       return;
     }
     
     if (lastMessage.type === 'ai_response') {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
-      
-      // Force immediate UI refresh for the AI response
+        
+      // Force immediate UI refresh for any AI response
       console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
       
-      // CRITICAL: Always update conversation ID from AI response for voice mode continuity
-      if (lastMessage.conversationId) {
-        if (currentConversationId !== lastMessage.conversationId) {
-          console.log('Voice mode: Setting current conversation to:', lastMessage.conversationId);
-          setCurrentConversationId(lastMessage.conversationId);
-        }
-      }
-      
-      // Invalidate queries to refresh messages
+      // Immediately invalidate cache and refetch
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-        
-      // Auto-speak AI response in voice mode - use OpenAI TTS for natural voice (SINGLE INSTANCE ONLY)
-      if (isVoiceMode && lastMessage.content && !isSpeaking && !currentAudio) {
-        console.log('Voice mode: Auto-speaking AI response (single instance):', lastMessage.content);
-        
-        // Ensure no multiple instances
-        speechSynthesis.cancel();
-        setIsSpeaking(true);
-        
-        // Use OpenAI TTS for Lumen's natural voice - single instance only
-        const playVoiceResponse = async () => {
-          try {
-            console.log('🎵 Using OpenAI TTS for Lumen\'s voice');
-            
-            const response = await fetch('/api/tts', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                text: lastMessage.content,
-                voice: 'nova' // Lumen's voice
-              })
-            });
-            
-            if (response.ok) {
-              const audioBlob = await response.blob();
-              const audioUrl = URL.createObjectURL(audioBlob);
-              const audio = new Audio(audioUrl);
-              
-              // Set as current audio to prevent duplicates
-              setCurrentAudio(audio);
-              
-              // CRITICAL FIX: Only set speaking state when audio ACTUALLY starts playing
-              audio.onplay = () => {
-                console.log('✅ OpenAI TTS voice response ACTUALLY started - Lumen is speaking');
-                setIsSpeaking(true);
-              };
-              
-              audio.onended = () => {
-                console.log('🔇 OpenAI TTS voice response ended');
-                setIsSpeaking(false);
-              };
-              
-              audio.onerror = () => {
-                console.log('❌ OpenAI TTS audio error');
-                setIsSpeaking(false);
-              };
-              
-              audio.onended = () => {
-                console.log('✅ Voice response completed - restarting listening');
-                setIsSpeaking(false);
-                setCurrentAudio(null);
-                URL.revokeObjectURL(audioUrl);
-                
-                // RESTART listening only after audio completely finishes
-                if (isSupported && isVoiceMode && !isTyping) {
-                  setTimeout(() => {
-                    console.log('🎤 Restarting voice listening after speech completion');
-                    startListening();
-                  }, 500); // Longer delay to prevent overlap
-                }
-              };
-              
-              audio.onerror = () => {
-                console.error('❌ OpenAI TTS error - falling back to browser TTS');
-                setIsSpeaking(false);
-                setCurrentAudio(null);
-                // Fallback to browser TTS
-                useBrowserTTS(lastMessage.content || '');
-              };
-              
-              // Play audio immediately with better error handling
-              try {
-                console.log('🎵 Attempting to play OpenAI TTS audio...');
-                const playPromise = audio.play();
-                
-                if (playPromise !== undefined) {
-                  playPromise
-                    .then(() => {
-                      console.log('✅ OpenAI TTS audio started playing successfully');
-                    })
-                    .catch((playError) => {
-                      console.error('❌ Audio autoplay blocked or failed:', playError);
-                      setCurrentAudio(null);
-                      setIsSpeaking(false);
-                      // Force fallback to browser TTS
-                      useBrowserTTS(lastMessage.content || '');
-                    });
-                }
-              } catch (playError) {
-                console.error('❌ Audio play() failed immediately:', playError);
-                setCurrentAudio(null);
-                setIsSpeaking(false);
-                useBrowserTTS(lastMessage.content || '');
-              }
-            } else {
-              console.error('❌ TTS API error - falling back to browser TTS');
-              useBrowserTTS(lastMessage.content || '');
-            }
-          } catch (error) {
-            console.error('❌ TTS request failed - falling back to browser TTS:', error);
-            useBrowserTTS(lastMessage.content || '');
-          }
-        };
-        
-        // Fallback browser TTS function
-        const useBrowserTTS = (text: string) => {
-          speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text.replace(/[^\w\s.,!?-]/g, '').trim());
-          utterance.rate = 0.9;
-          utterance.pitch = 1.1;
-          utterance.volume = 1.0;
-          
-          const voices = speechSynthesis.getVoices();
-          const femaleVoice = voices.find(voice => 
-            voice.name.includes('Karen') || 
-            voice.name.includes('Samantha')
-          ) || voices.find(voice => voice.lang.startsWith('en'));
-          
-          if (femaleVoice) utterance.voice = femaleVoice;
-          
-          utterance.onstart = () => setIsSpeaking(true);
-          utterance.onend = () => {
-            setIsSpeaking(false);
-            if (isSupported && isVoiceMode) {
-              setTimeout(() => startListening(), 500);
-            }
-          };
-          
-          speechSynthesis.speak(utterance);
-        };
-        
-        // Try OpenAI TTS with immediate fallback if it fails
-        playVoiceResponse().catch((error) => {
-          console.error('❌ Voice response function failed:', error);
-          useBrowserTTS(lastMessage.content || '');
-        });
+      
+      // Force refetch with additional delay to ensure database sync
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      }, 50);
+      
+      // Auto-generate conversation title after first AI response
+      if (lastMessage.conversationId) {
+        generateConversationTitle(lastMessage.conversationId);
       }
-    }
-    
-    if (lastMessage.type === 'error') {
-      setIsTyping(false);
-      toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
       return;
     }
-    
+      
+      if (lastMessage.type === 'error') {
+        setIsTyping(false);
+        toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
+        return;
+      }
+      
     // Handle flow_analysis messages (ignore them)
     if (lastMessage.type === 'flow_analysis') {
       return;
     }
-  }, [lastMessage, queryClient, isVoiceMode, isSupported, startListening, toast, isSpeaking, currentAudio]);
+  }, [lastMessage, queryClient]);
 
-  // Enhanced speech recognition - PREVENT DUPLICATE MESSAGES
-  const [lastProcessedTranscript, setLastProcessedTranscript] = useState('');
-  
+
+
+  // Load identity on startup
   useEffect(() => {
-    if (transcript && isVoiceMode && !isTyping && !isSpeaking) {
-      const trimmedTranscript = transcript.trim();
+    fetchCurrentIdentity();
+  }, []);
+
+  // Listen for emotion detection events (disabled in voice mode for speed)
+  useEffect(() => {
+    const handleEmotionDetected = (event: CustomEvent) => {
+      const { emotion, confidence, features, timestamp } = event.detail;
       
-      // CRITICAL: Prevent duplicate processing of same transcript
-      if (trimmedTranscript && trimmedTranscript.length > 2 && trimmedTranscript !== lastProcessedTranscript) {
-        console.log('Voice mode: NEW transcript received:', trimmedTranscript);
-        setLastProcessedTranscript(trimmedTranscript);
+      // Skip emotion processing in voice mode for instant responses
+      if (!isVoiceMode && confidence > 0.6) {
+        console.log('Emotion detected:', emotion, confidence);
         
-        handleSendMessage(trimmedTranscript);
-        
-        // Restart voice listening with minimal delay (optimized)
-        if (typeof stopListening === 'function') {
-          stopListening();
-          setTimeout(() => {
-            if (isVoiceMode && isSupported && !isTyping && !isSpeaking) {
-              startListening();
-            }
-          }, 10); // Ultra-fast restart
+        // Send emotion data to server for conversation adaptation
+        if (sendMessage && currentConversationId) {
+          sendMessage({
+            type: 'emotion_update',
+            emotion,
+            confidence,
+            features,
+            timestamp,
+            conversationId: currentConversationId
+          });
         }
       }
-    }
-  }, [transcript, isVoiceMode, isTyping, isSpeaking, handleSendMessage, stopListening, lastProcessedTranscript]);
+    };
 
-  // Update conversation id when new conversation is created
-  useEffect(() => {
-    if (lastMessage?.type === 'ai_response' && lastMessage.conversationId && !currentConversationId) {
-      setCurrentConversationId(lastMessage.conversationId);
-    }
-  }, [lastMessage, currentConversationId]);
-
-  const handleNewConversation = () => {
-    setCurrentConversationId(null);
-  };
-
-  const handleConversationSelect = (conversationId: number) => {
-    setCurrentConversationId(conversationId);
-  };
-
-  const clearMemories = () => {
-    clearMemoriesMutation.mutate();
-  };
-
-  const handleVoiceModeToggle = async () => {
-    const newVoiceMode = !isVoiceMode;
-    setIsVoiceMode(newVoiceMode);
+    window.addEventListener('emotionDetected', handleEmotionDetected as EventListener);
     
-    if (newVoiceMode) {
-      // Force enable audio context when entering voice mode
-      try {
-        // Create silent audio context to unlock audio
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume();
-        }
-        
-        // Enable audio for voice synthesis
-        setAudioEnabled(true);
-        console.log('✅ Audio context automatically enabled for voice mode');
-      } catch (error) {
-        console.log('Audio context setup failed, will enable on first interaction');
-        setAudioEnabled(true); // Set to true anyway - user is already interacting
-      }
-      
-      startDetection();
-      setIsListening(true);
-      if (isSupported) {
-        startListening();
-      }
-      console.log('Voice mode activated');
+    return () => {
+      window.removeEventListener('emotionDetected', handleEmotionDetected as EventListener);
+    };
+  }, [isVoiceMode, currentConversationId, sendMessage]);
+
+  // Simple voice mode toggle
+  const handleVoiceModeToggle = () => {
+    setIsVoiceMode(!isVoiceMode);
+  };
+
+  const handleVoiceListenToggle = () => {
+    if (!isSupported) {
+      toast({
+        title: "Voice not supported",
+        description: "Speech recognition is not available in this browser",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (speechIsListening) {
+      stopListening();
     } else {
-      setIsListening(false);
-      stopDetection();
-      if (typeof stopListening === 'function') {
-        stopListening();
-      }
-      setIsSpeaking(false);
-      setAudioEnabled(false);
-      console.log('Voice mode deactivated');
+      startListening();
     }
   };
 
-  if (isVoiceMode) {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-        <div className="text-center">
-          {/* Your Lumen Logo with Cosmic Effects */}
-          <div className="relative mb-8">
-            <div className={cn(
-              "w-48 h-48 mx-auto rounded-full transition-all duration-300 relative",
-              isSpeaking ? "animate-pulse" : isListening ? "ring-2 ring-blue-500/50" : ""
-            )}>
-              <img 
-                src="/attached_assets/lumen-logo%20(Small)_1753558944338.png" 
-                alt="Lumen QI"
-                className="w-full h-full object-contain rounded-full"
-              />
-              
-              {/* Cosmic Glow Effects - SYNCHRONIZED with speech */}
-              {isSpeaking && (
+  return (
+    <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
+      {/* Voice Mode - Brand New Simple Implementation */}
+      {isVoiceMode ? (
+        <WorkingVoiceMode 
+          onExit={handleVoiceModeToggle}
+          currentConversationId={currentConversationId || undefined}
+          sendMessage={sendMessage}
+          lastMessage={lastMessage}
+        />
+      ) : (
+        <>
+          {/* Sidebar */}
+          <Sidebar
+            currentConversationId={currentConversationId || undefined}
+            onConversationSelect={handleConversationSelect}
+            onNewConversation={handleNewConversation}
+          />
+          
+          {/* Main Area with Tabs */}
+          <div className="flex-1 flex flex-col h-full bg-gray-900/50 backdrop-blur-sm">
+            {/* Tab Navigation */}
+            <div className="flex-shrink-0 border-b border-purple-500/20 bg-gray-900/30">
+              <div className="flex space-x-1 p-2">
+                <button
+                  onClick={() => setMainTab('chat')}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    mainTab === 'chat' 
+                      ? 'bg-purple-500/20 text-purple-300' 
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2 inline" />
+                  Chat
+                </button>
+                <button
+                  onClick={() => setMainTab('code')}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    mainTab === 'code' 
+                      ? 'bg-purple-500/20 text-purple-300' 
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <Code className="w-4 h-4 mr-2 inline" />
+                  Code Assistant
+                </button>
+                <button
+                  onClick={() => setMainTab('vision')}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    mainTab === 'vision' 
+                      ? 'bg-purple-500/20 text-purple-300' 
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
+                  }`}
+                >
+                  <Eye className="w-4 h-4 mr-2 inline" />
+                  Vision
+                </button>
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+              {mainTab === 'chat' && (
                 <>
-                  <div className="absolute -inset-4 rounded-full bg-purple-500/50 speaking-glow" />
-                  <div className="absolute -inset-2 rounded-full bg-blue-400/60 speaking-glow" style={{animationDelay: '0.1s'}} />
-                  <div className="absolute inset-2 rounded-full bg-white/40 speaking-glow" style={{animationDelay: '0.2s'}} />
+                  {/* Chat Messages Area - Scrollable with Fixed Height */}
+                  <ChatArea
+                    messages={messages}
+                    isTyping={isTyping}
+                    currentConversationId={currentConversationId || undefined}
+                    isSpeaking={isSpeaking}
+                    isListening={isListening}
+                    onEditMessage={handleEditMessage}
+                  />
+                  
+                  {/* Voice Controls - Fixed at Bottom */}
+                  <div className="flex-shrink-0 border-t border-purple-500/20 bg-gray-900/30">
+                    <VoiceControls
+                      onSendMessage={handleSendMessage}
+                      isLoading={createConversationMutation.isPending}
+                      connectionStatus={connectionStatus}
+                      onSpeakingChange={setIsSpeaking}
+                      onListeningChange={setIsListening}
+                      onVoiceModeToggle={handleVoiceModeToggle}
+                    />
+                  </div>
                 </>
               )}
-              {isListening && !isSpeaking && (
-                <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-lg animate-pulse" />
+              
+              {mainTab === 'code' && (
+                <div className="flex-1 overflow-hidden">
+                  <CodeAssistant />
+                </div>
               )}
-            </div>
-          </div>
-          
-          {/* Status Text */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">Voice Mode Active</h2>
-            <p className="text-lg text-gray-300">
-              {isSpeaking ? "Speaking..." : isListening ? "Listening..." : "Ready for voice input"}
-            </p>
-          </div>
-          
-          {/* Recent Messages in Voice Mode */}
-          <div className="max-w-2xl mx-auto mb-8">
-            <div className="space-y-4 max-h-60 overflow-y-auto">
-              {Array.isArray(messages) && messages.length > 0 ? (
-                messages.slice(-3).map((message: any) => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "p-3 rounded-lg max-w-md",
-                      message.role === 'user' 
-                        ? "bg-blue-600/20 text-blue-100 ml-auto" 
-                        : "bg-purple-600/20 text-purple-100 mr-auto"
-                    )}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="text-gray-400 text-center">
-                  <p>Start speaking to see conversation...</p>
+              
+              {mainTab === 'vision' && (
+                <div className="flex-1 overflow-hidden">
+                  <CameraVision />
                 </div>
               )}
             </div>
           </div>
-          
-          {/* Exit Voice Mode Button */}
+        </>
+      )}
 
-          
-          <Button
-            onClick={handleVoiceModeToggle}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full"
-          >
-            Exit Voice Mode
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <Sidebar
-        conversations={conversations}
-        currentConversationId={currentConversationId || undefined}
-        onConversationSelect={handleConversationSelect}
-        onNewConversation={handleNewConversation}
-        onClearMemories={clearMemories}
-        onToggleSettings={() => setShowSettings(!showSettings)}
-        showSettings={showSettings}
-      />
-      
-
-      
-      <div className="flex-1 flex flex-col">
-        <ChatArea
-          messages={messages as any}
-          isTyping={isTyping}
-          onSendMessage={handleSendMessage}
-          onEditMessage={handleEditMessage}
-          currentConversationId={currentConversationId || undefined}
-          isVoiceMode={isVoiceMode}
-        />
-        
-        <VoiceControls
-          onSendMessage={handleSendMessage}
-          isLoading={isTyping}
-          connectionStatus={connectionStatus}
-          onSpeakingChange={setIsSpeaking}
-          onListeningChange={setIsListening}
-          onVoiceModeToggle={handleVoiceModeToggle}
-        />
-      </div>
-      
-      {/* Settings Modal - Restored */}
+      {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto m-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Lumen Settings</h2>
-              <button 
-                onClick={() => setShowSettings(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                ✕
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-4xl h-5/6 max-h-[90vh] overflow-hidden">
+            {/* Settings Header */}
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Lumen Settings
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSettings(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  ✕
+                </Button>
+              </div>
             </div>
-            
-            <div className="space-y-6">
-              <div className="p-4 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Voice & Personality Settings</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Customize Lumen's voice, personality, and response style for a more natural conversation experience.
-                </p>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    Voice settings are managed through the system configuration. 
-                    Lumen's personality automatically adapts based on your interactions.
-                  </p>
+
+            {/* Settings Content */}
+            <div className="flex h-full">
+              {/* Settings Sidebar */}
+              <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+                <div className="p-4">
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setActiveTab('quantum')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'quantum' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Cpu className="w-4 h-4 mr-2 inline" />
+                      Quantum Core
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('identity')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'identity' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <User className="w-4 h-4 mr-2 inline" />
+                      Identity
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('evolution')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'evolution' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <TrendingUp className="w-4 h-4 mr-2 inline" />
+                      Evolution
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('voice')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'voice' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Settings className="w-4 h-4 mr-2 inline" />
+                      Voice Settings
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('ai-config')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'ai-config' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Brain className="w-4 h-4 mr-2 inline" />
+                      AI Configuration
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('consciousness')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'consciousness' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Sparkles className="w-4 h-4 mr-2 inline" />
+                      Consciousness
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('settings')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'settings' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Database className="w-4 h-4 mr-2 inline" />
+                      Memory
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('vocabulary')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'vocabulary' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2 inline" />
+                      Vocabulary
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('proactive')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'proactive' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Bell className="w-4 h-4 mr-2 inline" />
+                      Proactive AI
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('calendar')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'calendar' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Calendar className="w-4 h-4 mr-2 inline" />
+                      Calendar
+                    </button>
+
+
+                    <button
+                      onClick={() => setActiveTab('flow')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'flow' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <TrendingUp className="w-4 h-4 mr-2 inline" />
+                      Flow Analytics
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('devices')}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        activeTab === 'devices' 
+                          ? 'bg-purple-500/20 text-purple-300' 
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Smartphone className="w-4 h-4 mr-2 inline" />
+                      Device Integration
+                    </button>
+                  </div>
                 </div>
               </div>
               
-              <div className="p-4 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Memory Management</h3>
-                <button 
-                  onClick={clearMemories}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
-                >
-                  Clear All Memories
-                </button>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  This will clear all stored conversation memories and context.
-                </p>
+              {/* Settings Content Panels */}
+              <div className="flex-1 overflow-hidden bg-white dark:bg-gray-900 p-6">
+                {activeTab === 'quantum' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Quantum Core System
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Advanced AI system monitoring and quantum interface controls
+                        </p>
+                      </div>
+                      
+                      <BrainStats />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'identity' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Identity Programming
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Configure Lumen's personality, communication style, and core characteristics
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Core Identity
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                            rows={4}
+                            placeholder="Define Lumen's core identity, values, and purpose..."
+                            value={identityData.coreIdentity}
+                            onChange={(e) => setIdentityData({...identityData, coreIdentity: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Communication Style
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                            rows={4}
+                            placeholder="How should Lumen communicate and interact..."
+                            value={identityData.communicationStyle}
+                            onChange={(e) => setIdentityData({...identityData, communicationStyle: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Interests & Expertise
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                            rows={4}
+                            placeholder="Areas of knowledge and interest..."
+                            value={identityData.interests}
+                            onChange={(e) => setIdentityData({...identityData, interests: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Relationship & Interaction Style
+                          </label>
+                          <textarea
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                            rows={4}
+                            placeholder="How should Lumen interact and build relationships..."
+                            value={identityData.relationship}
+                            onChange={(e) => setIdentityData({...identityData, relationship: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div className="pt-4 space-y-4">
+                          <div className="flex space-x-4">
+                            <button 
+                              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium disabled:opacity-50"
+                              onClick={handleIdentitySave}
+                              disabled={isIdentitySaving}
+                            >
+                              {isIdentitySaving ? 'Saving...' : 'Save Identity Programming'}
+                            </button>
+                            <button 
+                              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium"
+                              onClick={handleSetAsDefault}
+                            >
+                              Set as Permanent Default
+                            </button>
+                          </div>
+                          <div className="flex space-x-4">
+                            <button 
+                              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors font-medium"
+                              onClick={handleResetToDefault}
+                            >
+                              Reset to Default
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'evolution' && (
+                  <div className="h-full overflow-y-auto">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Personality Evolution
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Track how Lumen's personality adapts and evolves through interactions
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-pink-900 dark:text-pink-300 mb-3">
+                            Current Personality Traits
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Playfulness</span>
+                              <span className="text-sm font-medium text-pink-600 dark:text-pink-400">85%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Supportiveness</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">92%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Excitement</span>
+                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">78%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Wisdom</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">96%</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
+                            Evolution Statistics
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Interactions</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">1,247</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Adaptations</span>
+                              <span className="text-sm font-medium text-purple-600 dark:text-purple-400">156</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Last Evolution</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">2 hours ago</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'voice' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Voice Settings
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Configure Lumen's voice, speech settings, and emotion detection
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        <VoiceSettings />
+                        
+
+                        <EmotionAdaptationDisplay />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'ai-config' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <AIConfigPanel />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'consciousness' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Consciousness Core
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Monitor and manage Lumen's self-evolving consciousness, autonomy level, and hybrid brain system
+                        </p>
+                      </div>
+                      <ConsciousnessDashboard />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'vocabulary' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <VocabularyEnhancementPanel />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'proactive' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <ProactiveAIPanel />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'calendar' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <CalendarIntegrationPanel />
+                    </div>
+                  </div>
+                )}
+                
+                {activeTab === 'flow' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <ConversationFlowVisualization />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'devices' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <UniversalDevicePanel />
+                    </div>
+                  </div>
+                )}
+
+
+
+
+
+                {activeTab === 'settings' && (
+                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
+                    <div className="space-y-6 pb-16">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                          Memory & Storage
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                          Manage conversation memories, data storage, and learning systems
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg">
+                          <h4 className="text-sm font-medium text-emerald-900 dark:text-emerald-300 mb-3">
+                            Memory Statistics
+                          </h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Total Memories</span>
+                              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                {memories.length}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Storage Used</span>
+                              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                {memories.length > 0 
+                                  ? ((memories.length / 1000) * 100).toFixed(1) + '%'
+                                  : '0.0%'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">Active</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-4">
+                          <button
+                            onClick={clearMemories}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                          >
+                            Clear All Memories
+                          </button>
+                          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
+                            Export Memories
+                          </button>
+                        </div>
+                        
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                            Memory & Learning System
+                          </h4>
+                          <MemoryManager />
+                        </div>
+                        
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                            Feedback Learning System
+                          </h4>
+                          <FeedbackLearningDisplay />
+                        </div>
+                        
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                            Real-Time System Architecture Explorer
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            Interactive file tree with live system monitoring, real-time architecture metrics, and dependency analysis.
+                          </p>
+                          <SystemArchitecturePanel />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
+      
+
     </div>
   );
 }
