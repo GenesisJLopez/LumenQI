@@ -136,12 +136,18 @@ export default function Home() {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
       
-      // Force immediate UI refresh for the AI response - debounced to prevent duplicate calls
-      setTimeout(() => {
-        console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-      }, 100);
+      // Force immediate UI refresh for the AI response
+      console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
+      
+      // Update current conversation if needed
+      if (lastMessage.conversationId && currentConversationId !== lastMessage.conversationId) {
+        console.log('Setting current conversation to:', lastMessage.conversationId);
+        setCurrentConversationId(lastMessage.conversationId);
+      }
+      
+      // Invalidate queries to refresh messages
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
         
       // Auto-speak AI response in voice mode - use OpenAI TTS for natural voice
       if (isVoiceMode && lastMessage.content && !isSpeaking) {
@@ -201,13 +207,28 @@ export default function Home() {
                 useBrowserTTS(lastMessage.content || '');
               };
               
-              // Play audio immediately
+              // Play audio immediately with better error handling
               try {
-                await audio.play();
-                console.log('🎵 OpenAI TTS audio started playing');
+                console.log('🎵 Attempting to play OpenAI TTS audio...');
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                  playPromise
+                    .then(() => {
+                      console.log('✅ OpenAI TTS audio started playing successfully');
+                    })
+                    .catch((playError) => {
+                      console.error('❌ Audio autoplay blocked or failed:', playError);
+                      setCurrentAudio(null);
+                      setIsSpeaking(false);
+                      // Force fallback to browser TTS
+                      useBrowserTTS(lastMessage.content || '');
+                    });
+                }
               } catch (playError) {
-                console.error('❌ Audio autoplay blocked, using browser TTS fallback');
+                console.error('❌ Audio play() failed immediately:', playError);
                 setCurrentAudio(null);
+                setIsSpeaking(false);
                 useBrowserTTS(lastMessage.content || '');
               }
             } else {
@@ -265,7 +286,7 @@ export default function Home() {
     if (lastMessage.type === 'flow_analysis') {
       return;
     }
-  }, [lastMessage, queryClient, isVoiceMode, isSupported, startListening, toast]);
+  }, [lastMessage, queryClient, isVoiceMode, isSupported, startListening, toast, isSpeaking, currentAudio]);
 
   // Enhanced speech recognition - simplified to prevent duplication
   useEffect(() => {
@@ -384,19 +405,25 @@ export default function Home() {
           {/* Recent Messages in Voice Mode */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="space-y-4 max-h-60 overflow-y-auto">
-              {(messages as any[])?.slice(-3).map((message: any) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "p-3 rounded-lg",
-                    message.role === 'user' 
-                      ? "bg-blue-600/20 text-blue-100 ml-8" 
-                      : "bg-purple-600/20 text-purple-100 mr-8"
-                  )}
-                >
-                  <p className="text-sm">{message.content}</p>
+              {Array.isArray(messages) && messages.length > 0 ? (
+                messages.slice(-3).map((message: any) => (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      "p-3 rounded-lg max-w-md",
+                      message.role === 'user' 
+                        ? "bg-blue-600/20 text-blue-100 ml-auto" 
+                        : "bg-purple-600/20 text-purple-100 mr-auto"
+                    )}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400 text-center">
+                  <p>Start speaking to see conversation...</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
           
