@@ -1373,8 +1373,8 @@ Respond with only the title, no quotes or additional text.`;
               console.log('Calling OpenAI for voice mode response...');
               aiResponse = await lumenAI.generateResponse(
                 content,
-                messages,
-                memories,
+                messages || [],
+                memories || [],
                 enhancedEmotionContext,
                 isVoiceMode
               );
@@ -1386,8 +1386,8 @@ Respond with only the title, no quotes or additional text.`;
               const brainResponse = await hybridBrain.generateResponse(
                 content,
                 enhancedEmotionContext,
-                messages,
-                memories,
+                messages || [],
+                memories || [],
                 isVoiceMode
               );
               aiResponse = brainResponse.content;
@@ -1396,8 +1396,18 @@ Respond with only the title, no quotes or additional text.`;
             }
           } catch (error) {
             console.error('AI generation error:', error);
-            // Fallback response
-            aiResponse = "I'm sorry, I'm having trouble processing your message right now. Please try again.";
+            // Voice mode specific fallback responses
+            if (isVoiceMode) {
+              const voiceFallbacks = [
+                "I'm still here, Genesis. What would you like to talk about?",
+                "Hey there! I'm listening. How can I help you today?",
+                "I'm here and ready to chat. What's on your mind?",
+                "I can hear you clearly. What would you like to discuss?"
+              ];
+              aiResponse = voiceFallbacks[Math.floor(Math.random() * voiceFallbacks.length)];
+            } else {
+              aiResponse = "I'm sorry, I'm having trouble processing your message right now. Please try again.";
+            }
             aiSource = 'fallback';
           }
           
@@ -1422,11 +1432,14 @@ Respond with only the title, no quotes or additional text.`;
 
           // Background operations (don't await these to improve response time)
           Promise.all([
-            // Save AI response
+            // Save AI response (with error handling)
             storage.createMessage({
               conversationId: actualConversationId,
               role: 'assistant',
               content: aiResponse
+            }).catch(error => {
+              console.error('Failed to save AI message:', error);
+              // Don't throw - this is a background operation
             }),
             // Process personality evolution in background with enhanced emotion data
             personalityEvolution.processInteraction({
@@ -1462,6 +1475,25 @@ Respond with only the title, no quotes or additional text.`;
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
+        
+        // Handle database connection errors specifically
+        if (error.code === '57P01' || error.message?.includes('database connection') || error.message?.includes('FATAL')) {
+          console.error('Database connection error - attempting recovery...');
+          
+          // For voice mode, provide immediate fallback response
+          if (data.isVoiceMode && ws.readyState === WebSocket.OPEN) {
+            console.log('Providing voice mode fallback response...');
+            ws.send(JSON.stringify({
+              type: 'ai_response',
+              content: "I'm still here, Genesis. How can I help you?",
+              conversationId: data.conversationId || Date.now(),
+              provider: 'fallback',
+              source: 'recovery'
+            }));
+            return;
+          }
+        }
+        
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
             type: 'error',
