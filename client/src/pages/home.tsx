@@ -149,16 +149,11 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
         
-      // Auto-speak AI response in voice mode - use OpenAI TTS for natural voice
-      if (isVoiceMode && lastMessage.content && !isSpeaking) {
-        console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
+      // Auto-speak AI response in voice mode - use OpenAI TTS for natural voice (SINGLE INSTANCE ONLY)
+      if (isVoiceMode && lastMessage.content && !isSpeaking && !currentAudio) {
+        console.log('Voice mode: Auto-speaking AI response (single instance):', lastMessage.content);
         
-        // Stop any existing audio first to prevent overlapping
-        if (currentAudio) {
-          currentAudio.pause();
-          currentAudio.currentTime = 0;
-          setCurrentAudio(null);
-        }
+        // Ensure no multiple instances
         speechSynthesis.cancel();
         setIsSpeaking(true);
         
@@ -194,8 +189,13 @@ export default function Home() {
                 setIsSpeaking(false);
                 setCurrentAudio(null);
                 URL.revokeObjectURL(audioUrl);
-                if (isSupported && isVoiceMode) {
-                  setTimeout(() => startListening(), 300);
+                
+                // RESTART listening only after audio completely finishes
+                if (isSupported && isVoiceMode && !isTyping) {
+                  setTimeout(() => {
+                    console.log('🎤 Restarting voice listening after speech completion');
+                    startListening();
+                  }, 500); // Longer delay to prevent overlap
                 }
               };
               
@@ -288,27 +288,27 @@ export default function Home() {
     }
   }, [lastMessage, queryClient, isVoiceMode, isSupported, startListening, toast, isSpeaking, currentAudio]);
 
-  // Enhanced speech recognition - simplified to prevent duplication
+  // Enhanced speech recognition - PREVENT DUPLICATE MESSAGES
+  const [lastProcessedTranscript, setLastProcessedTranscript] = useState('');
+  
   useEffect(() => {
     if (transcript && isVoiceMode && !isTyping && !isSpeaking) {
       const trimmedTranscript = transcript.trim();
-      if (trimmedTranscript && trimmedTranscript.length > 2) {
-        console.log('Voice mode transcript received:', trimmedTranscript);
+      
+      // CRITICAL: Prevent duplicate processing of same transcript
+      if (trimmedTranscript && trimmedTranscript.length > 2 && trimmedTranscript !== lastProcessedTranscript) {
+        console.log('Voice mode: NEW transcript received:', trimmedTranscript);
+        setLastProcessedTranscript(trimmedTranscript);
         
         handleSendMessage(trimmedTranscript);
         
         // Clear transcript immediately to prevent duplication
         if (typeof stopListening === 'function') {
           stopListening();
-          setTimeout(() => {
-            if (isVoiceMode && isSupported && !isTyping && !isSpeaking) {
-              startListening();
-            }
-          }, 50);
         }
       }
     }
-  }, [transcript, isVoiceMode, isTyping, isSpeaking, handleSendMessage, stopListening, startListening, isSupported]);
+  }, [transcript, isVoiceMode, isTyping, isSpeaking, handleSendMessage, stopListening, lastProcessedTranscript]);
 
   // Update conversation id when new conversation is created
   useEffect(() => {
@@ -452,6 +452,23 @@ export default function Home() {
         onToggleSettings={() => setShowSettings(!showSettings)}
         showSettings={showSettings}
       />
+      
+      {/* Central Lumen Logo - positioned as requested */}
+      <div className={cn(
+        "lumen-central-logo",
+        (isSpeaking || isListening) && "active"
+      )}>
+        <img 
+          src="/attached_assets/lumen-logo (Small)_1753467027342.png" 
+          alt="Lumen QI"
+          className={cn(
+            "w-full h-full object-contain",
+            isSpeaking && "lumen-logo-speaking",
+            isListening && "lumen-logo-listening",
+            !isSpeaking && !isListening && "lumen-logo-idle"
+          )}
+        />
+      </div>
       
       <div className="flex-1 flex flex-col">
         <ChatArea

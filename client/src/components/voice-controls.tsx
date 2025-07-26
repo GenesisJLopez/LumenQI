@@ -61,14 +61,7 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
       onSendMessage(message);
       setInputValue('');
       
-      // Continue listening in voice mode for seamless conversation
-      if (isListening) {
-        setTimeout(() => {
-          if (isSupported) {
-            startListening();
-          }
-        }, 1000);
-      }
+      // Do NOT restart listening here - let the audio completion handle it to prevent double responses
     }
   };
 
