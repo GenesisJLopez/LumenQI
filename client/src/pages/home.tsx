@@ -365,9 +365,17 @@ export default function Home() {
           type: 'chat_message',
           content,
           conversationId: conversationId ?? undefined,
-          emotion: textEmotion
+          emotion: textEmotion?.emotion // Extract just the emotion string
         });
       }
+      
+      // Refresh messages list immediately after successful send
+      setTimeout(() => {
+        if (conversationId) {
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
+        }
+      }, 50);
+      
     } catch (error) {
       console.error('Failed to send message:', error);
       toast({

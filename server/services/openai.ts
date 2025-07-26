@@ -103,7 +103,7 @@ VOICE MODE - ULTRA FAST RESPONSES:
 - Respond instantly without delays
 - No emojis or complex formatting
 
-Current conversation context: ${conversationContext.slice(-1).map(msg => `${msg.role}: ${msg.content}`).join('\n')}`;
+Current conversation context: ${Array.isArray(conversationContext) ? conversationContext.slice(-1).map(msg => `${msg.role}: ${msg.content}`).join('\n') : 'No previous context'}`;
         
         // Skip complex features in voice mode for speed - just use basic system prompt
       } else {
@@ -116,10 +116,11 @@ Current conversation context: ${conversationContext.slice(-1).map(msg => `${msg.
         }
       }
       
-      // Prepare messages for OpenAI
+      // Prepare messages for OpenAI - ensure conversationContext is an array
+      const contextMessages = Array.isArray(conversationContext) ? conversationContext.slice(isVoiceMode ? -1 : -8) : [];
       const messages = [
         { role: "system", content: systemPrompt },
-        ...conversationContext.slice(isVoiceMode ? -1 : -8), // Minimal context for voice mode speed
+        ...contextMessages, // Safe context for OpenAI
         { role: "user", content: userMessage }
       ];
 
