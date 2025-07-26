@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
-import { useWebSocket } from '@/hooks/use-websocket';
+import { useHttpCommunication } from '@/hooks/use-http-communication';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
 import { SimpleVoiceMode } from '@/components/simple-voice-mode';
@@ -62,7 +62,7 @@ export default function Home() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
+  const { sendMessage, lastMessage, connectionStatus, isLoading } = useHttpCommunication();
 
   // Handle message editing
   const handleEditMessage = async (messageId: number, newContent: string) => {
@@ -347,25 +347,33 @@ export default function Home() {
     // Send message immediately for faster response
     console.log('handleSendMessage called with:', { content, conversationId, isVoiceMode });
     
-    if (isVoiceMode) {
-      console.log('Sending voice mode message');
-      sendMessage({
-        type: 'chat_message',
-        content,
-        conversationId: conversationId ?? undefined,
-        isVoiceMode: true
-      });
-    } else {
-      console.log('Sending normal mode message');
-      // Normal mode with full emotion processing
-      const textEmotion = detectEmotionFromText(content);
-      const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
+    try {
+      if (isVoiceMode) {
+        console.log('Sending voice mode message');
+        await sendMessage({
+          type: 'chat_message',
+          content,
+          conversationId: conversationId ?? undefined,
+          isVoiceMode: true
+        });
+      } else {
+        console.log('Sending normal mode message');
+        // Normal mode with full emotion processing
+        const textEmotion = detectEmotionFromText(content);
 
-      sendMessage({
-        type: 'chat_message',
-        content,
-        conversationId: conversationId ?? undefined,
-        emotion: textEmotion
+        await sendMessage({
+          type: 'chat_message',
+          content,
+          conversationId: conversationId ?? undefined,
+          emotion: textEmotion
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
       });
     }
 
@@ -373,16 +381,11 @@ export default function Home() {
     queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
   };
 
-  // Process incoming WebSocket messages  
+  // Process incoming HTTP responses  
   useEffect(() => {
     if (!lastMessage) return;
     
-    console.log('Received WebSocket message:', lastMessage);
-    
-    if (lastMessage.type === 'typing') {
-      setIsTyping(lastMessage.isTyping || false);
-      return;
-    }
+    console.log('Received HTTP response:', lastMessage);
     
     if (lastMessage.type === 'ai_response') {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
@@ -393,12 +396,16 @@ export default function Home() {
       
       // Immediately invalidate cache and refetch
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      if (lastMessage.conversationId) {
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      }
       
       // Force refetch with additional delay to ensure database sync
       setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-      }, 50);
+        if (lastMessage.conversationId) {
+          queryClient.refetchQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        }
+      }, 100);
       
       // Auto-generate conversation title after first AI response
       if (lastMessage.conversationId) {
@@ -407,11 +414,11 @@ export default function Home() {
       return;
     }
       
-      if (lastMessage.type === 'error') {
-        setIsTyping(false);
-        toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
-        return;
-      }
+    if (lastMessage.type === 'error') {
+      setIsTyping(false);
+      toast({ title: "Error: " + lastMessage.content, variant: "destructive" });
+      return;
+    }
       
     // Handle flow_analysis messages (ignore them)
     if (lastMessage.type === 'flow_analysis') {
