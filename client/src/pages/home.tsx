@@ -181,9 +181,20 @@ export default function Home() {
               // Set as current audio to prevent duplicates
               setCurrentAudio(audio);
               
+              // CRITICAL FIX: Only set speaking state when audio ACTUALLY starts playing
               audio.onplay = () => {
-                console.log('✅ OpenAI TTS voice response started - Lumen is speaking');
+                console.log('✅ OpenAI TTS voice response ACTUALLY started - Lumen is speaking');
                 setIsSpeaking(true);
+              };
+              
+              audio.onended = () => {
+                console.log('🔇 OpenAI TTS voice response ended');
+                setIsSpeaking(false);
+              };
+              
+              audio.onerror = () => {
+                console.log('❌ OpenAI TTS audio error');
+                setIsSpeaking(false);
               };
               
               audio.onended = () => {
@@ -386,7 +397,7 @@ export default function Home() {
               isSpeaking ? "animate-pulse" : isListening ? "ring-2 ring-blue-500/50" : ""
             )}>
               <img 
-                src="/attached_assets/lumen-logo%20(Small)_1753555540990.png" 
+                src="/attached_assets/lumen-logo%20(Small)_1753558944338.png" 
                 alt="Lumen QI"
                 className="w-full h-full object-contain rounded-full"
               />
