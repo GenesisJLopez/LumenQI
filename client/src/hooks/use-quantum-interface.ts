@@ -8,6 +8,8 @@ interface QuantumInterfaceHook {
   adaptMachineLearning: (inputData: number[], feedback: number) => Promise<void>;
   connectToMLBackend: () => Promise<boolean>;
   mlBackendStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
+  isQuantumConnected: boolean;
+  refreshMetrics: () => void;
 }
 
 export function useQuantumInterface(): QuantumInterfaceHook {
@@ -202,6 +204,14 @@ export function useQuantumInterface(): QuantumInterfaceHook {
     }
   }, [isElectron, zmqSocket, mlBackendStatus]);
 
+  const refreshMetrics = useCallback(() => {
+    if (isElectron && window.require) {
+      const { ipcRenderer } = window.require('electron');
+      ipcRenderer.invoke('get-hardware-info').then(setHardwareInfo);
+      ipcRenderer.invoke('get-ml-metrics').then(setMLMetrics);
+    }
+  }, [isElectron]);
+
   return {
     isElectron,
     hardwareInfo,
@@ -209,6 +219,8 @@ export function useQuantumInterface(): QuantumInterfaceHook {
     synthesizeAdvancedTTS,
     adaptMachineLearning,
     connectToMLBackend,
-    mlBackendStatus
+    mlBackendStatus,
+    isQuantumConnected: mlBackendStatus === 'connected',
+    refreshMetrics
   };
 }

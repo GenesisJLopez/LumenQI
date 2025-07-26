@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { cn } from '@/lib/utils';
-import lumenLogo from '@assets/lumen-logo (Small)_1753450894008.png';
+import lumenLogo from '@assets/lumen-logo (Small)_1753559711469.png';
 import { deviceAccess, enhancedVoice } from '@/lib/device-access';
 
 interface SimpleVoiceModeProps {

@@ -5,6 +5,10 @@ interface WebSocketMessage {
   content?: string;
   conversationId?: number;
   message?: string;
+  isEdit?: boolean;
+  isTyping?: boolean;
+  emotion?: string;
+  isVoiceMode?: boolean;
 }
 
 interface UseWebSocketReturn {

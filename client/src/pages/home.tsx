@@ -4,7 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
-import WorkingVoiceMode from '@/components/working-voice-mode';
+import { SimpleVoiceMode } from '@/components/simple-voice-mode';
 import { useQuantumInterface } from '@/hooks/use-quantum-interface';
 import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { Sidebar } from '@/components/sidebar';
@@ -127,7 +127,7 @@ export default function Home() {
     enabled: !!currentConversationId,
     refetchOnWindowFocus: true,
     staleTime: 0, // Always consider data stale
-    cacheTime: 0, // Don't cache messages
+    gcTime: 0, // Don't cache messages
   });
 
   const { data: memories = [] } = useQuery({
@@ -293,13 +293,13 @@ export default function Home() {
     }
   };
 
-  const handleNewConversation = () => {
+  const handleNewConversation = (createNew = false) => {
     // Clear current conversation selection
     setCurrentConversationId(undefined);
     
     // Only create a new conversation if explicitly requested
     // This allows clearing the current conversation without creating a new one
-    if (arguments.length > 0 && arguments[0] === true) {
+    if (createNew) {
       createConversationMutation.mutate({
         title: 'New conversation',
         userId: 1, // Demo user ID
@@ -352,7 +352,7 @@ export default function Home() {
       sendMessage({
         type: 'chat_message',
         content,
-        conversationId,
+        conversationId: conversationId ?? undefined,
         isVoiceMode: true
       });
     } else {
@@ -364,9 +364,8 @@ export default function Home() {
       sendMessage({
         type: 'chat_message',
         content,
-        conversationId,
-        emotion: textEmotion,
-        emotionContext,
+        conversationId: conversationId ?? undefined,
+        emotion: textEmotion
       });
     }
 
@@ -481,13 +480,11 @@ export default function Home() {
 
   return (
     <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
-      {/* Voice Mode - Brand New Simple Implementation */}
+      {/* Voice Mode - Simple Implementation */}
       {isVoiceMode ? (
-        <WorkingVoiceMode 
+        <SimpleVoiceMode 
           onExit={handleVoiceModeToggle}
-          currentConversationId={currentConversationId || undefined}
-          sendMessage={sendMessage}
-          lastMessage={lastMessage}
+          currentConversationId={currentConversationId}
         />
       ) : (
         <>
@@ -1034,13 +1031,13 @@ export default function Home() {
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600 dark:text-gray-400">Total Memories</span>
                               <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                                {memories.length}
+                                {Array.isArray(memories) ? memories.length : 0}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600 dark:text-gray-400">Storage Used</span>
                               <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                {memories.length > 0 
+                                {Array.isArray(memories) && memories.length > 0 
                                   ? ((memories.length / 1000) * 100).toFixed(1) + '%'
                                   : '0.0%'}
                               </span>
