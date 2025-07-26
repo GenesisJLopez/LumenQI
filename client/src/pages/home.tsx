@@ -389,6 +389,25 @@ export default function Home() {
           </div>
           
           {/* Exit Voice Mode Button */}
+          {/* Audio Enable Button if needed */}
+          {!audioEnabled && (
+            <Button
+              onClick={async () => {
+                try {
+                  const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+XzzGEaB');
+                  await audio.play();
+                  setAudioEnabled(true);
+                  console.log('✅ Audio manually enabled');
+                } catch (error) {
+                  console.error('❌ Failed to enable audio:', error);
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full mb-4"
+            >
+              Enable Audio
+            </Button>
+          )}
+          
           <Button
             onClick={handleVoiceModeToggle}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full"
