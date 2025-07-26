@@ -50,6 +50,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create code generator instance
   // Code generation service is already imported
 
+  // HTTP-based chat endpoint for reliable communication
+  app.post("/api/chat/message", async (req, res) => {
+    try {
+      const { type, content, conversationId, isVoiceMode } = req.body;
+      
+      if (!content || !conversationId) {
+        return res.status(400).json({ error: "Content and conversationId are required" });
+      }
+
+      // Save user message
+      const userMessage = await storage.createMessage({
+        conversationId,
+        role: 'user',
+        content
+      });
+
+      // Generate AI response using the hybrid brain system
+      const startTime = Date.now();
+      let aiResponse: string;
+      let aiSource: string;
+
+      try {
+        // Try OpenAI first  
+        aiResponse = await hybridBrain.generateResponse(content, conversationId, {
+          isVoiceMode: isVoiceMode || false,
+          maxTokens: isVoiceMode ? 100 : 1000
+        });
+        aiSource = 'hybrid';
+      } catch (error) {
+        console.error('Hybrid brain failed, using consciousness core:', error);
+        // Fallback to consciousness core
+        aiResponse = await consciousnessCore.generateResponse(content, conversationId);
+        aiSource = 'consciousness';
+      }
+
+      const responseTime = Date.now() - startTime;
+
+      // Save AI response
+      const assistantMessage = await storage.createMessage({
+        conversationId,
+        role: 'assistant',
+        content: aiResponse
+      });
+
+      // Generate conversation title if this is the first exchange
+      if (userMessage.id === 1) {
+        try {
+          const title = await hybridBrain.generateConversationTitle(content);
+          await storage.updateConversation(conversationId, { title });
+        } catch (error) {
+          console.error('Failed to generate title:', error);
+        }
+      }
+
+      // Background operations (don't block response)
+      Promise.all([
+        // Process personality evolution
+        personalityEvolution.processInteraction({
+          userId: 1,
+          messageContent: content,
+          timestamp: new Date()
+        }),
+        // Create memory if significant
+        (content.length > 50 || aiResponse.length > 100) ?
+          storage.createMemory({
+            userId: 1,
+            content: `User discussed: ${content.substring(0, 100)}...`,
+            context: `Conversation ${conversationId}`,
+            importance: 2
+          }) : Promise.resolve(),
+      ]).catch(error => {
+        console.error('Background operation error:', error);
+      });
+
+      res.json({
+        content: aiResponse,
+        messageId: assistantMessage.id,
+        source: aiSource,
+        responseTime
+      });
+
+    } catch (error) {
+      console.error('Chat message error:', error);
+      res.status(500).json({ error: "Failed to process message" });
+    }
+  });
+
   // API Routes
   app.get("/api/conversations", async (req, res) => {
     try {
@@ -1505,7 +1592,7 @@ Respond with only the title, no quotes or additional text.`;
   // Voice personality endpoints
   app.get("/api/voice-personality", (_req, res) => {
     try {
-      const personality = voicePersonalityService.getPersonality();
+      const personality = voiceToneService.getCurrentTone();
       res.json(personality);
     } catch (error) {
       console.error('Failed to get voice personality:', error);
@@ -1516,7 +1603,7 @@ Respond with only the title, no quotes or additional text.`;
   app.post("/api/voice-personality", (req, res) => {
     try {
       const personalityData = req.body;
-      const updatedPersonality = voicePersonalityService.updatePersonality(personalityData);
+      const updatedPersonality = voiceToneService.updateTone(personalityData);
       res.json(updatedPersonality);
     } catch (error) {
       console.error('Failed to update voice personality:', error);
@@ -1526,7 +1613,7 @@ Respond with only the title, no quotes or additional text.`;
 
   app.post("/api/voice-personality/reset", (_req, res) => {
     try {
-      const resetPersonality = voicePersonalityService.resetToDefault();
+      const resetPersonality = voiceToneService.resetToDefault();
       res.json(resetPersonality);
     } catch (error) {
       console.error('Failed to reset voice personality:', error);

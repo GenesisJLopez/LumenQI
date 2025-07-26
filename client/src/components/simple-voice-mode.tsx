@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { useWebSocket } from '@/hooks/use-websocket';
+import { useHttpCommunication } from '@/hooks/use-http-communication';
 import { cn } from '@/lib/utils';
 import lumenLogo from '@assets/lumen-logo (Small)_1753559711469.png';
 import { deviceAccess, enhancedVoice } from '@/lib/device-access';
@@ -16,7 +16,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
   const [transcript, setTranscript] = useState('');
   const [speechIntensity, setSpeechIntensity] = useState(0);
   
-  const { sendMessage, lastMessage } = useWebSocket();
+  const { sendMessage, lastMessage } = useHttpCommunication();
   const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
   const lastMessageIdRef = useRef<string>('');
@@ -163,8 +163,8 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     
     console.log('🎤 Voice mode: Sending message:', message);
     
-    // Send message via WebSocket with voice mode flag
-    sendMessage({
+    // Send message via HTTP with voice mode flag
+    await sendMessage({
       type: 'chat_message',
       content: message,
       conversationId: currentConversationId,
