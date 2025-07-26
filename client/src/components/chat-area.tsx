@@ -317,22 +317,7 @@ export function ChatArea({ messages, isTyping = false, currentConversationId, is
               </div>
             ))}
             
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="max-w-[70%] p-4 rounded-2xl cosmic-message assistant">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold cosmic-text mb-2">Lumen QI</div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+
         </div>
       </div>
     </div>
