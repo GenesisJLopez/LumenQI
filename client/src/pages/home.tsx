@@ -102,7 +102,7 @@ export default function Home() {
       const messageData = {
         type: 'chat_message',
         content: content.trim(),
-        conversationId: currentConversationId,
+        conversationId: currentConversationId || undefined,
         isVoiceMode,
         ...(currentEmotion && { emotion: currentEmotion })
       };
@@ -127,7 +127,7 @@ export default function Home() {
     console.log('Received WebSocket message:', lastMessage);
     
     if (lastMessage.type === 'typing') {
-      setIsTyping(lastMessage.isTyping);
+      setIsTyping((lastMessage as any).isTyping);
       return;
     }
     
@@ -183,7 +183,7 @@ export default function Home() {
                 console.error('❌ OpenAI TTS error - falling back to browser TTS');
                 setIsSpeaking(false);
                 // Fallback to browser TTS
-                useBrowserTTS(lastMessage.content);
+                useBrowserTTS(lastMessage.content || '');
               };
               
               // Try to play audio with better error handling
@@ -199,17 +199,17 @@ export default function Home() {
                     console.log('🎵 OpenAI TTS audio started playing (retry)');
                   } catch (retryError) {
                     console.error('❌ Audio retry failed, falling back to browser TTS');
-                    useBrowserTTS(lastMessage.content);
+                    useBrowserTTS(lastMessage.content || '');
                   }
                 }, 100);
               }
             } else {
               console.error('❌ TTS API error - falling back to browser TTS');
-              useBrowserTTS(lastMessage.content);
+              useBrowserTTS(lastMessage.content || '');
             }
           } catch (error) {
             console.error('❌ TTS request failed - falling back to browser TTS:', error);
-            useBrowserTTS(lastMessage.content);
+            useBrowserTTS(lastMessage.content || '');
           }
         };
         
@@ -243,7 +243,7 @@ export default function Home() {
         // Try OpenAI TTS with immediate fallback if it fails
         playVoiceResponse().catch((error) => {
           console.error('❌ Voice response function failed:', error);
-          useBrowserTTS(lastMessage.content);
+          useBrowserTTS(lastMessage.content || '');
         });
       }
     }
@@ -372,7 +372,7 @@ export default function Home() {
           {/* Recent Messages in Voice Mode */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="space-y-4 max-h-60 overflow-y-auto">
-              {messages.slice(-3).map((message) => (
+              {(messages as any[])?.slice(-3).map((message: any) => (
                 <div
                   key={message.id}
                   className={cn(
@@ -423,7 +423,7 @@ export default function Home() {
     <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Sidebar
         conversations={conversations}
-        currentConversationId={currentConversationId}
+        currentConversationId={currentConversationId || undefined}
         onConversationSelect={handleConversationSelect}
         onNewConversation={handleNewConversation}
         onClearMemories={clearMemories}
@@ -433,11 +433,11 @@ export default function Home() {
       
       <div className="flex-1 flex flex-col">
         <ChatArea
-          messages={messages}
+          messages={messages as any}
           isTyping={isTyping}
           onSendMessage={handleSendMessage}
           onEditMessage={handleEditMessage}
-          currentConversationId={currentConversationId}
+          currentConversationId={currentConversationId || undefined}
           isVoiceMode={isVoiceMode}
         />
         
