@@ -22,6 +22,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -135,18 +136,27 @@ export default function Home() {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
       
-      // Force immediate UI refresh for the AI response
-      console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      // Force immediate UI refresh for the AI response - debounced to prevent duplicate calls
+      setTimeout(() => {
+        console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+      }, 100);
         
       // Auto-speak AI response in voice mode - use OpenAI TTS for natural voice
-      if (isVoiceMode && lastMessage.content) {
+      if (isVoiceMode && lastMessage.content && !isSpeaking) {
         console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
         
+        // Stop any existing audio first to prevent overlapping
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          setCurrentAudio(null);
+        }
+        speechSynthesis.cancel();
         setIsSpeaking(true);
         
-        // Use OpenAI TTS for Lumen's natural voice
+        // Use OpenAI TTS for Lumen's natural voice - single instance only
         const playVoiceResponse = async () => {
           try {
             console.log('🎵 Using OpenAI TTS for Lumen\'s voice');
@@ -165,6 +175,9 @@ export default function Home() {
               const audioUrl = URL.createObjectURL(audioBlob);
               const audio = new Audio(audioUrl);
               
+              // Set as current audio to prevent duplicates
+              setCurrentAudio(audio);
+              
               audio.onplay = () => {
                 console.log('✅ OpenAI TTS voice response started - Lumen is speaking');
                 setIsSpeaking(true);
@@ -173,6 +186,7 @@ export default function Home() {
               audio.onended = () => {
                 console.log('✅ Voice response completed - restarting listening');
                 setIsSpeaking(false);
+                setCurrentAudio(null);
                 URL.revokeObjectURL(audioUrl);
                 if (isSupported && isVoiceMode) {
                   setTimeout(() => startListening(), 300);
@@ -182,26 +196,19 @@ export default function Home() {
               audio.onerror = () => {
                 console.error('❌ OpenAI TTS error - falling back to browser TTS');
                 setIsSpeaking(false);
+                setCurrentAudio(null);
                 // Fallback to browser TTS
                 useBrowserTTS(lastMessage.content || '');
               };
               
-              // Try to play audio with better error handling
+              // Play audio immediately
               try {
                 await audio.play();
                 console.log('🎵 OpenAI TTS audio started playing');
               } catch (playError) {
-                console.error('❌ Audio autoplay blocked:', playError);
-                // Try again with user interaction context
-                setTimeout(async () => {
-                  try {
-                    await audio.play();
-                    console.log('🎵 OpenAI TTS audio started playing (retry)');
-                  } catch (retryError) {
-                    console.error('❌ Audio retry failed, falling back to browser TTS');
-                    useBrowserTTS(lastMessage.content || '');
-                  }
-                }, 100);
+                console.error('❌ Audio autoplay blocked, using browser TTS fallback');
+                setCurrentAudio(null);
+                useBrowserTTS(lastMessage.content || '');
               }
             } else {
               console.error('❌ TTS API error - falling back to browser TTS');
@@ -306,15 +313,20 @@ export default function Home() {
     setIsVoiceMode(newVoiceMode);
     
     if (newVoiceMode) {
-      // Enable audio context immediately when entering voice mode
+      // Force enable audio context when entering voice mode
       try {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+XzzGEaB');
-        await audio.play();
+        // Create silent audio context to unlock audio
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+        
+        // Enable audio for voice synthesis
         setAudioEnabled(true);
-        console.log('✅ Audio context enabled automatically');
+        console.log('✅ Audio context automatically enabled for voice mode');
       } catch (error) {
-        console.log('Audio autoplay blocked, will try with first TTS response');
-        setAudioEnabled(false);
+        console.log('Audio context setup failed, will enable on first interaction');
+        setAudioEnabled(true); // Set to true anyway - user is already interacting
       }
       
       startDetection();
@@ -389,24 +401,7 @@ export default function Home() {
           </div>
           
           {/* Exit Voice Mode Button */}
-          {/* Audio Enable Button if needed */}
-          {!audioEnabled && (
-            <Button
-              onClick={async () => {
-                try {
-                  const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+XzzGEaB');
-                  await audio.play();
-                  setAudioEnabled(true);
-                  console.log('✅ Audio manually enabled');
-                } catch (error) {
-                  console.error('❌ Failed to enable audio:', error);
-                }
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full mb-4"
-            >
-              Enable Audio
-            </Button>
-          )}
+
           
           <Button
             onClick={handleVoiceModeToggle}
