@@ -1226,7 +1226,6 @@ Respond with only the title, no quotes or additional text.`;
       try {
         const message = JSON.parse(data);
         console.log('Received WebSocket message:', message);
-      console.log('Message type:', message.type, 'Expected: chat_message');
         
         if (message.type === 'emotion_update') {
           const { emotion, confidence, features, timestamp, conversationId } = message;
@@ -1265,53 +1264,23 @@ Respond with only the title, no quotes or additional text.`;
         }
         
         if (message.type === 'chat_message') {
-          console.log('Processing chat_message:', message);
-          const { content, conversationId, emotion, emotionContext, isEdit } = message;
+          const { content, conversationId, emotion, emotionContext, isEdit, isVoiceMode } = message;
           
-          // CRITICAL FIX: Voice mode conversation continuity 
-          let actualConversationId = conversationId;
-          
-          if (!actualConversationId && message.isVoiceMode) {
-            // For voice mode, try to continue the most recent conversation
-            console.log('Voice mode: Finding existing conversation to continue...');
-            try {
-              const conversations = await storage.getConversations(1);
-              if (conversations.length > 0) {
-                actualConversationId = conversations[0].id;
-                console.log('Voice mode: Continuing conversation:', actualConversationId);
-              }
-            } catch (error) {
-              console.log('Could not find existing conversations, will create new one');
-            }
-          }
-          
-          if (!actualConversationId) {
-            console.log('Creating new conversation (first message)');
-            try {
-              const newConversation = await storage.createConversation({
-                userId: 1,
-                title: content.length > 50 ? content.substring(0, 47) + '...' : content
-              });
-              actualConversationId = newConversation.id;
-              console.log('New conversation created:', actualConversationId);
-            } catch (convError) {
-              console.error('Failed to create conversation:', convError);
-              throw convError;
-            }
-          } else {
-            console.log('Continuing existing conversation:', actualConversationId);
+          // Validate that conversationId is provided
+          if (!conversationId) {
+            throw new Error('Conversation ID is required');
           }
           
           // Update proactive AI's last interaction time
           proactiveAI.updateLastInteraction();
           
           // Optimize for voice mode - minimal context for speed
-          const isVoiceMode = message.isVoiceMode || false;
+          const voiceModeFlag = isVoiceMode || false;
           const isEditMessage = isEdit || false;
           
           // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
-          if (emotion && !isVoiceMode) {
+          if (emotion && !voiceModeFlag) {
             // Generate comprehensive emotion context using the adaptation service
             enhancedEmotionContext = emotionAdaptationService.generateEmotionContext(emotion);
             
@@ -1329,21 +1298,21 @@ Respond with only the title, no quotes or additional text.`;
             });
           }
           
-          let userMessage: any, messages: any[], memories: any[];
+          let userMessage, messages, memories;
           
-          if (isVoiceMode) {
+          if (voiceModeFlag) {
             // Ultra-fast voice mode: minimal context, parallel processing
             if (!isEditMessage) {
               // Only save new message if not an edit
               userMessage = await storage.createMessage({
-                conversationId: actualConversationId,
+                conversationId,
                 role: 'user',
                 content
               });
             }
             
             // Get only last 2 messages for voice mode speed
-            messages = await storage.getMessagesByConversation(actualConversationId).then(msgs => 
+            messages = await storage.getMessagesByConversation(conversationId).then(msgs => 
               msgs.slice(-2).map(msg => ({
                 role: msg.role,
                 content: msg.content
@@ -1356,14 +1325,14 @@ Respond with only the title, no quotes or additional text.`;
             if (!isEditMessage) {
               // Only save new message if not an edit
               userMessage = await storage.createMessage({
-                conversationId: actualConversationId,
+                conversationId,
                 role: 'user',
                 content
               });
             }
             
             [messages, memories] = await Promise.all([
-              storage.getMessagesByConversation(actualConversationId).then(msgs => 
+              storage.getMessagesByConversation(conversationId).then(msgs => 
                 msgs.slice(-8).map(msg => ({
                   role: msg.role,
                   content: msg.content
@@ -1382,18 +1351,18 @@ Respond with only the title, no quotes or additional text.`;
           const responseStartTime = Date.now();
           let aiResponse, aiSource;
           
-          console.log(`Processing ${isVoiceMode ? 'voice mode' : 'normal'} message: "${content}"`);
+          console.log(`Processing ${voiceModeFlag ? 'voice mode' : 'normal'} message: "${content}"`);
           
           try {
-            if (isVoiceMode) {
+            if (voiceModeFlag) {
               // Direct OpenAI call for voice mode - bypass hybrid brain for speed
               console.log('Calling OpenAI for voice mode response...');
               aiResponse = await lumenAI.generateResponse(
                 content,
-                messages || [],
-                memories || [],
+                messages,
+                memories,
                 enhancedEmotionContext,
-                isVoiceMode
+                voiceModeFlag
               );
               aiSource = 'online';
               console.log('OpenAI voice mode response generated:', aiResponse ? 'SUCCESS' : 'FAILED');
@@ -1403,9 +1372,9 @@ Respond with only the title, no quotes or additional text.`;
               const brainResponse = await hybridBrain.generateResponse(
                 content,
                 enhancedEmotionContext,
-                messages || [],
-                memories || [],
-                isVoiceMode
+                messages,
+                memories,
+                voiceModeFlag
               );
               aiResponse = brainResponse.content;
               aiSource = brainResponse.source;
@@ -1413,32 +1382,34 @@ Respond with only the title, no quotes or additional text.`;
             }
           } catch (error) {
             console.error('AI generation error:', error);
-            // Voice mode specific fallback responses
-            if (isVoiceMode) {
-              const voiceFallbacks = [
-                "I'm still here, Genesis. What would you like to talk about?",
-                "Hey there! I'm listening. How can I help you today?",
-                "I'm here and ready to chat. What's on your mind?",
-                "I can hear you clearly. What would you like to discuss?"
-              ];
-              aiResponse = voiceFallbacks[Math.floor(Math.random() * voiceFallbacks.length)];
-            } else {
-              aiResponse = "I'm sorry, I'm having trouble processing your message right now. Please try again.";
-            }
+            // Fallback response
+            aiResponse = "I'm sorry, I'm having trouble processing your message right now. Please try again.";
             aiSource = 'fallback';
           }
           
           const responseTime = Date.now() - responseStartTime;
 
-          // Send response back to client immediately with provider info
+          // Save AI response BEFORE sending WebSocket message
+          try {
+            await storage.createMessage({
+              conversationId,
+              role: 'assistant',
+              content: aiResponse
+            });
+            console.log('AI response saved to database successfully');
+          } catch (error) {
+            console.error('Failed to save AI response to database:', error);
+          }
+
+          // Send response back to client after saving to database
           console.log(`Sending ai_response via WebSocket: ${aiResponse ? aiResponse.substring(0, 50) + '...' : 'NO RESPONSE'}`);
           if (ws.readyState === WebSocket.OPEN) {
             const responseMessage = {
               type: 'ai_response',
               content: aiResponse,
-              conversationId: actualConversationId,
+              conversationId,
               provider: aiSource,
-              model: aiSource === 'consciousness' ? 'lumen-consciousness' : (isVoiceMode ? 'gpt-4o-voice' : 'hybrid-brain'),
+              model: aiSource === 'consciousness' ? 'lumen-consciousness' : (voiceModeFlag ? 'gpt-4o-voice' : 'hybrid-brain'),
               source: aiSource // Include brain source (online/offline/hybrid)
             };
             ws.send(JSON.stringify(responseMessage));
@@ -1449,15 +1420,6 @@ Respond with only the title, no quotes or additional text.`;
 
           // Background operations (don't await these to improve response time)
           Promise.all([
-            // Save AI response (with error handling)
-            storage.createMessage({
-              conversationId: actualConversationId,
-              role: 'assistant',
-              content: aiResponse
-            }).catch(error => {
-              console.error('Failed to save AI message:', error);
-              // Don't throw - this is a background operation
-            }),
             // Process personality evolution in background with enhanced emotion data
             personalityEvolution.processInteraction({
               userId: 1,
@@ -1471,16 +1433,16 @@ Respond with only the title, no quotes or additional text.`;
               storage.createMemory({
                 userId: 1,
                 content: `User discussed: ${content.substring(0, 100)}...`,
-                context: `Conversation ${actualConversationId}`,
+                context: `Conversation ${conversationId}`,
                 importance: 2
               }) : Promise.resolve(),
             // Analyze conversation flow in background (without waiting for message save)
             conversationFlowAnalyzer.analyzeMessage({
               id: Date.now(),
-              conversationId: actualConversationId,
+              conversationId,
               role: 'user',
               content,
-              timestamp: new Date(),
+              createdAt: new Date(),
               metadata: emotion ? { emotion } : undefined
             }, aiSource, responseTime).catch(error => {
               console.error('Flow analysis error:', error);
@@ -1492,25 +1454,6 @@ Respond with only the title, no quotes or additional text.`;
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
-        
-        // Handle database connection errors specifically
-        if (error.code === '57P01' || error.message?.includes('database connection') || error.message?.includes('FATAL')) {
-          console.error('Database connection error - attempting recovery...');
-          
-          // For voice mode, provide immediate fallback response
-          if (data.isVoiceMode && ws.readyState === WebSocket.OPEN) {
-            console.log('Providing voice mode fallback response...');
-            ws.send(JSON.stringify({
-              type: 'ai_response',
-              content: "I'm still here, Genesis. How can I help you?",
-              conversationId: data.conversationId || Date.now(),
-              provider: 'fallback',
-              source: 'recovery'
-            }));
-            return;
-          }
-        }
-        
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
             type: 'error',
