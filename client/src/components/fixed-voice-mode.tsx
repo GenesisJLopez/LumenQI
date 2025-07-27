@@ -44,7 +44,6 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
     if (!currentConversationId || !text.trim() || isProcessingRef.current) return;
     
     isProcessingRef.current = true;
-    console.log('🎤 PROCESSING VOICE MESSAGE:', text);
     
     try {
       const response = await fetch('/api/chat/message', {
@@ -59,7 +58,7 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
       
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ VOICE MESSAGE SUCCESS:', data.content?.substring(0, 50));
+        // Success - response received
         
         // Speak response
         if (data.content) {
@@ -70,7 +69,7 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
         setTimeout(fetchMessages, 500);
       }
     } catch (error) {
-      console.error('❌ VOICE MESSAGE FAILED:', error);
+      console.error('Voice message failed:', error);
     }
     
     isProcessingRef.current = false;
@@ -92,8 +91,8 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
     utterance.onend = () => {
       setIsSpeaking(false);
       setSpeechIntensity(0);
-      // Restart listening
-      setTimeout(startListening, 1000);
+      // Restart listening after speech
+      setTimeout(startListening, 500);
     };
     
     speechSynthesis.speak(utterance);
@@ -114,19 +113,17 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
 
   // Initialize speech recognition
   useEffect(() => {
-    console.log('🎤 INITIALIZING VOICE MODE');
     
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       
       const recognition = recognitionRef.current;
-      recognition.continuous = false; // Process one phrase at a time
+      recognition.continuous = true; // Keep listening continuously
       recognition.interimResults = true;
       recognition.lang = 'en-US';
       
       recognition.onstart = () => {
-        console.log('🎤 RECOGNITION STARTED');
         setIsListening(true);
       };
       
@@ -148,9 +145,10 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
         setTranscript(currentTranscript);
         
         // Process final results
-        if (finalTranscript.trim()) {
-          // Process speech silently
+        if (finalTranscript.trim() && !isProcessingRef.current) {
           setTranscript('');
+          // Stop listening while processing
+          recognition.stop();
           processVoiceMessage(finalTranscript.trim());
         }
       };
@@ -161,13 +159,8 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
       };
       
       recognition.onend = () => {
-        console.log('🎤 RECOGNITION ENDED');
         setIsListening(false);
-        
-        // Auto-restart if not processing and not speaking
-        if (!isProcessingRef.current && !isSpeaking) {
-          setTimeout(startListening, 1000);
-        }
+        // Do not auto-restart - wait for speech to finish
       };
       
       // Load messages and start listening
