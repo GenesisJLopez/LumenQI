@@ -2268,6 +2268,42 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
+  // Enhanced self-modification endpoints
+  app.post("/api/system/self-diagnose", async (req, res) => {
+    try {
+      const result = await systemAwarenessService.detectAndRepairErrors();
+      res.json(result);
+    } catch (error) {
+      console.error('Self-diagnosis error:', error);
+      res.status(500).json({ error: "Failed to perform self-diagnosis" });
+    }
+  });
+
+  app.post("/api/system/optimize", async (req, res) => {
+    try {
+      const result = await systemAwarenessService.optimizeSystem();
+      res.json(result);
+    } catch (error) {
+      console.error('System optimization error:', error);
+      res.status(500).json({ error: "Failed to optimize system" });
+    }
+  });
+
+  app.post("/api/system/evolve", async (req, res) => {
+    try {
+      const { userRequest } = req.body;
+      if (!userRequest) {
+        return res.status(400).json({ error: "User request is required" });
+      }
+      
+      const result = await systemAwarenessService.evolveCapabilities(userRequest);
+      res.json(result);
+    } catch (error) {
+      console.error('System evolution error:', error);
+      res.status(500).json({ error: "Failed to evolve capabilities" });
+    }
+  });
+
   // Initialize vocabulary system with pre-loaded data
   vocabularyService.startAutoUpdates();
 

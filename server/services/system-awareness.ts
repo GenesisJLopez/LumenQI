@@ -606,6 +606,374 @@ SELF-MODIFICATION ABILITIES:
       return null;
     }
   }
+
+  // Enhanced self-modification capabilities
+  async detectAndRepairErrors(): Promise<{
+    errors: Array<{ file: string; error: string; severity: 'low' | 'medium' | 'high' }>;
+    repairs: Array<{ file: string; action: string; success: boolean }>;
+  }> {
+    const errors: Array<{ file: string; error: string; severity: 'low' | 'medium' | 'high' }> = [];
+    const repairs: Array<{ file: string; action: string; success: boolean }> = [];
+
+    try {
+      // Check for common JavaScript/TypeScript errors
+      const tsFiles = await this.findFilesByExtension(['.ts', '.tsx', '.js', '.jsx']);
+      
+      for (const file of tsFiles) {
+        const content = await this.getFileContent(file);
+        if (content) {
+          // Check for syntax errors and common issues
+          const fileErrors = await this.analyzeSyntaxErrors(file, content);
+          errors.push(...fileErrors);
+          
+          // Attempt to repair detected errors
+          for (const error of fileErrors) {
+            const repairResult = await this.attemptFileRepair(file, content, error);
+            repairs.push(repairResult);
+          }
+        }
+      }
+
+      // Check package.json dependencies
+      const packageErrors = await this.checkPackageDependencies();
+      errors.push(...packageErrors);
+
+    } catch (error) {
+      console.error('Error during self-diagnosis:', error);
+    }
+
+    return { errors, repairs };
+  }
+
+  private async findFilesByExtension(extensions: string[]): Promise<string[]> {
+    const files: string[] = [];
+    
+    const scanDir = async (dirPath: string): Promise<void> => {
+      try {
+        const entries = await fs.readdir(dirPath, { withFileTypes: true });
+        
+        for (const entry of entries) {
+          const fullPath = path.join(dirPath, entry.name);
+          const relativePath = path.relative(process.cwd(), fullPath);
+          
+          if (entry.isDirectory() && 
+              !['node_modules', '.git', 'dist', '.next'].includes(entry.name)) {
+            await scanDir(fullPath);
+          } else if (entry.isFile()) {
+            const ext = path.extname(entry.name);
+            if (extensions.includes(ext)) {
+              files.push(relativePath);
+            }
+          }
+        }
+      } catch (error) {
+        // Skip directories that can't be accessed
+      }
+    };
+
+    await scanDir(process.cwd());
+    return files;
+  }
+
+  private async analyzeSyntaxErrors(filePath: string, content: string): Promise<Array<{ file: string; error: string; severity: 'low' | 'medium' | 'high' }>> {
+    const errors: Array<{ file: string; error: string; severity: 'low' | 'medium' | 'high' }> = [];
+    
+    // Check for callback ref warning that appears in the user's console
+    if (content.includes('useCallback') && content.includes('textarea') && content.includes('ref')) {
+      errors.push({
+        file: filePath,
+        error: 'Potential callback ref warning in textarea - check ref handling',
+        severity: 'medium'
+      });
+    }
+    
+    // Check for unused imports
+    const importMatches = content.match(/import\s+.*?\s+from\s+['"`].*?['"`]/g);
+    if (importMatches) {
+      for (const importMatch of importMatches) {
+        const importedItems = importMatch.match(/import\s+{([^}]+)}/);
+        if (importedItems) {
+          const items = importedItems[1].split(',').map(item => item.trim());
+          for (const item of items) {
+            if (!content.includes(item + '(') && !content.includes(item + ' ') && !content.includes('<' + item)) {
+              errors.push({
+                file: filePath,
+                error: `Unused import: ${item}`,
+                severity: 'low'
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Check for WebSocket undefined variable errors
+    if (content.includes('brainResponse') && !content.includes('let brainResponse') && !content.includes('const brainResponse')) {
+      errors.push({
+        file: filePath,
+        error: 'Undefined variable brainResponse detected in WebSocket handler',
+        severity: 'high'
+      });
+    }
+
+    return errors;
+  }
+
+  private async attemptFileRepair(filePath: string, content: string, error: { file: string; error: string; severity: string }): Promise<{ file: string; action: string; success: boolean }> {
+    try {
+      let repairedContent = content;
+      let action = '';
+
+      // Fix WebSocket brainResponse undefined variable
+      if (error.error.includes('brainResponse')) {
+        if (content.includes('brainResponse') && !content.includes('let brainResponse')) {
+          repairedContent = content.replace(
+            /(?=.*brainResponse)^(?!.*let brainResponse)/gm,
+            'let brainResponse = "";\n'
+          );
+          action = 'Added brainResponse variable declaration';
+        }
+      }
+
+      // Remove unused imports
+      if (error.error.includes('Unused import')) {
+        const unusedItem = error.error.replace('Unused import: ', '');
+        const importRegex = new RegExp(`,?\\s*${unusedItem}\\s*,?`, 'g');
+        repairedContent = repairedContent.replace(importRegex, '');
+        action = `Removed unused import: ${unusedItem}`;
+      }
+
+      // Fix callback ref warnings
+      if (error.error.includes('callback ref warning')) {
+        // Replace problematic ref patterns
+        repairedContent = content.replace(
+          /ref=\{([^}]+)\}/g,
+          'ref={(el) => { if (el) $1(el); }}'
+        );
+        action = 'Fixed callback ref pattern';
+      }
+
+      // Only write if content actually changed
+      if (repairedContent !== content) {
+        await this.modifyFile(filePath, repairedContent);
+        return { file: filePath, action, success: true };
+      }
+
+      return { file: filePath, action: 'No repair needed', success: true };
+    } catch (error) {
+      return { file: filePath, action: `Repair failed: ${error}`, success: false };
+    }
+  }
+
+  private async checkPackageDependencies(): Promise<Array<{ file: string; error: string; severity: 'low' | 'medium' | 'high' }>> {
+    const errors: Array<{ file: string; error: string; severity: 'low' | 'medium' | 'high' }> = [];
+    
+    try {
+      const packageJsonContent = await this.getFileContent('package.json');
+      if (packageJsonContent) {
+        const packageJson = JSON.parse(packageJsonContent);
+        
+        // Check for missing dependencies
+        if (!packageJson.dependencies) {
+          errors.push({
+            file: 'package.json',
+            error: 'No dependencies section found',
+            severity: 'high'
+          });
+        }
+
+        // Check for outdated packages
+        if (packageJson.dependencies && packageJson.dependencies['react'] && 
+            !packageJson.dependencies['react'].includes('18')) {
+          errors.push({
+            file: 'package.json',
+            error: 'React version may be outdated',
+            severity: 'medium'
+          });
+        }
+      }
+    } catch (error) {
+      errors.push({
+        file: 'package.json',
+        error: 'Failed to parse package.json',
+        severity: 'high'
+      });
+    }
+
+    return errors;
+  }
+
+  async optimizeSystem(): Promise<{
+    optimizations: Array<{ category: string; action: string; impact: string }>;
+    success: boolean;
+  }> {
+    const optimizations: Array<{ category: string; action: string; impact: string }> = [];
+
+    try {
+      // Clean up temporary files
+      try {
+        await execAsync('find . -name "*.log" -type f -delete');
+        optimizations.push({
+          category: 'Cleanup',
+          action: 'Removed log files',
+          impact: 'Reduced disk usage'
+        });
+      } catch (error) {
+        // Log files might not exist
+      }
+
+      // Optimize imports in critical files
+      const criticalFiles = ['server/services/openai.ts', 'client/src/pages/home.tsx'];
+      for (const file of criticalFiles) {
+        const content = await this.getFileContent(file);
+        if (content && content.includes('import')) {
+          const optimizedContent = this.optimizeImports(content);
+          if (optimizedContent !== content) {
+            await this.modifyFile(file, optimizedContent);
+            optimizations.push({
+              category: 'Code Quality',
+              action: `Optimized imports in ${file}`,
+              impact: 'Improved code readability'
+            });
+          }
+        }
+      }
+
+      return { optimizations, success: true };
+    } catch (error) {
+      return { 
+        optimizations: [{
+          category: 'Error',
+          action: `System optimization failed: ${error}`,
+          impact: 'No changes made'
+        }], 
+        success: false 
+      };
+    }
+  }
+
+  private optimizeImports(content: string): string {
+    // Sort imports alphabetically
+    const lines = content.split('\n');
+    const importLines: string[] = [];
+    const nonImportLines: string[] = [];
+    
+    for (const line of lines) {
+      if (line.trim().startsWith('import ')) {
+        importLines.push(line);
+      } else {
+        nonImportLines.push(line);
+      }
+    }
+
+    // Sort import lines
+    importLines.sort();
+    
+    return [...importLines, ...nonImportLines].join('\n');
+  }
+
+  async evolveCapabilities(userRequest: string): Promise<{
+    newCapability: string;
+    implementation: string;
+    success: boolean;
+  }> {
+    try {
+      // Analyze user request to determine what new capability to add
+      const capability = this.analyzeCapabilityRequest(userRequest);
+      
+      if (capability.type === 'service') {
+        const serviceCode = this.generateServiceCode(capability.name, capability.description);
+        const success = await this.createNewService(capability.name, capability.description, serviceCode);
+        
+        return {
+          newCapability: capability.name,
+          implementation: serviceCode,
+          success
+        };
+      }
+
+      return {
+        newCapability: 'No specific capability identified',
+        implementation: 'User request requires manual implementation',
+        success: false
+      };
+    } catch (error) {
+      return {
+        newCapability: 'Error',
+        implementation: `Failed to evolve capabilities: ${error}`,
+        success: false
+      };
+    }
+  }
+
+  private analyzeCapabilityRequest(request: string): { type: string; name: string; description: string } {
+    // Simple capability detection based on keywords
+    if (request.includes('self-repair') || request.includes('fix herself')) {
+      return {
+        type: 'enhancement',
+        name: 'self-repair-system',
+        description: 'Enhanced self-repair and error detection system'
+      };
+    }
+
+    if (request.includes('weather') || request.includes('forecast')) {
+      return {
+        type: 'service',
+        name: 'weather-service',
+        description: 'Weather information and forecasting service'
+      };
+    }
+
+    return {
+      type: 'unknown',
+      name: 'custom-capability',
+      description: 'Custom capability based on user request'
+    };
+  }
+
+  private generateServiceCode(serviceName: string, description: string): string {
+    const className = serviceName.charAt(0).toUpperCase() + serviceName.slice(1).replace('-', '');
+    return `/**
+ * ${description}
+ * Auto-generated by Lumen's self-evolution system
+ */
+
+export class ${className}Service {
+  private static instance: ${className}Service;
+
+  private constructor() {}
+
+  static getInstance(): ${className}Service {
+    if (!${className}Service.instance) {
+      ${className}Service.instance = new ${className}Service();
+    }
+    return ${className}Service.instance;
+  }
+
+  async initialize(): Promise<boolean> {
+    try {
+      // Initialize service
+      console.log('${description} initialized');
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize ${serviceName}:', error);
+      return false;
+    }
+  }
+
+  async processRequest(request: string): Promise<string> {
+    try {
+      // Process request based on service purpose
+      return \`Processed request: \${request}\`;
+    } catch (error) {
+      return \`Error processing request: \${error}\`;
+    }
+  }
+}
+
+export const ${serviceName.replace('-', '')}Service = ${className}Service.getInstance();
+`;
+  }
 }
 
 export const systemAwarenessService = SystemAwarenessService.getInstance();
