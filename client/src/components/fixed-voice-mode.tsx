@@ -58,7 +58,6 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
       
       if (response.ok) {
         const data = await response.json();
-        // Success - response received
         
         // Speak response
         if (data.content) {
@@ -67,9 +66,14 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
         
         // Refresh messages
         setTimeout(fetchMessages, 500);
+      } else {
+        // Restart listening on API error
+        setTimeout(startListening, 1000);
       }
     } catch (error) {
       console.error('Voice message failed:', error);
+      // Restart listening on error
+      setTimeout(startListening, 1000);
     }
     
     isProcessingRef.current = false;
@@ -113,13 +117,12 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
 
   // Initialize speech recognition
   useEffect(() => {
-    
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       
       const recognition = recognitionRef.current;
-      recognition.continuous = true; // Keep listening continuously
+      recognition.continuous = false; // Process one phrase at a time to prevent endless loop
       recognition.interimResults = true;
       recognition.lang = 'en-US';
       
@@ -147,8 +150,6 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
         // Process final results
         if (finalTranscript.trim() && !isProcessingRef.current) {
           setTranscript('');
-          // Stop listening while processing
-          recognition.stop();
           processVoiceMessage(finalTranscript.trim());
         }
       };
@@ -160,7 +161,10 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
       
       recognition.onend = () => {
         setIsListening(false);
-        // Do not auto-restart - wait for speech to finish
+        // Only restart if not processing or speaking
+        if (!isProcessingRef.current && !isSpeaking) {
+          setTimeout(startListening, 1000);
+        }
       };
       
       // Load messages and start listening
