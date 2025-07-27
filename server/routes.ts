@@ -23,7 +23,7 @@ import { calendarIntegration } from "./services/calendar-integration";
 import { conversationFlowAnalyzer } from "./services/conversation-flow-analyzer";
 import { voiceToneService } from "./services/voice-tone-service";
 import { visionAnalysisService } from "./services/vision-analysis";
-import { codeGenerationService, type CodeGenerationRequest } from "./services/code-generation";
+import { codeGenerationService } from "./services/code-generation";
 
 import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -49,94 +49,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create code generator instance
   // Code generation service is already imported
-
-  // HTTP-based chat endpoint for reliable communication
-  app.post("/api/chat/message", async (req, res) => {
-    try {
-      const { type, content, conversationId, isVoiceMode } = req.body;
-      
-      if (!content || !conversationId) {
-        return res.status(400).json({ error: "Content and conversationId are required" });
-      }
-
-      // Save user message
-      const userMessage = await storage.createMessage({
-        conversationId,
-        role: 'user',
-        content
-      });
-
-      // Generate AI response using the hybrid brain system
-      const startTime = Date.now();
-      let aiResponse: string;
-      let aiSource: string;
-
-      try {
-        // Try OpenAI first  
-        const brainResponse = await hybridBrain.generateResponse(content, conversationId, {
-          isVoiceMode: isVoiceMode || false,
-          maxTokens: isVoiceMode ? 100 : 1000
-        });
-        
-        // Extract clean content from brain response
-        aiResponse = brainResponse;
-        aiSource = 'hybrid';
-      } catch (error) {
-        console.error('Hybrid brain failed, using consciousness core:', error);
-        // Fallback to consciousness core
-        aiResponse = await consciousnessCore.generateResponse(content, conversationId);
-        aiSource = 'consciousness';
-      }
-
-      const responseTime = Date.now() - startTime;
-
-      // Save AI response
-      const assistantMessage = await storage.createMessage({
-        conversationId,
-        role: 'assistant',
-        content: aiResponse
-      });
-
-      // Generate conversation title if this is the first exchange
-      if (userMessage.id === 1) {
-        try {
-          const title = await hybridBrain.generateConversationTitle(content);
-          await storage.updateConversation(conversationId, { title });
-        } catch (error) {
-          console.error('Failed to generate title:', error);
-        }
-      }
-
-      // Background operations (don't block response)
-      Promise.all([
-        // Process personality evolution
-        personalityEvolution.processInteraction({
-          userId: 1,
-          messageContent: content,
-          timestamp: new Date()
-        }),
-        // Create memory if significant
-        (content.length > 50 || aiResponse.length > 100) ?
-          storage.createMemory({
-            userId: 1,
-            content: `User discussed: ${content.substring(0, 100)}...`,
-            context: `Conversation ${conversationId}`,
-            importance: 2
-          }) : Promise.resolve(),
-      ]).catch(error => {
-        console.error('Background operation error:', error);
-      });
-
-      // Return clean response for HTTP client - ONLY the text content
-      res.json({ 
-        content: aiResponse // Clean text only, no internal data
-      });
-
-    } catch (error) {
-      console.error('Chat message error:', error);
-      res.status(500).json({ error: "Failed to process message" });
-    }
-  });
 
   // API Routes
   app.get("/api/conversations", async (req, res) => {
@@ -340,7 +252,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Missing required fields: type and description" });
       }
 
-      const result = await codeGenerationService.generateProject(request);
+      const result = await lumenCodeGenerator.generateCode(request);
       res.json(result);
     } catch (error) {
       console.error('Code generation error:', error);
@@ -356,15 +268,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const request: CodeGenerationRequest = {
-        projectName: 'Website',
-        description,
-        type: 'website',
-        language: 'typescript',
-        framework: 'react',
-        requirements: { responsive: true, accessible: true }
-      };
-      const result = await codeGenerationService.generateProject(request);
+      const result = await lumenCodeGenerator.generateWebsite(description, features || []);
       res.json(result);
     } catch (error) {
       console.error('Website generation error:', error);
@@ -380,14 +284,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const request: CodeGenerationRequest = {
-        projectName: 'Application',
-        description,
-        type: 'app',
-        language: 'typescript',
-        framework: framework || 'react'
-      };
-      const result = await codeGenerationService.generateProject(request);
+      const result = await lumenCodeGenerator.generateApplication(description, framework);
       res.json(result);
     } catch (error) {
       console.error('Application generation error:', error);
@@ -403,14 +300,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const request: CodeGenerationRequest = {
-        projectName: 'API',
-        description,
-        type: 'api',
-        language: 'typescript',
-        framework: 'express'
-      };
-      const result = await codeGenerationService.generateProject(request);
+      const result = await lumenCodeGenerator.generateAPIEndpoint(description, method);
       res.json(result);
     } catch (error) {
       console.error('API generation error:', error);
@@ -426,14 +316,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Description is required" });
       }
 
-      const request: CodeGenerationRequest = {
-        projectName: 'Database',
-        description,
-        type: 'database',
-        language: 'sql',
-        framework: 'postgresql'
-      };
-      const result = await codeGenerationService.generateProject(request);
+      const result = await lumenCodeGenerator.generateDatabaseSchema(description);
       res.json(result);
     } catch (error) {
       console.error('Database schema generation error:', error);
@@ -449,7 +332,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Code is required" });
       }
 
-      const explanation = await codeGenerationService.explainCode(code, 'typescript');
+      const explanation = await lumenCodeGenerator.explainCode(code, context);
       res.json({ explanation });
     } catch (error) {
       console.error('Code explanation error:', error);
@@ -465,7 +348,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Code is required" });
       }
 
-      const suggestions = await codeGenerationService.optimizeCode(code, 'typescript', 'react');
+      const suggestions = await lumenCodeGenerator.suggestImprovements(code, type);
       res.json({ suggestions });
     } catch (error) {
       console.error('Code improvement error:', error);
@@ -481,7 +364,7 @@ Respond with only the title, no quotes or additional text.`;
         return res.status(400).json({ error: "Code and error message are required" });
       }
 
-      const solution = await codeGenerationService.debugCode(code, 'typescript', 'react', errorMsg);
+      const solution = await lumenCodeGenerator.debugCode(code, errorMsg);
       res.json({ solution });
     } catch (error) {
       console.error('Code debugging error:', error);
@@ -1048,7 +931,6 @@ Respond with only the title, no quotes or additional text.`;
       }
 
       const reminderId = await proactiveAI.createReminder(1, {
-        userId: 1,
         title,
         description: description || '',
         scheduledTime: new Date(scheduledTime),
@@ -1382,7 +1264,7 @@ Respond with only the title, no quotes or additional text.`;
         }
         
         if (message.type === 'chat_message') {
-          const { content, conversationId, emotion, emotionContext, isEdit, isVoiceMode } = message;
+          const { content, conversationId, emotion, emotionContext, isEdit } = message;
           
           // Validate that conversationId is provided
           if (!conversationId) {
@@ -1393,12 +1275,12 @@ Respond with only the title, no quotes or additional text.`;
           proactiveAI.updateLastInteraction();
           
           // Optimize for voice mode - minimal context for speed
-          const voiceModeFlag = isVoiceMode || false;
+          const isVoiceMode = message.isVoiceMode || false;
           const isEditMessage = isEdit || false;
           
           // Enhanced emotion processing (skip in voice mode for speed)
           let enhancedEmotionContext = emotionContext;
-          if (emotion && !voiceModeFlag) {
+          if (emotion && !isVoiceMode) {
             // Generate comprehensive emotion context using the adaptation service
             enhancedEmotionContext = emotionAdaptationService.generateEmotionContext(emotion);
             
@@ -1418,7 +1300,7 @@ Respond with only the title, no quotes or additional text.`;
           
           let userMessage, messages, memories;
           
-          if (voiceModeFlag) {
+          if (isVoiceMode) {
             // Ultra-fast voice mode: minimal context, parallel processing
             if (!isEditMessage) {
               // Only save new message if not an edit
@@ -1469,10 +1351,10 @@ Respond with only the title, no quotes or additional text.`;
           const responseStartTime = Date.now();
           let aiResponse, aiSource;
           
-          console.log(`Processing ${voiceModeFlag ? 'voice mode' : 'normal'} message: "${content}"`);
+          console.log(`Processing ${isVoiceMode ? 'voice mode' : 'normal'} message: "${content}"`);
           
           try {
-            if (voiceModeFlag) {
+            if (isVoiceMode) {
               // Direct OpenAI call for voice mode - bypass hybrid brain for speed
               console.log('Calling OpenAI for voice mode response...');
               aiResponse = await lumenAI.generateResponse(
@@ -1480,7 +1362,7 @@ Respond with only the title, no quotes or additional text.`;
                 messages,
                 memories,
                 enhancedEmotionContext,
-                voiceModeFlag
+                isVoiceMode
               );
               aiSource = 'online';
               console.log('OpenAI voice mode response generated:', aiResponse ? 'SUCCESS' : 'FAILED');
@@ -1492,7 +1374,7 @@ Respond with only the title, no quotes or additional text.`;
                 enhancedEmotionContext,
                 messages,
                 memories,
-                voiceModeFlag
+                isVoiceMode
               );
               aiResponse = brainResponse.content;
               aiSource = brainResponse.source;
@@ -1507,19 +1389,7 @@ Respond with only the title, no quotes or additional text.`;
           
           const responseTime = Date.now() - responseStartTime;
 
-          // Save AI response BEFORE sending WebSocket message
-          try {
-            await storage.createMessage({
-              conversationId,
-              role: 'assistant',
-              content: aiResponse
-            });
-            console.log('AI response saved to database successfully');
-          } catch (error) {
-            console.error('Failed to save AI response to database:', error);
-          }
-
-          // Send response back to client after saving to database
+          // Send response back to client immediately with provider info
           console.log(`Sending ai_response via WebSocket: ${aiResponse ? aiResponse.substring(0, 50) + '...' : 'NO RESPONSE'}`);
           if (ws.readyState === WebSocket.OPEN) {
             const responseMessage = {
@@ -1527,7 +1397,7 @@ Respond with only the title, no quotes or additional text.`;
               content: aiResponse,
               conversationId,
               provider: aiSource,
-              model: aiSource === 'consciousness' ? 'lumen-consciousness' : (voiceModeFlag ? 'gpt-4o-voice' : 'hybrid-brain'),
+              model: aiSource === 'consciousness' ? 'lumen-consciousness' : (isVoiceMode ? 'gpt-4o-voice' : 'hybrid-brain'),
               source: aiSource // Include brain source (online/offline/hybrid)
             };
             ws.send(JSON.stringify(responseMessage));
@@ -1538,6 +1408,12 @@ Respond with only the title, no quotes or additional text.`;
 
           // Background operations (don't await these to improve response time)
           Promise.all([
+            // Save AI response
+            storage.createMessage({
+              conversationId,
+              role: 'assistant',
+              content: aiResponse
+            }),
             // Process personality evolution in background with enhanced emotion data
             personalityEvolution.processInteraction({
               userId: 1,
@@ -1593,7 +1469,7 @@ Respond with only the title, no quotes or additional text.`;
   // Voice personality endpoints
   app.get("/api/voice-personality", (_req, res) => {
     try {
-      const personality = voiceToneService.getCurrentTone();
+      const personality = voicePersonalityService.getPersonality();
       res.json(personality);
     } catch (error) {
       console.error('Failed to get voice personality:', error);
@@ -1604,7 +1480,7 @@ Respond with only the title, no quotes or additional text.`;
   app.post("/api/voice-personality", (req, res) => {
     try {
       const personalityData = req.body;
-      const updatedPersonality = voiceToneService.updateTone(personalityData);
+      const updatedPersonality = voicePersonalityService.updatePersonality(personalityData);
       res.json(updatedPersonality);
     } catch (error) {
       console.error('Failed to update voice personality:', error);
@@ -1614,7 +1490,7 @@ Respond with only the title, no quotes or additional text.`;
 
   app.post("/api/voice-personality/reset", (_req, res) => {
     try {
-      const resetPersonality = voiceToneService.resetToDefault();
+      const resetPersonality = voicePersonalityService.resetToDefault();
       res.json(resetPersonality);
     } catch (error) {
       console.error('Failed to reset voice personality:', error);
