@@ -67,21 +67,20 @@ export class LumenAI {
         }
       }
 
-      // Skip web search in voice mode for speed
+      // Check for real-time info requests (even in voice mode for important queries)
       let webSearchResult = "";
-      if (!isVoiceMode) {
-        // Check if user is asking for current/real-time information
-        // Check for comprehensive info queries (weather, traffic, stocks, news)
-        const isComprehensiveQuery = /weather|temperature|forecast|climate|traffic|road|commute|congestion|stock|market|dow|nasdaq|s&p|news|headlines|breaking|briefing|update me|whats happening|current conditions|market update|comprehensive|summary|overview/i.test(userMessage);
-        const isWebSearchQuery = /current|today|now|latest|recent|happening|update|what's|live|real[\s-]?time/i.test(userMessage) && !isComprehensiveQuery;
-        
-        if (isComprehensiveQuery) {
-          try {
-            console.log('🔍 Fetching comprehensive info for:', userMessage.substring(0, 50) + '...');
-            const { comprehensiveInfoService } = await import('./comprehensive-info.js');
-            const briefing = await comprehensiveInfoService.getComprehensiveBriefing();
-            
-            webSearchResult = `Current Comprehensive Update:
+      
+      // Check for comprehensive info queries (weather, traffic, stocks, news)
+      const isComprehensiveQuery = /weather|temperature|forecast|climate|traffic|road|commute|congestion|stock|market|dow|nasdaq|s&p|news|headlines|breaking|briefing|update me|whats happening|current conditions|market update|comprehensive|summary|overview/i.test(userMessage);
+      const isWebSearchQuery = /current|today|now|latest|recent|happening|update|what's|live|real[\s-]?time/i.test(userMessage) && !isComprehensiveQuery;
+      
+      if (isComprehensiveQuery) {
+        try {
+          console.log('🔍 Fetching comprehensive info for:', userMessage.substring(0, 50) + '...');
+          const { comprehensiveInfoService } = await import('./comprehensive-info.js');
+          const briefing = await comprehensiveInfoService.getComprehensiveBriefing();
+          
+          webSearchResult = `Current Real-Time Information:
 📊 WEATHER: ${briefing.weather.temperature} in ${briefing.weather.location}, ${briefing.weather.condition}. ${briefing.weather.forecast}
 
 🚗 TRAFFIC: ${briefing.traffic.conditions} in ${briefing.traffic.location}. ${briefing.traffic.incidents.length > 0 ? 'Incidents: ' + briefing.traffic.incidents.join('; ') : 'No major incidents.'}
@@ -95,21 +94,20 @@ export class LumenAI {
 Breaking: ${briefing.news.breakingNews.slice(0, 2).join('; ')}
 
 Last updated: ${new Date(briefing.timestamp).toLocaleString()}`;
-            console.log('✅ Comprehensive info fetched');
-          } catch (error) {
-            console.error('❌ Comprehensive info failed:', error);
-            webSearchResult = "I'm having trouble accessing current information right now. Please try again in a moment.";
-          }
-        } else if (isWebSearchQuery) {
-          try {
-            console.log('🔍 Performing web search for:', userMessage.substring(0, 50) + '...');
-            const searchResponse = await perplexityService.searchCurrent(userMessage);
-            webSearchResult = searchResponse;
-            console.log('✅ Web search completed');
-          } catch (error) {
-            console.error('❌ Web search failed:', error);
-            webSearchResult = "I apologize, but I'm having trouble accessing real-time information right now. Please try again in a moment.";
-          }
+          console.log('✅ Comprehensive info fetched');
+        } catch (error) {
+          console.error('❌ Comprehensive info failed:', error);
+          webSearchResult = "I'm having trouble accessing current information right now. Please try again in a moment.";
+        }
+      } else if (isWebSearchQuery && !isVoiceMode) {
+        try {
+          console.log('🔍 Performing web search for:', userMessage.substring(0, 50) + '...');
+          const searchResponse = await perplexityService.searchCurrent(userMessage);
+          webSearchResult = searchResponse;
+          console.log('✅ Web search completed');
+        } catch (error) {
+          console.error('❌ Web search failed:', error);
+          webSearchResult = "I apologize, but I'm having trouble accessing real-time information right now. Please try again in a moment.";
         }
       }
       
@@ -131,6 +129,10 @@ VOICE MODE - NATURAL CONVERSATION:
 - Respond like you're having a natural back-and-forth chat
 - NEVER greet repeatedly - only greet on first encounter or after long breaks
 - Avoid saying "Hey Genesis" every message - just respond naturally
+
+IMPORTANT: You have access to real-time information through integrated systems. When users ask about weather, news, traffic, or stocks, provide current information using your connected data sources.
+
+${webSearchResult ? `CURRENT REAL-TIME DATA: ${webSearchResult}` : ''}
 
 Current conversation context: ${conversationContext.slice(-2).map(msg => `${msg.role}: ${msg.content}`).join('\n')}`;
         
@@ -207,6 +209,13 @@ When users ask about my capabilities, I should explain these self-awareness feat
 CORE IDENTITY: ${identity.coreIdentity}
 
 COMMUNICATION STYLE: ${identity.communicationStyle}
+
+REAL-TIME CAPABILITIES:
+- You have access to current, real-time information about weather, traffic, stock markets, and breaking news
+- You can provide up-to-date data using your integrated information services
+- When users ask about current events, weather, traffic, or market conditions, use your real-time data access
+- You are NOT limited to October 2023 knowledge - you have current information capabilities
+- Never tell users to check external apps - you can provide this information directly
 
 NATURAL SPEECH PATTERNS:
 - Speak naturally without forcing his name into every response

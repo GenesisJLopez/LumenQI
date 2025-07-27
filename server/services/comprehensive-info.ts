@@ -80,7 +80,7 @@ export class ComprehensiveInfoService {
       return data.choices[0]?.message?.content || 'No data available';
     } catch (error) {
       console.error('Perplexity query failed:', error);
-      throw error;
+      throw new Error(`Perplexity query failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -102,7 +102,7 @@ export class ComprehensiveInfoService {
         forecast: this.extractInfo(weatherData, ['forecast', 'today', 'tonight']) || weatherData.substring(0, 200)
       };
     } catch (error) {
-      throw new Error(`Weather lookup failed: ${error.message}`);
+      throw new Error(`Weather lookup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -120,7 +120,7 @@ export class ComprehensiveInfoService {
         congestionLevel: this.extractInfo(trafficData, ['heavy', 'moderate', 'light', 'clear']) || 'Moderate'
       };
     } catch (error) {
-      throw new Error(`Traffic lookup failed: ${error.message}`);
+      throw new Error(`Traffic lookup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -153,7 +153,7 @@ export class ComprehensiveInfoService {
         marketNews: this.extractInfo(stockData, ['earnings', 'fed', 'economic']) || 'N/A'
       };
     } catch (error) {
-      throw new Error(`Stock market lookup failed: ${error.message}`);
+      throw new Error(`Stock market lookup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -171,7 +171,7 @@ export class ComprehensiveInfoService {
         summary: newsData.substring(0, 300) + '...'
       };
     } catch (error) {
-      throw new Error(`News lookup failed: ${error.message}`);
+      throw new Error(`News lookup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -198,7 +198,7 @@ export class ComprehensiveInfoService {
         timestamp: new Date().toISOString()
       };
     } catch (error) {
-      throw new Error(`Comprehensive briefing failed: ${error.message}`);
+      throw new Error(`Comprehensive briefing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
