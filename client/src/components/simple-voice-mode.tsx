@@ -10,11 +10,19 @@ interface SimpleVoiceModeProps {
   currentConversationId?: number;
 }
 
+interface Message {
+  id: number;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
 export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceModeProps) {
-  const [isListening, setIsListening] = useState(true);
+  const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [speechIntensity, setSpeechIntensity] = useState(0);
+  const [messages, setMessages] = useState<Message[]>([]);
   
   const { sendMessage, lastMessage } = useHttpCommunication();
   const recognitionRef = useRef<any>(null);
@@ -35,11 +43,17 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       
       // Start basic voice recognition
       console.log('🎤 Starting basic voice recognition');
+      // Load conversation messages for display
+      if (currentConversationId) {
+        fetchMessages();
+      }
+      
       setTimeout(() => {
         if (recognitionRef.current) {
+          console.log('🎤 Starting speech recognition from device access...');
           startListening();
         }
-      }, 1000);
+      }, 2000);
     };
 
     initializeDeviceAccess();
@@ -54,15 +68,39 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
   }, []);
 
   // Start listening function for voice mode
+  // Fetch conversation messages for display
+  const fetchMessages = async () => {
+    if (!currentConversationId) return;
+    
+    try {
+      const response = await fetch(`/api/conversations/${currentConversationId}/messages`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.slice(-6)); // Show last 6 messages
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
+
   const startListening = () => {
-    if (!recognitionRef.current) return;
+    if (!recognitionRef.current) {
+      console.error('❌ Speech recognition not available');
+      return;
+    }
+    
+    if (isListening || isSpeaking) {
+      console.log('🎤 Already listening or speaking, skipping start');
+      return;
+    }
     
     try {
       setIsListening(true);
       recognitionRef.current.start();
-      console.log('🎤 Voice recognition started');
+      console.log('✅ Voice recognition started successfully');
     } catch (error) {
-      console.error('Failed to start recognition:', error);
+      console.error('❌ Failed to start recognition:', error);
+      setIsListening(false);
     }
   };
 
@@ -134,12 +172,18 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         setIsListening(false);
         // Auto-restart listening when not speaking
         if (!isSpeaking) {
-          setTimeout(() => startListening(), 500);
+          setTimeout(() => {
+            console.log('🎤 Auto-restarting speech recognition...');
+            startListening();
+          }, 1000);
         }
       };
       
       // Auto-start listening when voice mode loads
-      setTimeout(() => startListening(), 1000);
+      setTimeout(() => {
+        console.log('🎤 Attempting to start voice recognition...');
+        startListening();
+      }, 1500);
     }
     
     return () => {
@@ -160,6 +204,11 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     if (lastMessage.type === 'ai_response' && lastMessage.content) {
       console.log('🎤 Voice mode: Speaking AI response now');
       speakText(lastMessage.content);
+      
+      // Refresh messages to show new conversation
+      setTimeout(() => {
+        fetchMessages();
+      }, 100);
     }
   }, [lastMessage]);
 
@@ -184,20 +233,24 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         isVoiceMode: true
       });
       console.log('✅ Voice message sent successfully');
+      
+      // Refresh messages immediately to show user message
+      fetchMessages();
     } catch (error) {
       console.error('❌ Failed to send voice message:', error);
     }
     
     // Restart listening after a short delay (reduced from 30ms to 10ms)
     setTimeout(() => {
-      if (recognitionRef.current) {
+      if (recognitionRef.current && !isSpeaking) {
         try {
           recognitionRef.current.start();
+          setIsListening(true);
         } catch (error) {
           console.error('Failed to restart recognition:', error);
         }
       }
-    }, 10);
+    }, 500);
   };
 
   const speakText = async (text: string) => {
@@ -345,12 +398,42 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       </div>
       
       {/* Logo - centered and bigger */}
-      <div className="relative z-10">
+      <div className="relative z-10 mb-8">
         <img 
           src={lumenLogo} 
           alt="Lumen" 
           className="w-48 h-48 mx-auto"
         />
+        
+        {/* Status indicator */}
+        <div className="text-center mt-4 text-white">
+          {isListening && <p className="text-green-400">🎤 Listening...</p>}
+          {isSpeaking && <p className="text-blue-400">🗣️ Speaking...</p>}
+          {transcript && <p className="text-yellow-400 text-sm">"{transcript}"</p>}
+        </div>
+      </div>
+      
+      {/* Conversation Display */}
+      <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 w-3/4 max-w-2xl z-20">
+        <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 max-h-60 overflow-y-auto">
+          {messages.length > 0 ? (
+            <div className="space-y-3">
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                    message.role === 'user' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-700 text-white'
+                  }`}>
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 text-center text-sm">Say something to start our conversation...</p>
+          )}
+        </div>
       </div>
       
       {/* Exit Voice Mode Button */}
