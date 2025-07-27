@@ -1,5 +1,10 @@
-# Use Node.js 20 Alpine for smaller image size
+# Multi-stage Docker build for Replit deployment
 FROM node:20-alpine AS builder
+
+# Set image labels for Replit deployment
+LABEL maintainer="lumen-ai"
+LABEL version="1.0.0"
+LABEL description="Lumen AI Chat Application"
 
 # Install system dependencies for building
 RUN apk add --no-cache \
