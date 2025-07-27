@@ -124,6 +124,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       }
       
       recognition.onstart = () => {
+        console.log('🎤 Speech recognition started successfully');
         setIsListening(true);
       };
       
@@ -152,15 +153,14 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         const currentTranscript = finalTranscript || interimTranscript;
         setTranscript(currentTranscript);
         
-        // Process final results with delay to ensure complete transcript
+        // Process final results immediately when speech stops
         if (finalTranscript.trim()) {
-          console.log('🎤 Got final transcript:', finalTranscript);
+          console.log('🎤 FINAL TRANSCRIPT RECEIVED:', finalTranscript);
           clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => {
-            console.log('🎤 Processing message after delay:', finalTranscript);
-            setIsListening(false);
-            processMessage(finalTranscript.trim());
-          }, 500);
+          setIsListening(false);
+          setTranscript(''); // Clear display
+          console.log('🎤 CALLING processMessage with:', finalTranscript.trim());
+          processMessage(finalTranscript.trim());
         }
       };
       
@@ -393,11 +393,11 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
 
   return (
     <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
-      {/* Cosmic glow positioned exactly behind logo */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* Cosmic glow positioned at same level as logo */}
+      <div className="absolute inset-0 flex items-center justify-center mb-8">
         <div 
           className={cn(
-            "w-56 h-56 rounded-full transition-all duration-300",
+            "w-48 h-48 rounded-full transition-all duration-300",
             isSpeaking ? 'cosmic-pulse-speaking' : 'cosmic-pulse-listening'
           )}
           style={isSpeaking ? {
