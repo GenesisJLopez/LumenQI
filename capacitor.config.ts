@@ -1,4 +1,4 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.lumen.qi',
@@ -13,7 +13,6 @@ const config: CapacitorConfig = {
     backgroundColor: '#0a0a0a',
     allowsLinkPreview: false,
     scrollEnabled: true,
-    bounces: false,
     disableLogs: false,
     minVersion: '13.0',
     preferredContentMode: 'mobile'
