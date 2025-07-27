@@ -27,6 +27,7 @@ demonstrate-*.md
 attached_assets/Screenshot*
 attached_assets/*.png
 !attached_assets/lumen-logo*.svg
+!attached_assets/lumen-logo*1753612035103.png
 
 # Backup and storage files
 lumen-backups
