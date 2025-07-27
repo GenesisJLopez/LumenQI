@@ -53,6 +53,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const lumenCodeGenerator = CodeGenerationService.getInstance();
   const voicePersonalityService = VoicePersonalityService.getInstance();
 
+  // Health check endpoint for deployment
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // API Routes
   app.get("/api/conversations", async (req, res) => {
     try {

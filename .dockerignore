@@ -1,47 +1,99 @@
-# Exclude large assets and development artifacts
-attached_assets/
-node_modules/
-.git/
-.cache/
-.pythonlibs/
-coverage/
-*.log
-*.tmp
-*.temp
-.env
+# Node modules
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+dist
+build
+
+# Development files
+.git
+.gitignore
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-README.md
-electron-main.js
+
+# Documentation and demos
+README*.md
+*.md
+demo-*.js
+test-*.js
+demonstrate-*.md
+
+# Large attached assets (screenshots and unnecessary images)
+attached_assets/Screenshot*
+attached_assets/*.png
+!attached_assets/lumen-logo*.svg
+
+# Backup and storage files
+lumen-backups
+lumen-brain-storage
+lumen-*.json
+*.json.bak
+
+# Development scripts
+scripts
+*.sh
+
+# iOS/Apple development files
+ios
+*.plist
+Info.plist
+capacitor.config.ts
+electron-*.js
+electron-*.json
+
+# ML and Python files
 ml-backend.py
 *.py
 
-# Exclude development and test files
-*.test.js
-*.test.ts
-*.spec.js
-*.spec.ts
-__tests__/
-test/
-tests/
+# Audio files
+*.mp3
+*.wav
 
-# Exclude OS files
+# macOS and system files
 .DS_Store
-Thumbs.db
+.AppleDouble
+.LSOverride
+
+# IDE files
+.vscode
+.idea
 *.swp
 *.swo
-*~
 
-# Exclude editor files
-.vscode/
-.idea/
-*.sublime-*
+# Log files
+*.log
 
-# Exclude large dependency caches
-.npm/
-.yarn/
-.pnpm/
+# Lock files (keep package-lock.json for reproducible builds)
 yarn.lock
-package-lock.json
+pnpm-lock.yaml
+
+# Cache directories
+.cache
+.temp
+.tmp
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+bower_components
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
