@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Required for Hardened Runtime -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <key>com.apple.security.cs.disable-executable-page-protection</key>
+  <true/>
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+  
+  <!-- Network Access -->
+  <key>com.apple.security.network.client</key>
+  <true/>
+  <key>com.apple.security.network.server</key>
+  <true/>
+  
+  <!-- File System Access -->
+  <key>com.apple.security.files.user-selected.read-write</key>
+  <true/>
+  <key>com.apple.security.files.downloads.read-write</key>
+  <true/>
+  
+  <!-- Microphone for Voice Commands -->
+  <key>com.apple.security.device.microphone</key>
+  <true/>
+  
+  <!-- Camera for Vision (if re-enabled) -->
+  <key>com.apple.security.device.camera</key>
+  <true/>
+  
+  <!-- Audio Output -->
+  <key>com.apple.security.device.audio-input</key>
+  <true/>
+  
+  <!-- Bluetooth for Device Integration -->
+  <key>com.apple.security.device.bluetooth</key>
+  <true/>
+  
+  <!-- Location Services for Calendar Integration -->
+  <key>com.apple.security.personal-information.location</key>
+  <true/>
+  
+  <!-- Addressbook for Calendar Integration -->
+  <key>com.apple.security.personal-information.addressbook</key>
+  <true/>
+  
+  <!-- Calendars -->
+  <key>com.apple.security.personal-information.calendars</key>
+  <true/>
+</dict>
+</plist>

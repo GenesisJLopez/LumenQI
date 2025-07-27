@@ -22,9 +22,55 @@
   ],
   "mac": {
     "category": "public.app-category.productivity",
-    "target": {
-      "target": "default",
-      "arch": ["x64", "arm64"]
+    "icon": "assets/lumen-logo.icns",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "mas",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "type": "distribution",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist",
+    "provisioningProfile": "build/embedded.provisionprofile"
+  },
+  "mas": {
+    "category": "public.app-category.productivity",
+    "icon": "assets/lumen-logo.icns",
+    "hardenedRuntime": false,
+    "entitlements": "build/entitlements.mas.plist",
+    "entitlementsInherit": "build/entitlements.mas.inherit.plist",
+    "provisioningProfile": "build/embedded.provisionprofile",
+    "type": "distribution"
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ],
+    "background": "assets/dmg-background.png",
+    "iconSize": 80,
+    "window": {
+      "width": 540,
+      "height": 380
     }
   },
   "win": {
