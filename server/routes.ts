@@ -25,6 +25,7 @@ import { voiceToneService } from "./services/voice-tone-service";
 import { visionAnalysisService } from "./services/vision-analysis";
 import { codeGenerationService, CodeGenerationService, CodeGenerationRequest } from "./services/code-generation";
 import { VoicePersonalityService } from "./services/voice-personality";
+import { comprehensiveInfoService } from "./services/comprehensive-info";
 
 import { insertConversationSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
 import { z } from "zod";
@@ -944,6 +945,60 @@ Respond with only the title, no quotes or additional text.`;
     } catch (error) {
       console.error('TTS error:', error);
       res.status(500).json({ error: "Failed to generate speech" });
+    }
+  });
+
+  // Comprehensive Information API endpoints
+  app.get("/api/info/weather", async (req, res) => {
+    try {
+      const location = req.query.location as string;
+      const weather = await comprehensiveInfoService.getCurrentWeather(location);
+      res.json(weather);
+    } catch (error) {
+      console.error('Weather lookup error:', error);
+      res.status(500).json({ error: "Failed to get weather information" });
+    }
+  });
+
+  app.get("/api/info/traffic", async (req, res) => {
+    try {
+      const location = req.query.location as string;
+      const traffic = await comprehensiveInfoService.getTrafficConditions(location);
+      res.json(traffic);
+    } catch (error) {
+      console.error('Traffic lookup error:', error);
+      res.status(500).json({ error: "Failed to get traffic information" });
+    }
+  });
+
+  app.get("/api/info/stocks", async (req, res) => {
+    try {
+      const stocks = await comprehensiveInfoService.getStockMarketUpdate();
+      res.json(stocks);
+    } catch (error) {
+      console.error('Stock market lookup error:', error);
+      res.status(500).json({ error: "Failed to get stock market information" });
+    }
+  });
+
+  app.get("/api/info/news", async (req, res) => {
+    try {
+      const news = await comprehensiveInfoService.getNewsUpdates();
+      res.json(news);
+    } catch (error) {
+      console.error('News lookup error:', error);
+      res.status(500).json({ error: "Failed to get news updates" });
+    }
+  });
+
+  app.get("/api/info/briefing", async (req, res) => {
+    try {
+      const location = req.query.location as string;
+      const briefing = await comprehensiveInfoService.getComprehensiveBriefing(location);
+      res.json(briefing);
+    } catch (error) {
+      console.error('Comprehensive briefing error:', error);
+      res.status(500).json({ error: "Failed to get comprehensive briefing" });
     }
   });
 
