@@ -101,13 +101,15 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
 
   // Start speech recognition
   const startListening = () => {
-    if (!recognitionRef.current || isListening || isSpeaking) return;
+    if (!recognitionRef.current || isListening || isSpeaking || isProcessingRef.current) return;
     
     try {
       console.log('🎤 STARTING SPEECH RECOGNITION');
       recognitionRef.current.start();
     } catch (error) {
       console.error('Failed to start recognition:', error);
+      // Try again in 2 seconds
+      setTimeout(startListening, 2000);
     }
   };
 
@@ -170,8 +172,13 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
       };
       
       // Load messages and start listening
-      fetchMessages();
-      setTimeout(startListening, 2000);
+      if (currentConversationId) {
+        fetchMessages();
+      }
+      setTimeout(() => {
+        console.log('🎤 AUTO-STARTING VOICE RECOGNITION');
+        startListening();
+      }, 1500);
     } else {
       console.error('Speech recognition not supported');
     }
