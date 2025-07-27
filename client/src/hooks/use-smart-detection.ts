@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useEmotionDetection } from './use-emotion-detection';
 import { useMotionDetection } from './use-motion-detection';
 
@@ -13,7 +13,7 @@ interface SmartDetectionState {
 }
 
 export function useSmartDetection() {
-  const [state, setState] = useState<SmartDetectionState>({
+  const [state, setState] =<SmartDetectionState>({
     currentMode: 'emotion',
     batteryLevel: 1,
     isPluggedIn: false,

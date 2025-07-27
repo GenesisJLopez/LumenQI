@@ -4,13 +4,13 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {ContentTrigger } from '@/components/ui/tabs';
 import { 
   Activity, 
   Brain, 
@@ -102,19 +102,19 @@ export function ConversationFlowVisualization() {
   const animationRef = useRef<number>();
 
   // Fetch flow visualization data
-  const { data: visualizationData, isLoading } = useQuery<FlowVisualizationData>({
+  const { data: visualizationData, isLoading } =<FlowVisualizationData>({
     queryKey: ['/api/flow/visualization', selectedConversation],
     refetchInterval: isRealtime ? 5000 : false
   });
 
   // Fetch conversation metrics
-  const { data: metrics } = useQuery<ConversationMetrics>({
+  const { data: metrics } =<ConversationMetrics>({
     queryKey: ['/api/flow/metrics', selectedConversation],
     refetchInterval: isRealtime ? 10000 : false
   });
 
   // Fetch conversations list
-  const { data: conversations = [] } = useQuery<any[]>({
+  const { data: conversations = [] } =<any[]>({
     queryKey: ['/api/conversations']
   });
 

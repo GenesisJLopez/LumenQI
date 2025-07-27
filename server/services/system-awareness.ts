@@ -748,7 +748,7 @@ SELF-MODIFICATION ABILITIES:
         // Replace problematic ref patterns
         repairedContent = content.replace(
           /ref=\{([^}]+)\}/g,
-          'ref={(el) => { if (el) $1(el); }}'
+          'ref={(el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) (el) => { if (el) $1(el); (el); (el); (el); (el); (el); (el); (el); (el); (el); (el); (el); (el); }}}}}}}}}}}}}}'
         );
         action = 'Fixed callback ref pattern';
       }

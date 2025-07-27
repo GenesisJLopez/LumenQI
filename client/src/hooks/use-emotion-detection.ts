@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { emotionDetector, type EmotionData } from '@/lib/emotion-detector';
+import { type EmotionData } from '@/lib/emotion-detector';
 import { enhancedEmotionDetector } from '@/lib/enhanced-emotion-detector';
 import { AdvancedEmotionDetector, type EmotionResult } from '@/lib/advanced-emotion-detector';
 
@@ -103,8 +103,7 @@ export function useEmotionDetection() {
   }, [advancedDetector]);
 
   const stopDetection = useCallback(() => {
-    advancedDetector.stopDetection();
-    emotionDetector.stopAnalyzing();
+    advancedDetector.stopDetection();.stopAnalyzing();
     setState(prev => ({ ...prev, isAnalyzing: false, currentEmotion: null }));
     console.log('Advanced emotion detection stopped');
   }, [advancedDetector]);
@@ -209,8 +208,7 @@ export function useEmotionDetection() {
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      advancedDetector.stopDetection();
-      emotionDetector.stopAnalyzing();
+      advancedDetector.stopDetection();.stopAnalyzing();
     };
   }, [advancedDetector]);
 

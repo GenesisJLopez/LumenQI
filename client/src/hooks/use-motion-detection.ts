@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 export interface MotionData {
   isMotionDetected: boolean;
@@ -18,7 +18,7 @@ interface MotionDetectionState {
 }
 
 export function useMotionDetection() {
-  const [state, setState] = useState<MotionDetectionState>({
+  const [state, setState] =<MotionDetectionState>({
     isActive: false,
     isInitialized: false,
     currentMotion: {

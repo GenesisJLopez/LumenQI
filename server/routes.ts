@@ -25,7 +25,7 @@ import { voiceToneService } from "./services/voice-tone-service";
 import { visionAnalysisService } from "./services/vision-analysis";
 import { codeGenerationService } from "./services/code-generation";
 
-import { insertConversationSchema, insertMessageSchema, insertMemorySchema, insertFeedbackSchema, conversations } from "@shared/schema";
+import { insertConversationSchema insertMemorySchema conversations } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -583,7 +583,7 @@ Respond with only the title, no quotes or additional text.`;
   // Feedback API endpoints
   app.post("/api/feedback", async (req, res) => {
     try {
-      const feedbackData = insertFeedbackSchema.parse({
+      const feedbackData =.parse({
         ...req.body,
         userId: 1 // Demo user ID
       });

@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { identityStorage } from "./identity-storage";
-import { systemAwarenessService } from "./system-awareness";
 import { perplexityService } from "./perplexity-search";
+import { systemAwarenessService } from "./system-awareness";
 import { vocabularyService } from "./vocabulary-enhancement";
 import { voiceToneService } from "./voice-tone-service";
 
