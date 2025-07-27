@@ -406,12 +406,37 @@ export default function Home() {
                 audio.onplay = () => {
                   setIsSpeaking(true);
                   console.log('Voice response started playing');
+                  
+                  // Add dynamic speech rhythm based on text length
+                  const textLength = cleanText.length;
+                  let speechRhythm = 'medium';
+                  
+                  if (textLength < 50) {
+                    speechRhythm = 'fast';
+                  } else if (textLength < 120) {
+                    speechRhythm = 'medium';
+                  } else {
+                    speechRhythm = 'slow';
+                  }
+                  
+                  // Apply speech-synced glow effect
+                  const logoElement = document.querySelector('.lumen-central-logo img');
+                  if (logoElement) {
+                    logoElement.className = `lumen-logo-speech-${speechRhythm}`;
+                  }
                 };
                 
                 audio.onended = () => {
                   setIsSpeaking(false);
                   URL.revokeObjectURL(audioUrl);
                   console.log('Voice response ended, restarting listening');
+                  
+                  // Reset logo to listening state
+                  const logoElement = document.querySelector('.lumen-central-logo img');
+                  if (logoElement) {
+                    logoElement.className = 'lumen-logo-listening';
+                  }
+                  
                   // Restart listening immediately with no delay
                   if (isSupported && isVoiceMode) {
                     setTimeout(() => startListening(), 10);
@@ -422,6 +447,13 @@ export default function Home() {
                   setIsSpeaking(false);
                   URL.revokeObjectURL(audioUrl);
                   console.error('Audio playback failed');
+                  
+                  // Reset logo to idle state on error
+                  const logoElement = document.querySelector('.lumen-central-logo img');
+                  if (logoElement) {
+                    logoElement.className = 'lumen-logo-idle';
+                  }
+                  
                   // Restart listening even on error
                   if (isSupported && isVoiceMode) {
                     setTimeout(() => startListening(), 10);
@@ -489,14 +521,26 @@ export default function Home() {
       const trimmedTranscript = transcript.trim();
       if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
         console.log('Voice mode transcript received:', trimmedTranscript);
+        
+        // Set logo to processing state while generating response
+        const logoElement = document.querySelector('.lumen-central-logo img');
+        if (logoElement) {
+          logoElement.className = 'lumen-logo-speaking';
+        }
+        
         handleSendMessage(trimmedTranscript);
         
         // Clear transcript to prevent duplication
         if (typeof stopListening === 'function') {
-          // Reset speech recognition state
+          // Reset speech recognition state and logo animation
           setTimeout(() => {
             if (isVoiceMode && isSupported && !isTyping) {
               startListening();
+              // Set logo back to listening state
+              const logoElement = document.querySelector('.lumen-central-logo img');
+              if (logoElement) {
+                logoElement.className = 'lumen-logo-listening';
+              }
             }
           }, 100);
         }
