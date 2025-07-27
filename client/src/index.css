@@ -523,6 +523,96 @@ body {
   animation: cosmicGlow 0.8s ease-in-out infinite;
 }
 
+/* Enhanced speech-synced glow animations */
+@keyframes speechRhythmSlow {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 25px rgba(119, 198, 255, 0.6));
+  }
+  30% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 35px rgba(255, 119, 198, 0.8));
+  }
+  70% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 45px rgba(120, 119, 198, 0.9));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 25px rgba(119, 198, 255, 0.6));
+  }
+}
+
+@keyframes speechRhythmMedium {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 30px rgba(119, 198, 255, 0.7));
+  }
+  20% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 40px rgba(255, 119, 198, 0.85));
+  }
+  50% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 55px rgba(120, 119, 198, 1));
+  }
+  80% {
+    transform: scale(1.10);
+    filter: drop-shadow(0 0 45px rgba(255, 119, 198, 0.9));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 30px rgba(119, 198, 255, 0.7));
+  }
+}
+
+@keyframes speechRhythmFast {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 35px rgba(119, 198, 255, 0.8));
+  }
+  15% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 45px rgba(255, 119, 198, 0.9));
+  }
+  30% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 60px rgba(120, 119, 198, 1));
+  }
+  45% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 50px rgba(255, 119, 198, 0.95));
+  }
+  60% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 65px rgba(119, 198, 255, 1));
+  }
+  75% {
+    transform: scale(1.10);
+    filter: drop-shadow(0 0 55px rgba(120, 119, 198, 0.9));
+  }
+  90% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 45px rgba(255, 119, 198, 0.85));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 35px rgba(119, 198, 255, 0.8));
+  }
+}
+
+.lumen-logo-speech-slow {
+  animation: speechRhythmSlow 2.5s ease-in-out infinite;
+}
+
+.lumen-logo-speech-medium {
+  animation: speechRhythmMedium 1.8s ease-in-out infinite;
+}
+
+.lumen-logo-speech-fast {
+  animation: speechRhythmFast 1.2s ease-in-out infinite;
+}
+
 /* Central Lumen Logo */
 .lumen-central-logo {
   position: fixed;
