@@ -150,8 +150,9 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
         
         // Process final results
         if (finalTranscript.trim()) {
-          console.log('🎤 FINAL TRANSCRIPT:', finalTranscript);
-          setTranscript('');
+          console.log('🎤 FINAL TRANSCRIPT CAPTURED:', finalTranscript);
+          console.log('🎤 SENDING TO LUMEN NOW...');
+          setTranscript('Processing...');
           processVoiceMessage(finalTranscript.trim());
         }
       };
@@ -215,10 +216,11 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
         />
         
         {/* Status indicator */}
-        <div className="text-center mt-4 text-white">
-          {isSpeaking && <p className="text-blue-400">🗣️ Speaking...</p>}
-          {isListening && <p className="text-green-400">🎤 Listening...</p>}
-          {transcript && <p className="text-yellow-400 text-sm">"{transcript}"</p>}
+        <div className="text-center mt-4 text-white min-h-[60px]">
+          {isSpeaking && <p className="text-blue-400 text-lg">🗣️ Lumen is speaking...</p>}
+          {isListening && !transcript && <p className="text-green-400 text-lg">🎤 Listening for your voice...</p>}
+          {transcript && !isProcessingRef.current && <p className="text-yellow-400 text-sm">"{transcript}"</p>}
+          {isProcessingRef.current && <p className="text-purple-400 text-lg">⚡ Processing your message...</p>}
         </div>
       </div>
       
