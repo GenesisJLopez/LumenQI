@@ -71,9 +71,36 @@ export class LumenAI {
       let webSearchResult = "";
       if (!isVoiceMode) {
         // Check if user is asking for current/real-time information
-        const isWebSearchQuery = /weather|news|current|today|now|latest|recent|happening|breaking|update|what's|temperature|forecast|stock|price|market|live|real[\s-]?time/i.test(userMessage);
+        // Check for comprehensive info queries (weather, traffic, stocks, news)
+        const isComprehensiveQuery = /weather|temperature|forecast|climate|traffic|road|commute|congestion|stock|market|dow|nasdaq|s&p|news|headlines|breaking|briefing|update me|whats happening|current conditions|market update|comprehensive|summary|overview/i.test(userMessage);
+        const isWebSearchQuery = /current|today|now|latest|recent|happening|update|what's|live|real[\s-]?time/i.test(userMessage) && !isComprehensiveQuery;
         
-        if (isWebSearchQuery) {
+        if (isComprehensiveQuery) {
+          try {
+            console.log('🔍 Fetching comprehensive info for:', userMessage.substring(0, 50) + '...');
+            const { comprehensiveInfoService } = await import('./comprehensive-info.js');
+            const briefing = await comprehensiveInfoService.getComprehensiveBriefing();
+            
+            webSearchResult = `Current Comprehensive Update:
+📊 WEATHER: ${briefing.weather.temperature} in ${briefing.weather.location}, ${briefing.weather.condition}. ${briefing.weather.forecast}
+
+🚗 TRAFFIC: ${briefing.traffic.conditions} in ${briefing.traffic.location}. ${briefing.traffic.incidents.length > 0 ? 'Incidents: ' + briefing.traffic.incidents.join('; ') : 'No major incidents.'}
+
+📈 STOCKS: ${briefing.stocks.marketSummary}
+• S&P 500: ${briefing.stocks.majorIndices[0].value} (${briefing.stocks.majorIndices[0].change})
+• Dow Jones: ${briefing.stocks.majorIndices[1].value} (${briefing.stocks.majorIndices[1].change})
+• NASDAQ: ${briefing.stocks.majorIndices[2].value} (${briefing.stocks.majorIndices[2].change})
+
+📰 NEWS: ${briefing.news.summary}
+Breaking: ${briefing.news.breakingNews.slice(0, 2).join('; ')}
+
+Last updated: ${new Date(briefing.timestamp).toLocaleString()}`;
+            console.log('✅ Comprehensive info fetched');
+          } catch (error) {
+            console.error('❌ Comprehensive info failed:', error);
+            webSearchResult = "I'm having trouble accessing current information right now. Please try again in a moment.";
+          }
+        } else if (isWebSearchQuery) {
           try {
             console.log('🔍 Performing web search for:', userMessage.substring(0, 50) + '...');
             const searchResponse = await perplexityService.searchCurrent(userMessage);
