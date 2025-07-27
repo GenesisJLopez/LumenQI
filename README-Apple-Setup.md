@@ -1,309 +1,224 @@
-# 🍎 Lumen QI - Apple Ecosystem Setup Guide
+# Apple Development Setup Guide for Lumen QI
 
-This guide will help you deploy Lumen QI to both the Mac App Store and iOS App Store using your Apple Developer account.
+This guide covers setting up Lumen QI for iOS and macOS development with Xcode integration.
 
-## Prerequisites
+## 🍎 Xcode Git Integration
 
-- ✅ Active Apple Developer Account ($99/year)
-- ✅ Xcode installed (latest version recommended)
-- ✅ macOS machine for building and signing
-- ✅ Valid certificates and provisioning profiles
+### Repository Information
+- **Repository URL:** `https://github.com/GenesisJLopez/LumenQI.git`
+- **Username:** `GenesisJLopez`
+- **Repository Name:** `LumenQI`
+- **Default Branch:** `main`
 
-## 🔧 Initial Setup
+### Method 1: Clone in Xcode (Recommended)
 
-### 1. Configure Apple Developer Settings
+1. **Open Xcode**
+2. **Welcome Screen:** Click "Clone an existing project"
+   - Or go to **Source Control > Clone...**
+3. **Enter Repository URL:** `https://github.com/GenesisJLopez/LumenQI.git`
+4. **Authentication:** Enter your GitHub credentials
+5. **Choose Location:** Select where to save the project locally
+6. **Clone:** Xcode will clone and open the project
 
-Edit `build/apple-config.env` with your Apple Developer account details:
+### Method 2: Add Remote to Existing Project
 
-```bash
-# Your Apple Developer Team ID (found in Apple Developer Portal)
-APPLE_TEAM_ID=ABCD123456
+If you already have the iOS project locally:
 
-# Your Apple ID email
-APPLE_ID=your-email@example.com
+1. **Open Terminal** in your project directory
+2. **Navigate to iOS folder:** `cd ios`
+3. **Add remote:** `git remote add origin https://github.com/GenesisJLopez/LumenQI.git`
+4. **Open Xcode:** `open App/App.xcworkspace`
+5. **Xcode will detect** the Git repository automatically
 
-# App-specific password (generate in Apple ID settings)
-APP_SPECIFIC_PASSWORD=xxxx-xxxx-xxxx-xxxx
-```
+### Method 3: Use Setup Script
 
-### 2. Create Certificates & Provisioning Profiles
-
-#### In Apple Developer Portal:
-
-1. **Certificates**:
-   - iOS: "Apple Distribution" certificate
-   - Mac: "3rd Party Mac Developer Application" certificate
-   - Mac: "3rd Party Mac Developer Installer" certificate
-
-2. **App IDs**:
-   - Bundle ID: `com.lumen.qi`
-   - Enable capabilities: Push Notifications, Siri, Background App Refresh
-
-3. **Provisioning Profiles**:
-   - iOS Distribution: "Lumen QI iOS Distribution"
-   - Mac App Store: "Lumen QI macOS Distribution"
-
-### 3. Install Certificates
-
-1. Download certificates from Apple Developer Portal
-2. Double-click to install in Keychain Access
-3. Verify certificates appear in "My Certificates"
-
-## 📱 iOS App Store Deployment
-
-### Step 1: Initialize iOS Project
+Run the automated setup script:
 
 ```bash
-# Initialize Capacitor for iOS
-npm run capacitor:init
-npm run capacitor:add:ios
-npm run capacitor:sync
+./scripts/setup-xcode-git.sh
 ```
 
-### Step 2: Configure Xcode Project
+This script will:
+- Initialize Git in the iOS directory
+- Add the correct remote URL
+- Create iOS-specific .gitignore
+- Verify the configuration
 
+## 📱 iOS Project Structure
+
+```
+ios/
+├── App/
+│   ├── App.xcworkspace          # Main Xcode workspace (open this)
+│   ├── App.xcodeproj            # Xcode project file
+│   ├── App/
+│   │   ├── Info.plist           # iOS app configuration
+│   │   ├── Assets.xcassets      # App icons and images
+│   │   └── ...
+│   └── Pods/                    # CocoaPods dependencies
+├── Podfile                      # CocoaPods configuration
+└── .gitignore                   # iOS-specific Git ignore rules
+```
+
+## 🔧 Xcode Source Control Features
+
+Once connected, you can use Xcode's built-in Git features:
+
+### Source Control Navigator (⌘2)
+- View repository status
+- See file changes and history
+- Manage branches
+- Perform commits and pushes
+
+### Source Control Menu
+- **Commit:** Stage and commit changes
+- **Push:** Push commits to GitHub
+- **Pull:** Pull latest changes
+- **Branch:** Create and switch branches
+- **Merge:** Merge branches
+- **Compare:** View file differences
+
+### Common Git Operations in Xcode
+
+1. **Stage Changes:**
+   - Source Control Navigator > Select files > Right-click > "Stage for Commit"
+
+2. **Commit Changes:**
+   - Source Control > Commit...
+   - Enter commit message
+   - Click "Commit"
+
+3. **Push to GitHub:**
+   - Source Control > Push...
+   - Select remote and branch
+   - Click "Push"
+
+4. **Pull Changes:**
+   - Source Control > Pull...
+   - Select remote and branch
+   - Click "Pull"
+
+## 🛠️ Build Configuration
+
+### Required for iOS Development
+
+1. **Apple Developer Account**
+   - Sign up at [developer.apple.com](https://developer.apple.com)
+   - Configure team in Xcode project settings
+
+2. **Signing & Capabilities**
+   - Open project in Xcode
+   - Select "App" target
+   - Go to "Signing & Capabilities" tab
+   - Select your development team
+   - Configure bundle identifier: `com.lumen.qi`
+
+3. **Provisioning Profiles**
+   - Xcode will manage automatically for development
+   - For App Store: Create distribution profiles in Apple Developer portal
+
+### Build Targets
+
+- **App (iOS):** Main iOS application
+- **App (macOS):** Mac Catalyst version (if enabled)
+
+## 📋 Development Workflow
+
+### 1. Initial Setup
 ```bash
-# Open iOS project in Xcode
-npm run capacitor:open:ios
+# Clone the repository
+git clone https://github.com/GenesisJLopez/LumenQI.git
+cd LumenQI
+
+# Install dependencies
+npm install
+
+# Build web assets
+npm run build
+
+# Add iOS platform
+npx cap add ios
+
+# Sync Capacitor
+npx cap sync ios
+
+# Open in Xcode
+npx cap open ios
 ```
 
-In Xcode:
-1. Select your Team in "Signing & Capabilities"
-2. Verify Bundle Identifier: `com.lumen.qi`
-3. Add required capabilities:
-   - Background App Refresh
-   - Push Notifications
-   - Siri
-   - Speech Recognition
-   - Microphone
-   - Camera
-   - Location Services
-   - Calendar Access
-
-### Step 3: Build and Archive
-
+### 2. Development Cycle
 ```bash
-# Automated build and archive
-./scripts/deploy-to-app-store.sh
+# Make changes to web code
+# Rebuild web assets
+npm run build
+
+# Sync changes to iOS
+npx cap sync ios
+
+# Open Xcode and build/run
+npx cap open ios
 ```
 
-Or manually in Xcode:
-1. Product → Archive
-2. Distribute App → App Store Connect
-3. Upload to App Store Connect
+### 3. Git Workflow in Xcode
+1. Make changes to iOS-specific files in Xcode
+2. Use Source Control Navigator to review changes
+3. Commit changes with descriptive messages
+4. Push to GitHub repository
+5. Pull latest changes from other contributors
 
-## 🖥️ Mac App Store Deployment
+## 🚀 Deployment
 
-### Step 1: Build Electron App
+### Development Testing
+- Use Xcode's iOS Simulator
+- Deploy to physical devices for testing
+- Use TestFlight for beta distribution
 
-```bash
-# Build for Mac App Store
-npm run dist:mas
-```
+### App Store Distribution
+1. **Archive:** Product > Archive in Xcode
+2. **Validate:** Use Xcode Organizer to validate
+3. **Upload:** Upload to App Store Connect
+4. **Review:** Submit for Apple review
 
-### Step 2: Sign and Package
+## 🔐 Security & Credentials
 
-The deployment script handles signing automatically if certificates are configured:
+### GitHub Authentication
+- Use personal access tokens instead of passwords
+- Configure in Xcode: Preferences > Accounts > GitHub
 
-```bash
-# Build, sign, and package for Mac App Store
-./scripts/deploy-to-app-store.sh
-```
+### Apple Developer Certificates
+- Development certificates for testing
+- Distribution certificates for App Store
+- Managed automatically by Xcode for most cases
 
-### Step 3: Upload to App Store Connect
+## 📚 Additional Resources
 
-```bash
-# Upload Mac app
-xcrun altool --upload-app \
-  -f "dist-electron/LumenQI-macOS.pkg" \
-  -u "your-apple-id@example.com" \
-  -p "app-specific-password"
-```
-
-## 🎨 Assets & Icons
-
-### Generate App Icons
-
-```bash
-# Generate all required icon sizes
-./scripts/build-apple-icons.sh
-```
-
-This creates:
-- iOS: All required App Store icon sizes
-- macOS: .icns file for Mac app
-- Asset catalogs ready for Xcode
-
-### Required Assets
-
-- **App Icons**: Generated automatically from your logo
-- **Screenshots**: Create in Xcode Simulator or devices
-- **App Preview Videos**: Optional but recommended
-
-## 🚀 App Store Connect Configuration
-
-### App Information
-
-1. **App Name**: "Lumen QI"
-2. **Bundle ID**: `com.lumen.qi`
-3. **Category**: Productivity
-4. **Age Rating**: Configure based on AI features
-5. **Price**: Free (configure in-app purchases if needed)
-
-### App Description
-
-```
-Lumen QI - Your Intelligent AI Companion
-
-Experience the future of AI interaction with Lumen QI, featuring:
-
-🗣️ Natural Voice Conversations
-📅 Proactive Calendar Integration  
-💬 Advanced Chat Capabilities
-🔧 Code Generation & Development
-🌐 Real-time Information Access
-🎯 Personalized Learning & Adaptation
-
-Lumen QI learns your preferences and provides contextual assistance across all your Apple devices with seamless synchronization.
-
-Perfect for professionals, developers, students, and anyone seeking an intelligent digital companion.
-
-Features:
-• Voice-activated commands with Siri integration
-• Smart calendar reminders and scheduling
-• Real-time web search and current information
-• Advanced code generation and debugging
-• Cross-device synchronization
-• Privacy-focused local AI processing
-• Dark mode and accessibility support
-```
-
-### Keywords
-
-```
-AI, Assistant, Productivity, Voice, Chat, Siri, Calendar, Development, Code, Smart
-```
-
-### Privacy Policy
-
-Update your privacy policy to include:
-- Voice data processing
-- Calendar access
-- Location services (if used)
-- Data synchronization between devices
-
-## 🔒 App Review Guidelines
-
-### Ensure Compliance
-
-1. **AI Disclosure**: Clearly indicate AI-generated content
-2. **Data Privacy**: Explain data collection and usage
-3. **Functionality**: Ensure all features work without crashes
-4. **Design**: Follow Apple Human Interface Guidelines
-5. **Content**: No inappropriate or harmful content
-
-### Testing Checklist
-
-- [ ] App launches successfully
-- [ ] Voice recognition works properly
-- [ ] Calendar integration functions correctly
-- [ ] All permissions are properly requested
-- [ ] App handles network connectivity issues
-- [ ] Dark mode support works
-- [ ] Accessibility features functional
-- [ ] No crashes during review scenarios
-
-## 📋 Submission Process
-
-### 1. TestFlight (Recommended)
-
-Before App Store submission:
-
-```bash
-# Build and upload to TestFlight
-./scripts/deploy-to-app-store.sh
-```
-
-1. Upload build to App Store Connect
-2. Configure TestFlight testing
-3. Invite internal/external testers
-4. Gather feedback and fix issues
-
-### 2. App Store Submission
-
-1. **Build**: Upload final build
-2. **Metadata**: Complete all app information
-3. **Screenshots**: Add for all supported devices
-4. **Review Notes**: Provide testing credentials if needed
-5. **Submit**: Submit for review
-
-### 3. Review Timeline
-
-- **Standard Review**: 7 days average
-- **Expedited Review**: 2-4 days (limited requests)
-- **Review Response**: Address any rejection feedback promptly
-
-## 🛠️ Development Commands
-
-```bash
-# Development
-npm run dev                    # Start development server
-npm run electron:dev          # Start Electron in development
-
-# Building
-npm run build                 # Build web application
-npm run electron:build        # Build Electron apps
-npm run dist:mac              # Build macOS app
-npm run dist:mas              # Build for Mac App Store
-
-# iOS Development
-npm run capacitor:sync        # Sync web build to iOS
-npm run capacitor:open:ios    # Open in Xcode
-npm run ios:build             # Build iOS app
-
-# Apple Deployment  
-./scripts/deploy-to-app-store.sh    # Complete Apple deployment
-./scripts/build-apple-icons.sh      # Generate app icons
-```
+- [Xcode Documentation](https://developer.apple.com/documentation/xcode)
+- [Capacitor iOS Documentation](https://capacitorjs.com/docs/ios)
+- [Apple Developer Documentation](https://developer.apple.com/documentation)
+- [Git in Xcode Guide](https://developer.apple.com/documentation/xcode/source-control-management)
 
 ## 🆘 Troubleshooting
 
 ### Common Issues
 
-1. **Code Signing Errors**
-   - Verify certificates are installed
-   - Check provisioning profile validity
-   - Ensure Team ID matches
+1. **"No remote configured"**
+   - Run: `git remote add origin https://github.com/GenesisJLopez/LumenQI.git`
 
-2. **Build Failures**
-   - Clean build folder: `rm -rf ios/build`
-   - Clean Xcode derived data
-   - Restart Xcode
+2. **Authentication failed**
+   - Use GitHub personal access token
+   - Configure in Xcode Preferences > Accounts
 
-3. **App Store Rejection**
-   - Review Apple's rejection feedback carefully
-   - Test on actual devices, not just simulators
-   - Ensure all metadata is complete and accurate
+3. **Workspace not found**
+   - Ensure CocoaPods are installed: `cd ios && pod install`
+   - Open `.xcworkspace` file, not `.xcodeproj`
 
-### Support
+4. **Build failures**
+   - Clean build folder: Product > Clean Build Folder
+   - Sync Capacitor: `npx cap sync ios`
+   - Update dependencies: `cd ios && pod update`
 
-- Apple Developer Support: https://developer.apple.com/support/
-- App Store Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
-- Capacitor iOS Documentation: https://capacitorjs.com/docs/ios
+### Getting Help
 
-## ✅ Success Checklist
-
-- [ ] Apple Developer account configured
-- [ ] Certificates and provisioning profiles created
-- [ ] iOS app builds and archives successfully
-- [ ] Mac app builds and signs correctly
-- [ ] All app icons generated and configured
-- [ ] App Store Connect metadata completed
-- [ ] TestFlight testing completed
-- [ ] Final submission successful
-
----
-
-**Ready for Apple App Store! 🍎🚀**
-
-Your Lumen QI app is now configured for both Mac App Store and iOS App Store deployment with your Apple Developer account.
+- Check GitHub Issues: https://github.com/GenesisJLopez/LumenQI/issues
+- Capacitor Community: https://capacitorjs.com/community
+- Apple Developer Forums: https://developer.apple.com/forums
