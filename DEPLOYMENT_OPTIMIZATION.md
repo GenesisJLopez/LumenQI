@@ -80,4 +80,37 @@ node scripts/optimize-build.js
 ./scripts/build-deploy.sh
 ```
 
-The deployment should now successfully build within the 8 GiB limit and provide optimal performance.
+## 🚨 CRITICAL SIZE REDUCTION UPDATE
+
+**Issue**: Despite initial optimizations, deployment still failed with "Image size is over the limit of 8 GiB"
+
+**Root Cause**: Nix dependencies and system packages were inflating container size beyond acceptable limits.
+
+**AGGRESSIVE SOLUTION APPLIED**:
+
+### Ultra-Minimal Container Strategy
+1. **Replaced Multi-stage with Single-stage**: Eliminated builder stage overhead
+2. **Ultra-minimal .dockerignore**: Excludes EVERYTHING except:
+   - `package-production.json` (minimal dependencies only)
+   - `package-lock.json`
+   - `dist/` (pre-built application)
+
+3. **Minimal Production Dependencies**: Reduced from 100+ to 7 essential packages:
+   - @neondatabase/serverless
+   - openai
+   - express
+   - ws
+   - drizzle-orm
+   - zod
+   - drizzle-zod
+
+4. **No Build Dependencies**: Application pre-built, no compilation in container
+5. **No System Dependencies**: Removed all apk packages and native dependencies
+
+### Expected Results
+- **Container size**: < 100MB (vs 8+ GiB)
+- **Size reduction**: 99%+ reduction
+- **Deploy time**: Significantly faster
+- **Bandwidth**: Minimal
+
+**Next Steps**: Use the ultra-minimal configuration for deployment. This should resolve the 8 GiB limit issue completely.
