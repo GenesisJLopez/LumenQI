@@ -295,7 +295,7 @@ export default function Home() {
 
   const handleNewConversation = (createNew = false) => {
     // Clear current conversation selection
-    setCurrentConversationId(undefined);
+    setCurrentConversationId(null);
     
     // Only create a new conversation if explicitly requested
     // This allows clearing the current conversation without creating a new one
@@ -454,10 +454,7 @@ export default function Home() {
         if (sendMessage && currentConversationId) {
           sendMessage({
             type: 'emotion_update',
-            emotion,
-            confidence,
-            features,
-            timestamp,
+            content: `Emotion detected: ${emotion}`,
             conversationId: currentConversationId
           });
         }
@@ -499,7 +496,7 @@ export default function Home() {
       {isVoiceMode ? (
         <FixedVoiceMode 
           onExit={handleVoiceModeToggle}
-          currentConversationId={currentConversationId}
+          currentConversationId={currentConversationId || undefined}
         />
       ) : (
         <>
@@ -570,7 +567,7 @@ export default function Home() {
                     <VoiceControls
                       onSendMessage={handleSendMessage}
                       isLoading={createConversationMutation.isPending}
-                      connectionStatus={connectionStatus}
+                      connectionStatus={connectionStatus === 'error' ? 'disconnected' : connectionStatus}
                       onSpeakingChange={setIsSpeaking}
                       onListeningChange={setIsListening}
                       onVoiceModeToggle={handleVoiceModeToggle}
