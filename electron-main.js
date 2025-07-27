@@ -65,10 +65,20 @@ function createWindow() {
     },
     icon: path.join(__dirname, 'assets/lumen-logo.png'),
     title: 'Lumen QI - Quantum Intelligence',
-    titleBarStyle: 'hiddenInset',
-    frame: false,
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    frame: process.platform !== 'darwin',
     backgroundColor: '#0a0a0a',
-    show: false
+    show: false,
+    // Apple-specific optimizations
+    vibrancy: process.platform === 'darwin' ? 'ultra-dark' : undefined,
+    transparent: process.platform === 'darwin',
+    hasShadow: true,
+    acceptFirstMouse: true,
+    skipTaskbar: false,
+    minimizable: true,
+    maximizable: true,
+    closable: true,
+    resizable: true
   });
 
   // Load the app
