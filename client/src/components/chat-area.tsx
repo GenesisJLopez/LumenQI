@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
-import { Bot, User, Copy, ThumbsUp, ThumbsDown, Volume2, VolumeX, Edit2, Check, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { FeedbackButtons } from './feedback-buttons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ interface ChatAreaProps {
 }
 
 export function ChatArea({ messages, isTyping = false, currentConversationId, isSpeaking = false, isListening = false, onEditMessage }: ChatAreaProps) {
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef =<HTMLDivElement>(null);
   const [lastMessageId, setLastMessageId] = useState<number | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
   const [isSpeakingMessage, setIsSpeakingMessage] = useState<number | null>(null);

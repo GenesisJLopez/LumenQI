@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CodeGenerator } from '@/components/code-generator';
 import { EmotionDisplay } from '@/components/emotion-display';
 import { RealTimeArchitectureExplorer } from '@/components/real-time-architecture-explorer';
-import { Activity, Brain, Cpu, HardDrive, Zap, Mic, Volume2, Code, Globe, Database, Monitor } from 'lucide-react';
+import { Activity, Brain, Cpu Globe Monitor } from 'lucide-react';
 
 interface HardwareInfo {
   cpuCores: number;

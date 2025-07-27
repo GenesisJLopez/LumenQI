@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -86,25 +86,25 @@ export function CalendarIntegrationPanel() {
   });
 
   // Fetch calendar stats
-  const { data: stats } = useQuery<CalendarStats>({
+  const { data: stats } =<CalendarStats>({
     queryKey: ['/api/calendar/stats'],
     refetchInterval: 10000 // Refresh every 10 seconds
   });
 
   // Fetch today's events
-  const { data: todayEvents = [] } = useQuery<CalendarEvent[]>({
+  const { data: todayEvents = [] } =<CalendarEvent[]>({
     queryKey: ['/api/calendar/events/today'],
     refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   // Fetch upcoming events
-  const { data: upcomingEvents = [] } = useQuery<CalendarEvent[]>({
+  const { data: upcomingEvents = [] } =<CalendarEvent[]>({
     queryKey: ['/api/calendar/events/upcoming'],
     refetchInterval: 60000 // Refresh every minute
   });
 
   // Fetch calendar alerts
-  const { data: alerts = [] } = useQuery<CalendarAlert[]>({
+  const { data: alerts = [] } =<CalendarAlert[]>({
     queryKey: ['/api/calendar/alerts'],
     refetchInterval: 15000 // Refresh every 15 seconds
   });

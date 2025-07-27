@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,13 +65,13 @@ export function ProactiveAIPanel() {
   const [wakeWord, setWakeWord] = useState(false);
 
   // Fetch reminders
-  const { data: reminders = [], isLoading } = useQuery<Reminder[]>({
+  const { data: reminders = [], isLoading } =<Reminder[]>({
     queryKey: ['/api/proactive/reminders'],
     refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   // Fetch proactive stats
-  const { data: stats } = useQuery<ProactiveStats>({
+  const { data: stats } =<ProactiveStats>({
     queryKey: ['/api/proactive/stats'],
     refetchInterval: 5000 // Refresh every 5 seconds
   });
