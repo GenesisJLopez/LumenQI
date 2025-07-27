@@ -1,34 +1,47 @@
-# Ultra-minimal production Dockerfile for maximum size reduction
-FROM node:20-alpine
+# Multi-stage optimized Dockerfile for Cloud Run deployment
+# Stage 1: Build stage (minimal)
+FROM node:20-alpine AS builder
 
-# Create app user
-RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+WORKDIR /tmp
 
-WORKDIR /app
-
-# Copy only essential production files
+# Copy package files for caching
 COPY package-production.json package.json
 COPY package-lock.json ./
 
-# Install only production dependencies with minimal cache
-RUN npm ci --only=production --no-audit --no-fund && npm cache clean --force
+# Install only production dependencies with maximum optimization
+RUN npm ci --only=production --no-audit --no-fund --no-optional && \
+    npm cache clean --force && \
+    rm -rf ~/.npm /tmp/.npm
+
+# Stage 2: Runtime stage (ultra-minimal)
+FROM node:20-alpine AS runtime
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S appuser -u 1001 -G nodejs
+
+WORKDIR /app
+
+# Copy production dependencies from builder stage
+COPY --from=builder /tmp/node_modules ./node_modules
 
 # Copy pre-built application
-COPY dist ./dist
+COPY --chown=appuser:nodejs dist ./dist
 
-# Set proper ownership
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+# Switch to non-root user
+USER appuser
 
-# Configure environment
-ENV NODE_ENV=production PORT=5000
+# Configure environment for Cloud Run
+ENV NODE_ENV=production \
+    PORT=8080 \
+    HOST=0.0.0.0
 
-# Expose port
-EXPOSE 5000
+# Expose Cloud Run port
+EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Add health check for container orchestration
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Start the application
 CMD ["node", "dist/index.js"]
