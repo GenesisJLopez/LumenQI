@@ -104,7 +104,6 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
     if (!recognitionRef.current || isListening || isSpeaking || isProcessingRef.current) return;
     
     try {
-      console.log('🎤 STARTING SPEECH RECOGNITION');
       recognitionRef.current.start();
     } catch (error) {
       console.error('Failed to start recognition:', error);
@@ -150,9 +149,8 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
         
         // Process final results
         if (finalTranscript.trim()) {
-          console.log('🎤 FINAL TRANSCRIPT CAPTURED:', finalTranscript);
-          console.log('🎤 SENDING TO LUMEN NOW...');
-          setTranscript('Processing...');
+          // Process speech silently
+          setTranscript('');
           processVoiceMessage(finalTranscript.trim());
         }
       };
@@ -176,10 +174,7 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
       if (currentConversationId) {
         fetchMessages();
       }
-      setTimeout(() => {
-        console.log('🎤 AUTO-STARTING VOICE RECOGNITION');
-        startListening();
-      }, 1500);
+      setTimeout(startListening, 1500);
     } else {
       console.error('Speech recognition not supported');
     }
@@ -215,12 +210,9 @@ export function FixedVoiceMode({ onExit, currentConversationId }: FixedVoiceMode
           className="w-48 h-48 mx-auto"
         />
         
-        {/* Status indicator */}
-        <div className="text-center mt-4 text-white min-h-[60px]">
-          {isSpeaking && <p className="text-blue-400 text-lg">🗣️ Lumen is speaking...</p>}
-          {isListening && !transcript && <p className="text-green-400 text-lg">🎤 Listening for your voice...</p>}
-          {transcript && !isProcessingRef.current && <p className="text-yellow-400 text-sm">"{transcript}"</p>}
-          {isProcessingRef.current && <p className="text-purple-400 text-lg">⚡ Processing your message...</p>}
+        {/* Silent operation - no status messages */}
+        <div className="text-center mt-4 text-white min-h-[20px]">
+          {/* Voice mode operates silently like ChatGPT */}
         </div>
       </div>
       
