@@ -152,38 +152,29 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         const currentTranscript = finalTranscript || interimTranscript;
         setTranscript(currentTranscript);
         
-        // Process final results
+        // Process final results immediately
         if (finalTranscript.trim()) {
+          console.log('🎤 Processing final transcript:', finalTranscript);
           clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => {
-            processMessage(finalTranscript.trim());
-          }, 1000); // Wait 1 second after speech ends
+          setIsListening(false);
+          processMessage(finalTranscript.trim());
         }
       };
       
       recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
-        // Auto-restart on error
-        setTimeout(() => startListening(), 1000);
+        // Don't auto-restart on errors to prevent loops
       };
       
       recognition.onend = () => {
+        console.log('🎤 Speech recognition ended');
         setIsListening(false);
-        // Auto-restart listening when not speaking
-        if (!isSpeaking) {
-          setTimeout(() => {
-            console.log('🎤 Auto-restarting speech recognition...');
-            startListening();
-          }, 1000);
-        }
+        // Don't auto-restart to prevent loops
       };
       
-      // Auto-start listening when voice mode loads
-      setTimeout(() => {
-        console.log('🎤 Attempting to start voice recognition...');
-        startListening();
-      }, 1500);
+      // Manual start - no auto-restart loops
+      console.log('🎤 Voice recognition initialized, ready for manual start');
     }
     
     return () => {
@@ -240,17 +231,7 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       console.error('❌ Failed to send voice message:', error);
     }
     
-    // Restart listening after a short delay (reduced from 30ms to 10ms)
-    setTimeout(() => {
-      if (recognitionRef.current && !isSpeaking) {
-        try {
-          recognitionRef.current.start();
-          setIsListening(true);
-        } catch (error) {
-          console.error('Failed to restart recognition:', error);
-        }
-      }
-    }, 500);
+    // Don't auto-restart here - let TTS handle restart
   };
 
   const speakText = async (text: string) => {
@@ -350,14 +331,20 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       console.log('🎤 Browser TTS ended');
       setIsSpeaking(false);
       setSpeechIntensity(0);
-      startListeningAgain();
+      // Restart listening after speech ends
+      setTimeout(() => {
+        startListening();
+      }, 1000);
     };
     
     utterance.onerror = (event) => {
       console.error('Browser TTS failed:', event.error);
       setIsSpeaking(false);
       setSpeechIntensity(0);
-      startListeningAgain();
+      // Restart listening after speech error
+      setTimeout(() => {
+        startListening();
+      }, 1000);
     };
     
     speechSynthesis.speak(utterance);
@@ -405,9 +392,8 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
           className="w-48 h-48 mx-auto"
         />
         
-        {/* Status indicator */}
+        {/* Status indicator - only show when actively processing */}
         <div className="text-center mt-4 text-white">
-          {isListening && <p className="text-green-400">🎤 Listening...</p>}
           {isSpeaking && <p className="text-blue-400">🗣️ Speaking...</p>}
           {transcript && <p className="text-yellow-400 text-sm">"{transcript}"</p>}
         </div>
@@ -431,13 +417,29 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center text-sm">Say something to start our conversation...</p>
+            <p className="text-gray-400 text-center text-sm">Click "Start Listening" to begin conversation...</p>
           )}
         </div>
       </div>
       
-      {/* Exit Voice Mode Button */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+      {/* Control Buttons */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-4">
+        <Button
+          onClick={() => {
+            if (isListening) {
+              stopListening();
+            } else {
+              startListening();
+            }
+          }}
+          className={`px-6 py-3 rounded-full ${
+            isListening 
+              ? 'bg-green-500 hover:bg-green-600' 
+              : 'bg-blue-500 hover:bg-blue-600'
+          } text-white`}
+        >
+          {isListening ? 'Stop Listening' : 'Start Listening'}
+        </Button>
         <Button
           onClick={onExit}
           className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
