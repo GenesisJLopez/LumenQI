@@ -1,11 +1,11 @@
-# Comprehensive .dockerignore for ultra-minimal container
-# Exclude everything except essentials
-*
+# Ultra-restrictive .dockerignore for Cloud Run deployment
+# Start by excluding everything
+**
 
-# Only include essential files for production
+# Only include absolutely essential production files
 !package-production.json
 !package-lock.json
-!dist/
+!dist/**
 
 # Explicitly exclude development files
 node_modules
