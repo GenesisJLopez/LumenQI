@@ -4,7 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useHttpCommunication } from '@/hooks/use-http-communication';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
-import { WorkingVoiceMode } from '@/components/working-voice-mode';
+// Voice mode removed - using in-chat voice button instead
 import { useQuantumInterface } from '@/hooks/use-quantum-interface';
 import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { Sidebar } from '@/components/sidebar';
@@ -46,7 +46,7 @@ export default function Home() {
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive' | 'calendar' | 'flow' | 'camera' | 'code' | 'devices'>('quantum');
@@ -447,7 +447,7 @@ export default function Home() {
       const { emotion, confidence, features, timestamp } = event.detail;
       
       // Skip emotion processing in voice mode for instant responses
-      if (!isVoiceMode && confidence > 0.6) {
+      if (!isVoiceActive && confidence > 0.6) {
         console.log('Emotion detected:', emotion, confidence);
         
         // Send emotion data to server for conversation adaptation
@@ -466,11 +466,11 @@ export default function Home() {
     return () => {
       window.removeEventListener('emotionDetected', handleEmotionDetected as EventListener);
     };
-  }, [isVoiceMode, currentConversationId, sendMessage]);
+  }, [isVoiceActive, currentConversationId, sendMessage]);
 
-  // Simple voice mode toggle
-  const handleVoiceModeToggle = () => {
-    setIsVoiceMode(!isVoiceMode);
+  // Voice conversation toggle
+  const handleVoiceToggle = () => {
+    setIsVoiceActive(!isVoiceActive);
   };
 
   const handleVoiceListenToggle = () => {
@@ -491,14 +491,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
-      {/* Voice Mode - Simple Implementation */}
-      {isVoiceMode ? (
-        <WorkingVoiceMode 
-          onExit={handleVoiceModeToggle}
-          currentConversationId={currentConversationId || undefined}
-        />
-      ) : (
+    <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">{/* Main Chat Interface */}
         <>
           {/* Sidebar */}
           <Sidebar
@@ -570,7 +563,9 @@ export default function Home() {
                       connectionStatus={connectionStatus === 'error' ? 'disconnected' : connectionStatus}
                       onSpeakingChange={setIsSpeaking}
                       onListeningChange={setIsListening}
-                      onVoiceModeToggle={handleVoiceModeToggle}
+                      onVoiceToggle={handleVoiceToggle}
+                      isVoiceActive={isVoiceActive}
+                      currentConversationId={currentConversationId || undefined}
                     />
                   </div>
                 </>
@@ -590,7 +585,6 @@ export default function Home() {
             </div>
           </div>
         </>
-      )}
 
       {/* Settings Modal */}
       {showSettings && (
