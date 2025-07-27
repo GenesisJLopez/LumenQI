@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Mic, MicOff, Send, Keyboard, Volume2, Radio } from 'lucide-react';
@@ -18,6 +18,7 @@ interface VoiceControlsProps {
 export function VoiceControls({ onSendMessage, isLoading = false, connectionStatus, onSpeakingChange, onListeningChange, onVoiceModeToggle }: VoiceControlsProps) {
   const [inputValue, setInputValue] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
   const { 
     isListening, 
@@ -108,6 +109,19 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
     onListeningChange?.(isListening);
   }, [isListening, onListeningChange]);
 
+  // Auto-resize textarea function
+  const adjustTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '48px';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 128) + 'px';
+    }
+  };
+
+  // Adjust height when input value changes
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [inputValue]);
+
   return (
     <div className="p-6 border-t border-gray-200 dark:border-gray-700 cosmic-bg">
       <div className="max-w-4xl mx-auto">
@@ -149,33 +163,24 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
             {/* Text Input */}
             <div className="flex-1 relative">
               <Textarea
+                ref={textareaRef}
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  // Auto-resize on change
+                  setTimeout(adjustTextareaHeight, 0);
+                }}
                 onKeyPress={handleKeyPress}
+                onInput={adjustTextareaHeight}
                 placeholder="Message Lumen QI..."
                 className="min-h-[48px] max-h-32 bg-transparent border-0 text-gray-100 placeholder-gray-400 focus:ring-0 focus:border-0 resize-none p-2 leading-relaxed"
                 rows={1}
                 disabled={isLoading}
                 style={{
-                  height: 'auto',
+                  height: '48px',
                   minHeight: '48px',
                   resize: 'none',
                   overflow: 'hidden'
-                }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = '48px';
-                  target.style.height = Math.min(target.scrollHeight, 128) + 'px';
-                }}
-                ref={(textarea) => {
-                  if (textarea) {
-                    const adjustHeight = () => {
-                      textarea.style.height = '48px';
-                      textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
-                    };
-                    textarea.addEventListener('input', adjustHeight);
-                    return () => textarea.removeEventListener('input', adjustHeight);
-                  }
                 }}
               />
             </div>
