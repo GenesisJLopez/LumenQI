@@ -1,49 +1,138 @@
-# Ultra-minimal dockerignore - exclude everything except essentials
+# Comprehensive .dockerignore for ultra-minimal container
+# Exclude everything except essentials
 *
+
+# Only include essential files for production
 !package-production.json
 !package-lock.json
 !dist/
 
-# macOS and system files
+# Explicitly exclude development files
+node_modules
+client/
+server/
+shared/
+.git
+.gitignore
+*.log
+*.md
+README.md
+*.txt
+
+# Exclude build artifacts and caches
+.cache/
+.temp/
+.tmp/
+.npm/
+.eslintcache
+build/
+coverage/
+*.tgz
+
+# Exclude Python caches and libraries (massive size reduction)
+.pythonlibs/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Exclude large asset files
+attached_assets/
+lumen-backups/
+lumen-brain-storage/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+
+# Exclude development configs
+*.config.js
+*.config.ts
+tsconfig.json
+tailwind.config.ts
+vite.config.ts
+drizzle.config.ts
+capacitor.config.ts
+electron-*.js
+electron-*.json
+
+# Exclude IDE and OS files
+.vscode/
+.idea/
 .DS_Store
 .AppleDouble
 .LSOverride
-
-# IDE files
-.vscode
-.idea
 *.swp
 *.swo
+Thumbs.db
 
-# Log files
-*.log
+# Exclude environment and secrets
+.env*
+!.env.example
+*.pem
+*.key
+*.crt
 
-# Lock files (keep package-lock.json for reproducible builds)
+# Exclude package managers
 yarn.lock
 pnpm-lock.yaml
+.pnpm-store/
+.yarn/
 
-# Cache directories
-.cache
-.temp
-.tmp
+# Exclude Apple/iOS development
+ios/
+build/
+Info.plist
+*.plist
+*.entitlements
 
-# Coverage directory used by tools like istanbul
-coverage
+# Exclude Python/ML backends
+*.py
+ml-backend.py
+__pycache__/
+*.pyc
 
-# nyc test coverage
-.nyc_output
+# Exclude audio/video files
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.mp4
+*.avi
+*.mov
 
-# Dependency directories
-bower_components
+# Exclude large dependency files
+ollama/
+*.tar.gz
+*.zip
+*.dmg
 
-# Optional npm cache directory
-.npm
+# Exclude documentation and meta files
+docs/
+documentation/
+DEPLOYMENT_OPTIMIZATION.md
+demonstrate-*.md
+lumen-*.json
+ai-config.json
 
-# Optional eslint cache
-.eslintcache
+# Exclude scripts and utilities
+scripts/
+demo-*.js
+*.sh
+deployment.json
 
-# Output of 'npm pack'
-*.tgz
+# Exclude testing files
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
 
-# Yarn Integrity file
-.yarn-integrity
+# Size optimization: exclude source maps and debug info
+*.map
+*.d.ts
