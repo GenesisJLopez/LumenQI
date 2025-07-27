@@ -157,6 +157,10 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
           console.log('🎤 Processing final transcript:', finalTranscript);
           clearTimeout(timeoutRef.current);
           setIsListening(false);
+          // Stop recognition to prevent restart loop during processing
+          if (recognitionRef.current) {
+            recognitionRef.current.stop();
+          }
           processMessage(finalTranscript.trim());
         }
       };
@@ -170,11 +174,19 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       recognition.onend = () => {
         console.log('🎤 Speech recognition ended');
         setIsListening(false);
-        // Don't auto-restart to prevent loops
+        // Auto-restart only if not speaking and not processing a message
+        if (!isSpeaking && transcript.trim() === '') {
+          setTimeout(() => {
+            startListening();
+          }, 1000);
+        }
       };
       
-      // Manual start - no auto-restart loops
-      console.log('🎤 Voice recognition initialized, ready for manual start');
+      // Auto-start listening when voice mode loads
+      setTimeout(() => {
+        console.log('🎤 Starting automatic voice recognition');
+        startListening();
+      }, 1500);
     }
     
     return () => {
@@ -231,7 +243,8 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       console.error('❌ Failed to send voice message:', error);
     }
     
-    // Don't auto-restart here - let TTS handle restart
+    // Clear transcript to prevent re-processing
+    setTranscript('');
   };
 
   const speakText = async (text: string) => {
@@ -417,29 +430,13 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center text-sm">Click "Start Listening" to begin conversation...</p>
+            <p className="text-gray-400 text-center text-sm">Say something to start our conversation...</p>
           )}
         </div>
       </div>
       
-      {/* Control Buttons */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-4">
-        <Button
-          onClick={() => {
-            if (isListening) {
-              stopListening();
-            } else {
-              startListening();
-            }
-          }}
-          className={`px-6 py-3 rounded-full ${
-            isListening 
-              ? 'bg-green-500 hover:bg-green-600' 
-              : 'bg-blue-500 hover:bg-blue-600'
-          } text-white`}
-        >
-          {isListening ? 'Stop Listening' : 'Start Listening'}
-        </Button>
+      {/* Exit Voice Mode Button */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <Button
           onClick={onExit}
           className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
