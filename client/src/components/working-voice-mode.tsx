@@ -1,259 +1,232 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import lumenLogo from '@assets/lumen-logo (Small)_1753559711469.png';
 
 interface WorkingVoiceModeProps {
-  currentConversationId: number | null;
-  sendMessage: (message: any) => void;
-  lastMessage: any;
   onExit: () => void;
+  currentConversationId?: number;
 }
 
-export default function WorkingVoiceMode({ 
-  currentConversationId, 
-  sendMessage, 
-  lastMessage,
-  onExit 
-}: WorkingVoiceModeProps) {
+interface Message {
+  id: number;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export function WorkingVoiceMode({ onExit, currentConversationId }: WorkingVoiceModeProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [status, setStatus] = useState('Initializing...');
+  const [messages, setMessages] = useState<Message[]>([]);
   
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const lastMessageRef = useRef<string>('');
+  const recognitionRef = useRef<any>(null);
+  const isProcessingRef = useRef(false);
+  const shouldContinueRef = useRef(true);
 
-  // Initialize speech recognition
-  useEffect(() => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      setStatus('Speech recognition not supported');
-      return;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+  // Fetch conversation messages
+  const loadMessages = async () => {
+    if (!currentConversationId) return;
     
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    try {
+      const response = await fetch(`/api/conversations/${currentConversationId}/messages`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.slice(-8)); // Show last 8 messages
+      }
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    }
+  };
 
-    recognition.onstart = () => {
-      setIsListening(true);
-      setStatus('Listening...');
-      console.log('🎤 Voice recognition started');
-    };
-
-    recognition.onresult = (event) => {
-      let interimTranscript = '';
-      let finalTranscript = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
+  // Send message to AI and get response
+  const sendToAI = async (userText: string) => {
+    if (!currentConversationId || isProcessingRef.current) return;
+    
+    isProcessingRef.current = true;
+    
+    try {
+      const response = await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: userText,
+          conversationId: currentConversationId,
+          isVoiceMode: true
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.content) {
+          speakText(result.content);
+          await loadMessages(); // Refresh messages
         }
       }
-
-      setTranscript(finalTranscript + interimTranscript);
-
-      if (finalTranscript.trim()) {
-        console.log('🎤 Final transcript:', finalTranscript);
-        processVoiceMessage(finalTranscript.trim());
-        setTranscript('');
-      }
-    };
-
-    recognition.onerror = (event) => {
-      console.error('🎤 Speech recognition error:', event.error);
-      setIsListening(false);
-      if (event.error !== 'aborted') {
-        setStatus('Error occurred, restarting...');
-        setTimeout(() => startListening(), 2000);
-      } else {
-        setStatus('Ready to listen...');
-      }
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-      // Only restart if we're not processing or speaking
-      if (!isSpeaking && status !== 'Processing...') {
-        setStatus('Ready to listen...');
-        setTimeout(() => startListening(), 1000);
-      }
-    };
-
-    recognitionRef.current = recognition;
-    
-    // Start listening after initialization
-    setTimeout(() => startListening(), 1000);
-
-    return () => {
-      if (recognition) {
-        recognition.stop();
-      }
-    };
-  }, []);
-
-  // Process AI responses
-  useEffect(() => {
-    console.log('🎤 Last message received:', lastMessage);
-    
-    if (!lastMessage || !lastMessage.content) {
-      return;
-    }
-
-    // Check if it's an AI response (either role 'assistant' or type 'ai_response')
-    if (lastMessage.role !== 'assistant' && lastMessage.type !== 'ai_response') {
-      return;
-    }
-
-    // Avoid processing the same message twice
-    const messageKey = `${lastMessage.conversationId || 'unknown'}-${lastMessage.content.substring(0, 20)}`;
-    if (messageKey === lastMessageRef.current) {
-      return;
-    }
-    lastMessageRef.current = messageKey;
-
-    console.log('🎤 Processing AI response for speech:', lastMessage.content.substring(0, 50));
-    setStatus('Speaking...');
-    speakResponse(lastMessage.content);
-  }, [lastMessage]);
-
-  const startListening = () => {
-    if (recognitionRef.current && !isListening && !isSpeaking && status !== 'Processing...') {
-      try {
-        recognitionRef.current.start();
-      } catch (error) {
-        console.error('Failed to start recognition:', error);
-        // Don't restart if there's an error to prevent loops
-        setTimeout(() => {
-          if (!isListening && !isSpeaking) {
-            setStatus('Ready to listen...');
-          }
-        }, 2000);
-      }
+    } catch (error) {
+      console.error('AI request failed:', error);
+    } finally {
+      isProcessingRef.current = false;
     }
   };
 
-  const processVoiceMessage = (message: string) => {
-    if (!currentConversationId || !message.trim()) return;
-
-    setStatus('Processing response...');
-    setIsListening(false);
-    
-    // Stop listening while processing
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
-
-    console.log('🎤 Sending voice message:', message);
-    
-    // Send message and wait for response
-    sendMessage({
-      type: 'chat_message',
-      content: message,
-      conversationId: currentConversationId,
-      isVoiceMode: true
-    });
-  };
-
-  const speakResponse = (text: string) => {
-    console.log('🎤 Starting speech for:', text.substring(0, 50));
+  // Text to speech
+  const speakText = (text: string) => {
     setIsSpeaking(true);
-    setStatus('Speaking...');
-
+    
     // Clean text for speech
-    const cleanText = text
-      .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
-      .replace(/[^\w\s.,!?'-]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
+    const cleanText = text.replace(/[^\w\s.,!?'-]/g, '').replace(/\s+/g, ' ').trim();
+    
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
-
-    // Use best available voice
-    const voices = speechSynthesis.getVoices();
-    const preferredVoice = voices.find(voice => 
-      voice.name.includes('Samantha') || 
-      voice.name.includes('Karen') || 
-      voice.name.includes('Alex') ||
-      voice.name.includes('Zira')
-    );
     
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    utterance.onstart = () => {
-      console.log('🎤 Speech started');
-      setIsSpeaking(true);
-      setStatus('Speaking...');
-    };
-
     utterance.onend = () => {
-      console.log('🎤 Speech finished');
       setIsSpeaking(false);
-      setStatus('Listening...');
-      
-      // Resume listening after speech
-      setTimeout(() => {
-        startListening();
-      }, 500);
+      // Continue listening after speaking
+      if (shouldContinueRef.current) {
+        setTimeout(startListening, 800);
+      }
     };
+    
+    speechSynthesis.speak(utterance);
+  };
 
-    utterance.onerror = (error) => {
-      console.error('🎤 Speech error:', error);
-      setIsSpeaking(false);
-      setStatus('Speech error, resuming listening...');
-      setTimeout(() => {
-        startListening();
-      }, 1000);
-    };
-
-    // Start speech
-    if (voices.length === 0) {
-      speechSynthesis.onvoiceschanged = () => {
-        speechSynthesis.speak(utterance);
-      };
-    } else {
-      speechSynthesis.speak(utterance);
+  // Start speech recognition
+  const startListening = () => {
+    if (!recognitionRef.current || isListening || isSpeaking || isProcessingRef.current || !shouldContinueRef.current) {
+      return;
+    }
+    
+    try {
+      recognitionRef.current.start();
+    } catch (error) {
+      // Recognition might already be running, ignore error
+      setTimeout(startListening, 2000);
     }
   };
 
+  // Initialize speech recognition
+  useEffect(() => {
+    shouldContinueRef.current = true;
+    
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+      recognition.maxAlternatives = 1;
+      
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+      
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.trim();
+        if (transcript && !isProcessingRef.current) {
+          setIsListening(false);
+          sendToAI(transcript);
+        }
+      };
+      
+      recognition.onerror = (event: any) => {
+        setIsListening(false);
+        if (shouldContinueRef.current && !isProcessingRef.current && !isSpeaking) {
+          setTimeout(startListening, 1500);
+        }
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+        if (shouldContinueRef.current && !isProcessingRef.current && !isSpeaking) {
+          setTimeout(startListening, 1000);
+        }
+      };
+      
+      recognitionRef.current = recognition;
+      
+      // Load messages and start listening
+      if (currentConversationId) {
+        loadMessages();
+      }
+      
+      // Start listening after a short delay
+      setTimeout(startListening, 1000);
+    }
+    
+    return () => {
+      shouldContinueRef.current = false;
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+      }
+      speechSynthesis.cancel();
+    };
+  }, [currentConversationId]);
+
   return (
-    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
-      {/* Simple clean background */}
-      <div className="absolute inset-0 bg-black" />
-
-      {/* Main content - just the logo */}
-      <div className="relative z-10 flex flex-col items-center">
-        {/* Simple Lumen logo - no animations */}
-        <div className="relative mb-8">
-          <img 
-            src="/attached_assets/lumen-logo%20(Small)_1753457783202.png" 
-            alt="Lumen" 
-            className="w-32 h-32 object-contain"
-          />
-        </div>
-
-        {/* Simple status text */}
-        <div className="text-white text-lg mb-4 text-center">
-          {status}
+    <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
+      {/* Cosmic glow positioned at same level as logo */}
+      <div className="absolute inset-0 flex items-center justify-center mb-8">
+        <div 
+          className={cn(
+            "w-48 h-48 rounded-full transition-all duration-300",
+            isSpeaking ? 'cosmic-pulse-speaking' : 'cosmic-pulse-listening'
+          )}
+        ></div>
+      </div>
+      
+      {/* Logo - centered */}
+      <div className="relative z-10 mb-8">
+        <img 
+          src={lumenLogo} 
+          alt="Lumen" 
+          className="w-48 h-48 mx-auto"
+        />
+        
+        {/* Silent operation - no status messages */}
+        <div className="text-center mt-4 text-white min-h-[20px]">
+          {/* Voice mode operates silently like ChatGPT */}
         </div>
       </div>
-
+      
+      {/* Conversation Display */}
+      <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 w-3/4 max-w-2xl z-20">
+        <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 max-h-60 overflow-y-auto">
+          {messages.length > 0 ? (
+            <div className="space-y-3">
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                    message.role === 'user' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-700 text-white'
+                  }`}>
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 text-center text-sm">Say something to start our conversation...</p>
+          )}
+        </div>
+      </div>
+      
       {/* Exit button */}
-      <button
+      <Button
         onClick={onExit}
-        className="absolute bottom-8 bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-full transition-colors"
+        variant="outline"
+        className="absolute bottom-8 bg-black/50 text-white border-white/20 hover:bg-white/10"
       >
-        <X size={24} />
-      </button>
+        Exit Voice Mode
+      </Button>
     </div>
   );
 }
