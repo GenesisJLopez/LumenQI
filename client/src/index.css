@@ -601,73 +601,69 @@ body {
   }
 }
 
-/* Speech rhythm animations - sync with voice */
-@keyframes speechRhythmSlow {
+/* Cosmic quantum energy animations - continuous, no voice sync */
+@keyframes cosmicIdle {
   0% {
     transform: scale(1);
-    filter: drop-shadow(0 0 12px rgba(255, 119, 198, 0.6));
+    filter: drop-shadow(0 0 15px rgba(120, 119, 198, 0.4)) drop-shadow(0 0 30px rgba(120, 119, 198, 0.2));
   }
-  25% {
-    transform: scale(1.03);
-    filter: drop-shadow(0 0 18px rgba(255, 119, 198, 0.8));
-  }
-  50% {
-    transform: scale(1.06);
-    filter: drop-shadow(0 0 24px rgba(255, 119, 198, 1.0));
-  }
-  75% {
-    transform: scale(1.03);
-    filter: drop-shadow(0 0 18px rgba(255, 119, 198, 0.8));
-  }
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 12px rgba(255, 119, 198, 0.6));
-  }
-}
-
-@keyframes speechRhythmMedium {
-  0% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(255, 119, 198, 0.6));
-  }
-  50% {
-    transform: scale(1.04);
-    filter: drop-shadow(0 0 20px rgba(255, 119, 198, 0.9));
-  }
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(255, 119, 198, 0.6));
-  }
-}
-
-@keyframes speechRhythmFast {
-  0% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6));
-  }
-  50% {
+  33% {
     transform: scale(1.02);
-    filter: drop-shadow(0 0 16px rgba(255, 119, 198, 0.8));
+    filter: drop-shadow(0 0 20px rgba(120, 119, 198, 0.5)) drop-shadow(0 0 40px rgba(120, 119, 198, 0.3));
+  }
+  66% {
+    transform: scale(1.01);
+    filter: drop-shadow(0 0 18px rgba(120, 119, 198, 0.45)) drop-shadow(0 0 35px rgba(120, 119, 198, 0.25));
   }
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6));
+    filter: drop-shadow(0 0 15px rgba(120, 119, 198, 0.4)) drop-shadow(0 0 30px rgba(120, 119, 198, 0.2));
   }
 }
 
-.lumen-logo-speech-slow {
-  filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 16px rgba(255, 119, 198, 0.4));
-  animation: speechRhythmSlow 1.5s ease-in-out infinite;
+@keyframes cosmicListening {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(119, 198, 255, 0.5)) drop-shadow(0 0 40px rgba(119, 198, 255, 0.3));
+  }
+  50% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 30px rgba(119, 198, 255, 0.7)) drop-shadow(0 0 60px rgba(119, 198, 255, 0.4));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(119, 198, 255, 0.5)) drop-shadow(0 0 40px rgba(119, 198, 255, 0.3));
+  }
 }
 
-.lumen-logo-speech-medium {
-  filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 16px rgba(255, 119, 198, 0.4));
-  animation: speechRhythmMedium 1.0s ease-in-out infinite;
+@keyframes cosmicSpeaking {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 25px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 50px rgba(255, 119, 198, 0.4));
+  }
+  40% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 35px rgba(255, 119, 198, 0.8)) drop-shadow(0 0 70px rgba(255, 119, 198, 0.5));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 25px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 50px rgba(255, 119, 198, 0.4));
+  }
 }
 
-.lumen-logo-speech-fast {
-  filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 16px rgba(255, 119, 198, 0.4));
-  animation: speechRhythmFast 0.6s ease-in-out infinite;
+.lumen-logo-cosmic-idle {
+  filter: drop-shadow(0 0 15px rgba(120, 119, 198, 0.4)) drop-shadow(0 0 30px rgba(120, 119, 198, 0.2)) drop-shadow(0 0 45px rgba(120, 119, 198, 0.1));
+  animation: cosmicIdle 4s ease-in-out infinite;
+}
+
+.lumen-logo-cosmic-listening {
+  filter: drop-shadow(0 0 20px rgba(119, 198, 255, 0.5)) drop-shadow(0 0 40px rgba(119, 198, 255, 0.3)) drop-shadow(0 0 60px rgba(119, 198, 255, 0.1));
+  animation: cosmicListening 3s ease-in-out infinite;
+}
+
+.lumen-logo-cosmic-speaking {
+  filter: drop-shadow(0 0 25px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 50px rgba(255, 119, 198, 0.4)) drop-shadow(0 0 75px rgba(255, 119, 198, 0.2));
+  animation: cosmicSpeaking 2.5s ease-in-out infinite;
 }
 
 /* Central Lumen Logo */
