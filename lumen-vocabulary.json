@@ -56,12 +56,12 @@
     },
     {
       "term": "Definition",
-      "definition": "** Something is very good or impactful, especially music or food.",
-      "usage": "\"Definition\" - ** Something is very good or impactful, especially music or food.",
+      "definition": "* Unlike ‘quiet quitting,’ resenteeism is staying at a job but being openly resentful about it.*",
+      "usage": "\"Definition\" - * Unlike ‘quiet quitting,’ resenteeism is staying at a job but being openly resentful about it.*",
       "popularity": 0.7,
       "source": "web_search",
       "category": "slang",
-      "lastUpdated": "2025-07-25T06:53:21.576Z"
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
     },
     {
       "term": "Caption",
@@ -119,12 +119,12 @@
     },
     {
       "term": "examples",
-      "definition": "- **The Ick**: A sudden feeling of repulsion or cringe toward someone or something, especially in dating.",
-      "usage": "\"examples\" - - **The Ick**: A sudden feeling of repulsion or cringe toward someone or something, especially in dating.",
+      "definition": "**1. Meta-verse (n.)**",
+      "usage": "\"examples\" - **1. Meta-verse (n.)**",
       "popularity": 0.7,
       "source": "web_search",
       "category": "slang",
-      "lastUpdated": "2025-07-25T07:51:58.544Z"
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
     },
     {
       "term": "Response",
@@ -218,12 +218,12 @@
     },
     {
       "term": "Example",
-      "definition": "“Can’t go out tonight… cossie livs.”",
-      "usage": "\"Example\" - “Can’t go out tonight… cossie livs.”",
+      "definition": "* \"There’s so much resenteeism since they cut bonuses last quarter.\"[5]",
+      "usage": "\"Example\" - * \"There’s so much resenteeism since they cut bonuses last quarter.\"[5]",
       "popularity": 0.7,
       "source": "web_search",
       "category": "slang",
-      "lastUpdated": "2025-07-25T07:51:58.544Z"
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
     },
     {
       "term": "Discord",
@@ -389,12 +389,12 @@
     },
     {
       "term": "self",
-      "definition": "referential).",
-      "usage": "\"self\" - referential).",
+      "definition": "motivated.[5]",
+      "usage": "\"self\" - motivated.[5]",
       "popularity": 0.7,
       "source": "web_search",
       "category": "slang",
-      "lastUpdated": "2025-07-25T06:53:08.801Z"
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
     },
     {
       "term": "Non",
@@ -638,6 +638,96 @@
       "source": "web_search",
       "category": "slang",
       "lastUpdated": "2025-07-25T07:51:58.544Z"
+    },
+    {
+      "term": "meta",
+      "definition": "verse after work for a game night.”[1]",
+      "usage": "\"meta\" - verse after work for a game night.”[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "eco",
+      "definition": "minimalism*, *doomscroll detox*, *biohacking*), new attitudes toward work (*resenteeism*, *high agency*) and playful internet culture (*raw dog*, *snackfish*, etc.).",
+      "usage": "\"eco\" - minimalism*, *doomscroll detox*, *biohacking*), new attitudes toward work (*resenteeism*, *high agency*) and playful internet culture (*raw dog*, *snackfish*, etc.).",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "AI",
+      "definition": "it’s wild how real it sounds!”[1]",
+      "usage": "\"AI\" - it’s wild how real it sounds!”[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "luxury",
+      "definition": "cashmere sweaters instead of designer logos.”[1]",
+      "usage": "\"luxury\" - cashmere sweaters instead of designer logos.”[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "biohacking",
+      "definition": "wears a sleep tracker and microdoses caffeine.”[1]",
+      "usage": "\"biohacking\" - wears a sleep tracker and microdoses caffeine.”[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "weekend",
+      "definition": "no news apps allowed!”[1]",
+      "usage": "\"weekend\" - no news apps allowed!”[1]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "week",
+      "definition": "she's the top shotta at her firm.\"[3]",
+      "usage": "\"week\" - she's the top shotta at her firm.\"[3]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "dog",
+      "definition": "no notes, just vibes.\"[5]",
+      "usage": "\"dog\" - no notes, just vibes.\"[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "binge",
+      "definition": "watching sessions.[5]",
+      "usage": "\"binge\" - watching sessions.[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
+    },
+    {
+      "term": "mentions",
+      "definition": "- *Convo*: Short for conversation.[5]",
+      "usage": "\"mentions\" - - *Convo*: Short for conversation.[5]",
+      "popularity": 0.7,
+      "source": "web_search",
+      "category": "slang",
+      "lastUpdated": "2025-07-27T09:21:55.508Z"
     }
   ],
   "popCulture": [
@@ -1600,7 +1690,177 @@
         "paris2025"
       ],
       "lastUpdated": "2025-07-25T07:52:00.714Z"
+    },
+    {
+      "hashtag": "#ViralVideo",
+      "platform": "general",
+      "description": "Trending hashtag: #ViralVideo",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "viralvideo"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#SocialMediaTrends",
+      "platform": "general",
+      "description": "Trending hashtag: #SocialMediaTrends",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "socialmediatrends"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#SpeakYourTruth",
+      "platform": "general",
+      "description": "Trending hashtag: #SpeakYourTruth",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "speakyourtruth"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#GenZVoices",
+      "platform": "general",
+      "description": "Trending hashtag: #GenZVoices",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "genzvoices"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#ViralRevolution",
+      "platform": "general",
+      "description": "Trending hashtag: #ViralRevolution",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "viralrevolution"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#FaithAndFreedom",
+      "platform": "general",
+      "description": "Trending hashtag: #FaithAndFreedom",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "faithandfreedom"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#DigitalDefiance",
+      "platform": "general",
+      "description": "Trending hashtag: #DigitalDefiance",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "digitaldefiance"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#RawAndReal",
+      "platform": "general",
+      "description": "Trending hashtag: #RawAndReal",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "rawandreal"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#InternetIcon",
+      "platform": "general",
+      "description": "Trending hashtag: #InternetIcon",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "interneticon"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#ContentCreation",
+      "platform": "general",
+      "description": "Trending hashtag: #ContentCreation",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "contentcreation"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#Outfits",
+      "platform": "general",
+      "description": "Trending hashtag: #Outfits",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "outfits"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#Styling",
+      "platform": "general",
+      "description": "Trending hashtag: #Styling",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "styling"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#GoldenHour",
+      "platform": "general",
+      "description": "Trending hashtag: #GoldenHour",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "goldenhour"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#CoastalAesthetic",
+      "platform": "general",
+      "description": "Trending hashtag: #CoastalAesthetic",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "coastalaesthetic"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#Empowerment",
+      "platform": "general",
+      "description": "Trending hashtag: #Empowerment",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "empowerment"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#SelfWorth",
+      "platform": "general",
+      "description": "Trending hashtag: #SelfWorth",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "selfworth"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
+    },
+    {
+      "hashtag": "#DateIdea",
+      "platform": "general",
+      "description": "Trending hashtag: #DateIdea",
+      "trendingScore": 0.8,
+      "relatedTerms": [
+        "dateidea"
+      ],
+      "lastUpdated": "2025-07-27T09:21:58.122Z"
     }
   ],
-  "lastUpdate": "2025-07-25T07:52:01.717Z"
+  "lastUpdate": "2025-07-27T09:21:58.124Z"
 }

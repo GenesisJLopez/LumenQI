@@ -47,6 +47,9 @@ interface ProactiveStats {
   isProactiveMode: boolean;
   deviceAccessEnabled: boolean;
   wakeWordActive: boolean;
+  mobileIntegrationActive: boolean;
+  crossDeviceSync: boolean;
+  systemNotifications: boolean;
   lastInteractionTime: Date;
 }
 
@@ -142,40 +145,39 @@ export function ProactiveAIPanel() {
     }
   });
 
-  // Enable device access
-  const enableDeviceAccessMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/proactive/enable-device-access', {
-        method: 'POST'
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to enable device access');
-      }
-      
+  // Device integration mutations
+  const deviceAccessMutation = useMutation({
+    mutationFn: async (enable: boolean) => {
+      const endpoint = enable ? '/api/proactive/device-access/enable' : '/api/proactive/device-access/disable';
+      const response = await fetch(endpoint, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to update device access');
       return response.json();
     },
     onSuccess: () => {
-      setDeviceAccess(true);
       queryClient.invalidateQueries({ queryKey: ['/api/proactive/stats'] });
     }
   });
 
-  // Enable wake word
-  const enableWakeWordMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/proactive/enable-wake-word', {
-        method: 'POST'
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to enable wake word');
-      }
-      
+  const wakeWordMutation = useMutation({
+    mutationFn: async (enable: boolean) => {
+      const endpoint = enable ? '/api/proactive/wake-word/enable' : '/api/proactive/wake-word/disable';
+      const response = await fetch(endpoint, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to update wake word');
       return response.json();
     },
     onSuccess: () => {
-      setWakeWord(true);
+      queryClient.invalidateQueries({ queryKey: ['/api/proactive/stats'] });
+    }
+  });
+
+  const mobileIntegrationMutation = useMutation({
+    mutationFn: async (enable: boolean) => {
+      const endpoint = enable ? '/api/proactive/mobile-integration/enable' : '/api/proactive/mobile-integration/disable';
+      const response = await fetch(endpoint, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to update mobile integration');
+      return response.json();
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/proactive/stats'] });
     }
   });
@@ -197,12 +199,14 @@ export function ProactiveAIPanel() {
     toggleProactiveMutation.mutate(enabled);
   };
 
-  const handleEnableDeviceAccess = () => {
-    enableDeviceAccessMutation.mutate();
+  const handleDeviceAccess = (enabled: boolean) => {
+    setDeviceAccess(enabled);
+    deviceAccessMutation.mutate(enabled);
   };
 
-  const handleEnableWakeWord = () => {
-    enableWakeWordMutation.mutate();
+  const handleWakeWord = (enabled: boolean) => {
+    setWakeWord(enabled);
+    wakeWordMutation.mutate(enabled);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -261,38 +265,43 @@ export function ProactiveAIPanel() {
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label>Device Access</Label>
-              <div className="flex items-center gap-2">
-                {deviceAccess ? (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleEnableDeviceAccess}
-                    disabled={enableDeviceAccessMutation.isPending}
-                  >
-                    <Monitor className="w-4 h-4 mr-1" />
-                    Enable
-                  </Button>
-                )}
-              </div>
+              <Label className="flex items-center gap-2">
+                <Monitor className="w-4 h-4" />
+                Computer Access
+              </Label>
+              <Switch 
+                checked={deviceAccess}
+                onCheckedChange={handleDeviceAccess}
+                disabled={deviceAccessMutation.isPending}
+              />
             </div>
             <div className="flex items-center justify-between">
-              <Label>Wake Word ("Hey Lumen")</Label>
-              <div className="flex items-center gap-2">
-                {wakeWord ? (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Button 
-                    size="sm" 
-                    onClick={handleEnableWakeWord}
-                    disabled={enableWakeWordMutation.isPending}
-                  >
-                    <Mic className="w-4 h-4 mr-1" />
-                    Enable
-                  </Button>
-                )}
-              </div>
+              <Label className="flex items-center gap-2">
+                <Mic className="w-4 h-4" />
+                Wake Word ("Hey Lumen")
+              </Label>
+              <Switch 
+                checked={wakeWord}
+                onCheckedChange={handleWakeWord}
+                disabled={wakeWordMutation.isPending}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4" />
+                Mobile Integration
+              </Label>
+              <Switch 
+                checked={stats?.mobileIntegrationActive || false}
+                onCheckedChange={(enabled) => mobileIntegrationMutation.mutate(enabled)}
+                disabled={mobileIntegrationMutation.isPending}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label>Cross-Device Sync</Label>
+              <Badge variant={stats?.crossDeviceSync ? "default" : "secondary"}>
+                {stats?.crossDeviceSync ? "Enabled" : "Disabled"}
+              </Badge>
             </div>
             <div className="flex items-center justify-between">
               <Label>Active Connections</Label>
@@ -309,6 +318,29 @@ export function ProactiveAIPanel() {
               </span>
             </div>
           )}
+
+          {/* Device Integration Status */}
+          <div className="pt-2 border-t">
+            <div className="text-sm font-medium mb-2">Device Integration Features:</div>
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${stats?.deviceAccessEnabled ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                Full system access for proactive notifications
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${stats?.wakeWordActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                Voice activation with "Hey Lumen" wake word
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${stats?.mobileIntegrationActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                Mobile integration and cross-device synchronization
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${stats?.systemNotifications ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                System-level notification delivery
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

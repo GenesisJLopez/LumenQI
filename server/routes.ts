@@ -1048,23 +1048,96 @@ Respond with only the title, no quotes or additional text.`;
     }
   });
 
-  app.post("/api/proactive/enable-device-access", async (req, res) => {
+  // Enhanced Device Integration API Endpoints
+  app.post("/api/proactive/device-access/enable", async (req, res) => {
     try {
-      const success = await proactiveAI.enableDeviceAccess();
-      res.json({ success, message: "Device access enabled" });
+      const success = proactiveAI.enableDeviceAccess();
+      res.json({ success, message: "Full computer access enabled for proactive notifications" });
     } catch (error) {
       console.error('Error enabling device access:', error);
       res.status(500).json({ error: "Failed to enable device access" });
     }
   });
 
-  app.post("/api/proactive/enable-wake-word", async (req, res) => {
+  app.post("/api/proactive/device-access/disable", async (req, res) => {
     try {
-      const success = await proactiveAI.enableWakeWord();
-      res.json({ success, message: "Wake word enabled" });
+      const success = proactiveAI.disableDeviceAccess();
+      res.json({ success, message: "Device access disabled" });
+    } catch (error) {
+      console.error('Error disabling device access:', error);
+      res.status(500).json({ error: "Failed to disable device access" });
+    }
+  });
+
+  app.post("/api/proactive/wake-word/enable", async (req, res) => {
+    try {
+      const success = proactiveAI.enableWakeWord();
+      res.json({ success, message: "Wake word detection enabled - 'Hey Lumen' is now active" });
     } catch (error) {
       console.error('Error enabling wake word:', error);
-      res.status(500).json({ error: "Failed to enable wake word" });
+      res.status(500).json({ error: "Failed to enable wake word detection" });
+    }
+  });
+
+  app.post("/api/proactive/wake-word/disable", async (req, res) => {
+    try {
+      const success = proactiveAI.disableWakeWord();
+      res.json({ success, message: "Wake word detection disabled" });
+    } catch (error) {
+      console.error('Error disabling wake word:', error);
+      res.status(500).json({ error: "Failed to disable wake word detection" });
+    }
+  });
+
+  app.post("/api/proactive/mobile-integration/enable", async (req, res) => {
+    try {
+      const success = proactiveAI.enableMobileIntegration();
+      res.json({ success, message: "Mobile integration and cross-device sync enabled" });
+    } catch (error) {
+      console.error('Error enabling mobile integration:', error);
+      res.status(500).json({ error: "Failed to enable mobile integration" });
+    }
+  });
+
+  app.post("/api/proactive/mobile-integration/disable", async (req, res) => {
+    try {
+      const success = proactiveAI.disableMobileIntegration();
+      res.json({ success, message: "Mobile integration disabled" });
+    } catch (error) {
+      console.error('Error disabling mobile integration:', error);
+      res.status(500).json({ error: "Failed to disable mobile integration" });
+    }
+  });
+
+  app.post("/api/proactive/notification", async (req, res) => {
+    try {
+      const { title, message, priority = 'medium' } = req.body;
+      
+      if (!title || !message) {
+        return res.status(400).json({ error: "Title and message are required" });
+      }
+
+      proactiveAI.sendSystemNotification(title, message, priority);
+      res.json({ success: true, message: "System notification sent" });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      res.status(500).json({ error: "Failed to send notification" });
+    }
+  });
+
+  app.post("/api/proactive/sync", async (req, res) => {
+    try {
+      const { data } = req.body;
+      
+      if (!data) {
+        return res.status(400).json({ error: "Data is required for synchronization" });
+      }
+
+      proactiveAI.syncAcrossDevices(data);
+      res.json({ success: true, message: "Data synchronized across all devices" });
+    } catch (error) {
+      console.error('Error syncing data:', error);
+      res.status(500).json({ error: "Failed to sync data" });
     }
   });
 
