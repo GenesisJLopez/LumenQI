@@ -170,16 +170,10 @@ export class OllamaIntegration {
       return true;
     }
 
-    // Validate model name to prevent command injection
-    if (!/^[a-zA-Z0-9._:-]+$/.test(modelName)) {
-      console.log(`❌ Invalid model name: ${modelName}`);
-      return false;
-    }
-
     try {
       console.log(`🔧 Downloading model: ${modelName}...`);
       
-      const { stdout, stderr } = await execAsync(`ollama pull "${modelName}"`);
+      const { stdout, stderr } = await execAsync(`ollama pull ${modelName}`);
       console.log('Download output:', stdout);
       
       if (stderr) {

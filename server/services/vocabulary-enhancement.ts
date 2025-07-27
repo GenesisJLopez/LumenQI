@@ -416,7 +416,30 @@ export class VocabularyEnhancementService {
     console.log('✓ Full vocabulary update completed');
   }
 
-
+  getContextualVocabulary(message: string): {
+    relevantSlang: SlangEntry[];
+    relevantPopCulture: PopCultureReference[];
+    relevantTrends: SocialTrend[];
+  } {
+    const lowerMessage = message.toLowerCase();
+    
+    return {
+      relevantSlang: this.vocabularyData.slang.filter(entry => 
+        lowerMessage.includes(entry.term.toLowerCase()) ||
+        entry.keywords?.some(keyword => lowerMessage.includes(keyword))
+      ).slice(0, 5),
+      
+      relevantPopCulture: this.vocabularyData.popCulture.filter(ref => 
+        lowerMessage.includes(ref.title.toLowerCase()) ||
+        ref.keywords.some(keyword => lowerMessage.includes(keyword))
+      ).slice(0, 3),
+      
+      relevantTrends: this.vocabularyData.socialTrends.filter(trend => 
+        lowerMessage.includes(trend.hashtag.toLowerCase()) ||
+        trend.relatedTerms.some(term => lowerMessage.includes(term))
+      ).slice(0, 3)
+    };
+  }
 
   getVocabularyPrompt(): string {
     const recentSlang = this.vocabularyData.slang.slice(0, 20);

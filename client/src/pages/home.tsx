@@ -1,4 +1,4 @@
-import lumenLogo from '@assets/lumen-logo (Small)_1753612035103.png';
+import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import type { Conversation, Message } from '@shared/schema';
 import { AIConfig } from '@/components/ai-config';
 import { AIConfigPanel } from '@/components/ai-config-panel';
