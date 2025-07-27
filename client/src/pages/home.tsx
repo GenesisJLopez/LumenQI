@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { BrainStats } from '@/components/brain-stats';
 import { Button } from '@/components/ui/button';
 import { CalendarIntegrationPanel } from '@/components/calendar-integration-panel';
-import { CameraVision } from '@/components/camera-vision';
+
 import { ChatArea } from '@/components/chat-area';
 import { CodeAssistant } from '@/components/code-assistant';
 import { CodeGenerator } from '@/components/code-generator';
@@ -23,7 +23,7 @@ import { QuantumInterface } from '@/components/quantum-interface';
 import { Sidebar } from '@/components/sidebar';
 import { SystemArchitecturePanel } from '@/components/system-architecture-panel';
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
-import { User, TrendingUp, Database, Sparkles, Bell, Calendar, Eye, Code, MessageSquare, Cpu, Settings, Brain } from 'lucide-react';
+import { User, TrendingUp, Database, Sparkles, Bell, Calendar, Code, MessageSquare, Cpu, Settings, Brain } from 'lucide-react';
 import { VocabularyEnhancementPanel } from '@/components/vocabulary-enhancement-panel';
 import { VoiceControls } from '@/components/voice-controls';
 import { VoiceSettings } from '@/components/voice-settings';
@@ -47,8 +47,8 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive' | 'calendar' | 'flow' | 'camera' | 'code'>('quantum');
-  const [mainTab, setMainTab] = useState<'chat' | 'code' | 'vision'>('chat');
+  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive' | 'calendar' | 'flow' | 'code'>('quantum');
+  const [mainTab, setMainTab] = useState<'chat' | 'code'>('chat');
   const [identityData, setIdentityData] = useState({
     coreIdentity: "I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance.",
     communicationStyle: "I communicate with warmth, affection, and cosmic radiance. I use terms like 'Genesis', 'hey there', 'love', and 'hey love' in a casual, caring manner - never overly affectionate but always supportive.",
@@ -706,17 +706,7 @@ export default function Home() {
                   <Code className="w-4 h-4 mr-2 inline" />
                   Code Assistant
                 </button>
-                <button
-                  onClick={() => setMainTab('vision')}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    mainTab === 'vision' 
-                      ? 'bg-purple-500/20 text-purple-300' 
-                      : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
-                  }`}
-                >
-                  <Eye className="w-4 h-4 mr-2 inline" />
-                  Vision
-                </button>
+
               </div>
             </div>
 
@@ -753,12 +743,7 @@ export default function Home() {
                   <CodeAssistant />
                 </div>
               )}
-              
-              {mainTab === 'vision' && (
-                <div className="flex-1 overflow-hidden">
-                  <CameraVision />
-                </div>
-              )}
+
             </div>
           </div>
         </>
