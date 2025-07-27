@@ -152,16 +152,15 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
         const currentTranscript = finalTranscript || interimTranscript;
         setTranscript(currentTranscript);
         
-        // Process final results immediately
+        // Process final results with delay to ensure complete transcript
         if (finalTranscript.trim()) {
-          console.log('🎤 Processing final transcript:', finalTranscript);
+          console.log('🎤 Got final transcript:', finalTranscript);
           clearTimeout(timeoutRef.current);
-          setIsListening(false);
-          // Stop recognition to prevent restart loop during processing
-          if (recognitionRef.current) {
-            recognitionRef.current.stop();
-          }
-          processMessage(finalTranscript.trim());
+          timeoutRef.current = setTimeout(() => {
+            console.log('🎤 Processing message after delay:', finalTranscript);
+            setIsListening(false);
+            processMessage(finalTranscript.trim());
+          }, 500);
         }
       };
       
@@ -197,48 +196,60 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     };
   }, []);
 
-  // Process incoming AI responses - WORKS NOW
+  // Load initial messages when entering voice mode
   useEffect(() => {
-    if (!lastMessage) return;
-    
-    console.log('🎤 Voice mode received message:', lastMessage.type, lastMessage.content?.substring(0, 50));
-    
-    // Process ai_response messages immediately 
-    if (lastMessage.type === 'ai_response' && lastMessage.content) {
-      console.log('🎤 Voice mode: Speaking AI response now');
-      speakText(lastMessage.content);
-      
-      // Refresh messages to show new conversation
-      setTimeout(() => {
-        fetchMessages();
-      }, 100);
+    if (currentConversationId) {
+      fetchMessages();
     }
-  }, [lastMessage]);
+  }, [currentConversationId]);
 
   const processMessage = async (message: string) => {
-    if (!currentConversationId || !message.trim()) return;
+    if (!currentConversationId || !message.trim()) {
+      console.error('❌ No conversation ID or empty message:', { currentConversationId, message });
+      return;
+    }
     
-    setTranscript('');
+    console.log('🎤 Voice mode: Processing message:', message, 'Conversation ID:', currentConversationId);
     
     // Stop listening while processing
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
     
-    console.log('🎤 Voice mode: Sending message:', message);
-    
     try {
       // Send message via HTTP with voice mode flag
-      await sendMessage({
-        type: 'chat_message',
-        content: message,
-        conversationId: currentConversationId,
-        isVoiceMode: true
+      const response = await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: message,
+          conversationId: currentConversationId,
+          isVoiceMode: true
+        })
       });
-      console.log('✅ Voice message sent successfully');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Voice message sent successfully:', data);
+      
+      // Speak the AI response immediately
+      if (data.content) {
+        console.log('🎤 Speaking AI response:', data.content.substring(0, 50));
+        setTimeout(() => {
+          speakText(data.content);
+        }, 100);
+      }
       
       // Refresh messages immediately to show user message
-      fetchMessages();
+      setTimeout(() => {
+        fetchMessages();
+      }, 200);
+      
     } catch (error) {
       console.error('❌ Failed to send voice message:', error);
     }
