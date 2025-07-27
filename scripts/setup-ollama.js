@@ -171,7 +171,17 @@ class OllamaSetup {
     }
     
     try {
-      execSync(`ollama pull "${modelName}"`, { stdio: 'inherit' });
+      const result = spawn('ollama', ['pull', modelName], { stdio: 'inherit' });
+      await new Promise((resolve, reject) => {
+        result.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Process exited with code ${code}`));
+          }
+        });
+        result.on('error', reject);
+      });
       this.log(`✅ Model ${modelName} downloaded successfully`, 'success');
       return true;
     } catch (error) {
