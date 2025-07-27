@@ -164,8 +164,14 @@ class OllamaSetup {
     this.log(`Downloading model: ${modelName} (${size})...`, 'info');
     this.log('This may take several minutes depending on your internet connection.', 'info');
     
+    // Validate model name to prevent command injection
+    if (!/^[a-zA-Z0-9._:-]+$/.test(modelName)) {
+      this.log(`❌ Invalid model name: ${modelName}`, 'error');
+      return false;
+    }
+    
     try {
-      execSync(`ollama pull ${modelName}`, { stdio: 'inherit' });
+      execSync(`ollama pull "${modelName}"`, { stdio: 'inherit' });
       this.log(`✅ Model ${modelName} downloaded successfully`, 'success');
       return true;
     } catch (error) {
