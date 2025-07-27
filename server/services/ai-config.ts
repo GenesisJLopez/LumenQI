@@ -222,7 +222,14 @@ export class AIConfigManager {
     return false;
   }
 
-
+  saveSettings(): void {
+    try {
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(this.settings, null, 2));
+      console.log('✓ AI configuration saved');
+    } catch (error) {
+      console.error('Failed to save AI configuration:', error);
+    }
+  }
 
   async getProviderStatus(): Promise<Array<{ provider: string; status: string; model: string }>> {
     const statuses = [];

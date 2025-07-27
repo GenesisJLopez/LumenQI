@@ -1,5 +1,0 @@
-# Minimal dockerignore for maximum size reduction
-*
-!package.json
-!package-lock.json
-!dist/

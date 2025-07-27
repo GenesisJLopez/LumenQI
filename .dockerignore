@@ -1,138 +1,49 @@
-# Ultra-restrictive .dockerignore for Cloud Run deployment
-# Start by excluding everything
-**
-
-# Only include absolutely essential production files
-!package-production.json
-!package-lock.json
-!dist/**
-
-# Explicitly exclude development files
-node_modules
-client/
-server/
-shared/
-.git
-.gitignore
+# Exclude large assets and build artifacts
+attached_assets/
+node_modules/
+dist/
+.git/
+.cache/
+.pythonlibs/
+coverage/
 *.log
+*.tmp
+*.temp
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.md
 README.md
-*.txt
-
-# Exclude build artifacts and caches
-.cache/
-.temp/
-.tmp/
-.npm/
-.eslintcache
-build/
-coverage/
-*.tgz
-
-# Exclude Python caches and libraries (massive size reduction)
-.pythonlibs/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-
-# Exclude large asset files
-attached_assets/
-lumen-backups/
-lumen-brain-storage/
-screenshots/
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.svg
-*.ico
-
-# Exclude development configs
-*.config.js
-*.config.ts
-tsconfig.json
-tailwind.config.ts
-vite.config.ts
-drizzle.config.ts
-capacitor.config.ts
-electron-*.js
-electron-*.json
-
-# Exclude IDE and OS files
-.vscode/
-.idea/
-.DS_Store
-.AppleDouble
-.LSOverride
-*.swp
-*.swo
-Thumbs.db
-
-# Exclude environment and secrets
-.env*
-!.env.example
-*.pem
-*.key
-*.crt
-
-# Exclude package managers
-yarn.lock
-pnpm-lock.yaml
-.pnpm-store/
-.yarn/
-
-# Exclude Apple/iOS development
-ios/
-build/
-Info.plist
-*.plist
-*.entitlements
-
-# Exclude Python/ML backends
-*.py
+electron-main.js
 ml-backend.py
-__pycache__/
-*.pyc
+*.py
 
-# Exclude audio/video files
-*.mp3
-*.wav
-*.m4a
-*.ogg
-*.mp4
-*.avi
-*.mov
-
-# Exclude large dependency files
-ollama/
-*.tar.gz
-*.zip
-*.dmg
-
-# Exclude documentation and meta files
-docs/
-documentation/
-DEPLOYMENT_OPTIMIZATION.md
-demonstrate-*.md
-lumen-*.json
-ai-config.json
-
-# Exclude scripts and utilities
-scripts/
-demo-*.js
-*.sh
-deployment.json
-
-# Exclude testing files
-test/
-tests/
+# Exclude development and test files
 *.test.js
 *.test.ts
 *.spec.js
 *.spec.ts
+__tests__/
+test/
+tests/
 
-# Size optimization: exclude source maps and debug info
-*.map
-*.d.ts
+# Exclude OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Exclude editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Exclude large dependency caches
+.npm/
+.yarn/
+.pnpm/
+yarn.lock
+package-lock.json
