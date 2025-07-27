@@ -375,7 +375,7 @@ export default function Home() {
         // Auto-speak AI response in voice mode
         if (isVoiceMode && lastMessage.content) {
           console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
-          setIsSpeaking(true);
+          // Don't set speaking state here - wait for audio to actually start
           
           // Use optimized TTS for faster response times
           const speakResponse = async () => {
@@ -402,12 +402,12 @@ export default function Home() {
                 // Preload audio for instant playback
                 audio.preload = 'auto';
                 
-                // Set speaking state immediately when audio starts playing
+                // Only set speaking state and glow when audio actually starts playing
                 audio.onplay = () => {
                   setIsSpeaking(true);
                   console.log('Voice response started playing');
                   
-                  // Apply continuous cosmic glow during speech
+                  // Apply cosmic speaking glow only when audio starts
                   const logoElement = document.querySelector('.lumen-central-logo img');
                   if (logoElement) {
                     logoElement.className = 'lumen-logo-cosmic-speaking';
