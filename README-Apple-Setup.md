@@ -10,6 +10,8 @@ This guide covers setting up Lumen QI for iOS and macOS development with Xcode i
 - **Repository Name:** `LumenQI`
 - **Default Branch:** `main`
 
+> ⚠️ **Important:** If you get a "repository not found" error, you need to create the GitHub repository first. See the troubleshooting section below.
+
 ### Method 1: Clone in Xcode (Recommended)
 
 1. **Open Xcode**
@@ -201,18 +203,28 @@ npx cap open ios
 
 ### Common Issues
 
-1. **"No remote configured"**
+1. **"Repository not found" / "Make sure a valid repository exists"**
+   - The GitHub repository doesn't exist yet
+   - **Solution:** Create repository at github.com:
+     1. Go to GitHub.com and sign in
+     2. Click "+" → "New repository"
+     3. Name: `LumenQI`
+     4. Make it public, add README and MIT license
+     5. Click "Create repository"
+
+2. **"No remote configured"**
    - Run: `git remote add origin https://github.com/GenesisJLopez/LumenQI.git`
 
-2. **Authentication failed**
-   - Use GitHub personal access token
-   - Configure in Xcode Preferences > Accounts
+3. **Authentication failed**
+   - Use GitHub personal access token instead of password
+   - Configure in Xcode: Preferences > Accounts > GitHub
 
-3. **Workspace not found**
-   - Ensure CocoaPods are installed: `cd ios && pod install`
-   - Open `.xcworkspace` file, not `.xcodeproj`
+4. **Workspace not found**
+   - iOS project structure incomplete
+   - **Solution:** Run `npx cap add ios` to create iOS project
+   - Open `ios/App/App.xcworkspace`, not `.xcodeproj`
 
-4. **Build failures**
+5. **Build failures**
    - Clean build folder: Product > Clean Build Folder
    - Sync Capacitor: `npx cap sync ios`
    - Update dependencies: `cd ios && pod update`
