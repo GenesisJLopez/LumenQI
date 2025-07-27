@@ -1,0 +1,25 @@
+{
+  "name": "lumen-ai",
+  "version": "1.0.0",
+  "description": "Lumen AI Chat Application",
+  "image": {
+    "tag": "lumen-ai:latest",
+    "registry": "docker.io"
+  },
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".",
+    "target": "runner"
+  },
+  "runtime": {
+    "port": 5000,
+    "env": {
+      "NODE_ENV": "production",
+      "PORT": "5000"
+    }
+  },
+  "health": {
+    "endpoint": "/api/health",
+    "timeout": 30
+  }
+}
