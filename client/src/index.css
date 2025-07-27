@@ -601,16 +601,73 @@ body {
   }
 }
 
+/* Speech rhythm animations - sync with voice */
+@keyframes speechRhythmSlow {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(255, 119, 198, 0.6));
+  }
+  25% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 18px rgba(255, 119, 198, 0.8));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 24px rgba(255, 119, 198, 1.0));
+  }
+  75% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 18px rgba(255, 119, 198, 0.8));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(255, 119, 198, 0.6));
+  }
+}
+
+@keyframes speechRhythmMedium {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(255, 119, 198, 0.6));
+  }
+  50% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 20px rgba(255, 119, 198, 0.9));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(255, 119, 198, 0.6));
+  }
+}
+
+@keyframes speechRhythmFast {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6));
+  }
+  50% {
+    transform: scale(1.02);
+    filter: drop-shadow(0 0 16px rgba(255, 119, 198, 0.8));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6));
+  }
+}
+
 .lumen-logo-speech-slow {
-  animation: speechRhythmSlow 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 16px rgba(255, 119, 198, 0.4));
+  animation: speechRhythmSlow 1.5s ease-in-out infinite;
 }
 
 .lumen-logo-speech-medium {
-  animation: speechRhythmMedium 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 16px rgba(255, 119, 198, 0.4));
+  animation: speechRhythmMedium 1.0s ease-in-out infinite;
 }
 
 .lumen-logo-speech-fast {
-  animation: speechRhythmFast 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 119, 198, 0.6)) drop-shadow(0 0 16px rgba(255, 119, 198, 0.4));
+  animation: speechRhythmFast 0.6s ease-in-out infinite;
 }
 
 /* Central Lumen Logo */
