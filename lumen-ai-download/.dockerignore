@@ -1,0 +1,138 @@
+# Ultra-restrictive .dockerignore for Cloud Run deployment
+# Start by excluding everything
+**
+
+# Only include absolutely essential production files
+!package-production.json
+!package-lock.json
+!dist/**
+
+# Explicitly exclude development files
+node_modules
+client/
+server/
+shared/
+.git
+.gitignore
+*.log
+*.md
+README.md
+*.txt
+
+# Exclude build artifacts and caches
+.cache/
+.temp/
+.tmp/
+.npm/
+.eslintcache
+build/
+coverage/
+*.tgz
+
+# Exclude Python caches and libraries (massive size reduction)
+.pythonlibs/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Exclude large asset files
+attached_assets/
+lumen-backups/
+lumen-brain-storage/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+
+# Exclude development configs
+*.config.js
+*.config.ts
+tsconfig.json
+tailwind.config.ts
+vite.config.ts
+drizzle.config.ts
+capacitor.config.ts
+electron-*.js
+electron-*.json
+
+# Exclude IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+Thumbs.db
+
+# Exclude environment and secrets
+.env*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Exclude package managers
+yarn.lock
+pnpm-lock.yaml
+.pnpm-store/
+.yarn/
+
+# Exclude Apple/iOS development
+ios/
+build/
+Info.plist
+*.plist
+*.entitlements
+
+# Exclude Python/ML backends
+*.py
+ml-backend.py
+__pycache__/
+*.pyc
+
+# Exclude audio/video files
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.mp4
+*.avi
+*.mov
+
+# Exclude large dependency files
+ollama/
+*.tar.gz
+*.zip
+*.dmg
+
+# Exclude documentation and meta files
+docs/
+documentation/
+DEPLOYMENT_OPTIMIZATION.md
+demonstrate-*.md
+lumen-*.json
+ai-config.json
+
+# Exclude scripts and utilities
+scripts/
+demo-*.js
+*.sh
+deployment.json
+
+# Exclude testing files
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Size optimization: exclude source maps and debug info
+*.map
+*.d.ts
