@@ -22,8 +22,8 @@ import { ProactiveAIPanel } from '@/components/proactive-ai-panel';
 import { QuantumInterface } from '@/components/quantum-interface';
 import { Sidebar } from '@/components/sidebar';
 import { SystemArchitecturePanel } from '@/components/system-architecture-panel';
-import { Tabs, TabsContent TabsTrigger } from '@/components/ui/tabs';
-import { User, TrendingUp, Database, Sparkles, Bell, Calendar, Eye, Code } from 'lucide-react';
+import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { User, TrendingUp, Database, Sparkles, Bell, Calendar, Eye, Code, MessageSquare, Cpu, Settings, Brain } from 'lucide-react';
 import { VocabularyEnhancementPanel } from '@/components/vocabulary-enhancement-panel';
 import { VoiceControls } from '@/components/voice-controls';
 import { VoiceSettings } from '@/components/voice-settings';
@@ -36,7 +36,7 @@ import { useSpeechRecognition } from '@/hooks/use-speech';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useWebSocket } from '@/hooks/use-websocket';
-import {ContentTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 
 export default function Home() {

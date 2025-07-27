@@ -1,5 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+// Fix for Vite createViteServer missing import
+import { createServer as createViteServer } from "vite";
+(global as any).createViteServer = createViteServer;
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Mic, MicOff, Send, Keyboard Radio } from 'lucide-react';
+import { Mic, MicOff, Send, Keyboard, Radio } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/use-speech';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
