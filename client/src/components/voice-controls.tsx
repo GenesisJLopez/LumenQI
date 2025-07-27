@@ -12,10 +12,12 @@ interface VoiceControlsProps {
   connectionStatus: 'connecting' | 'connected' | 'disconnected';
   onSpeakingChange?: (speaking: boolean) => void;
   onListeningChange?: (listening: boolean) => void;
-  onVoiceModeToggle?: () => void;
+  onVoiceToggle?: () => void;
+  isVoiceActive?: boolean;
+  currentConversationId?: number;
 }
 
-export function VoiceControls({ onSendMessage, isLoading = false, connectionStatus, onSpeakingChange, onListeningChange, onVoiceModeToggle }: VoiceControlsProps) {
+export function VoiceControls({ onSendMessage, isLoading = false, connectionStatus, onSpeakingChange, onListeningChange, onVoiceToggle, isVoiceActive = false, currentConversationId }: VoiceControlsProps) {
   const [inputValue, setInputValue] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const { toast } = useToast();
@@ -33,7 +35,8 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
     }
   }, [transcript]);
 
-  const handleVoiceToggle = () => {
+  // Voice conversation functionality
+  const handleVoiceConversation = async () => {
     if (!isSupported) {
       toast({
         title: "Voice not supported",
@@ -43,17 +46,77 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
       return;
     }
 
-    if (isListening) {
-      stopListening();
-    } else {
-      // Start continuous listening for seamless conversation
-      startListening();
+    if (!currentConversationId) {
       toast({
-        title: "Voice mode activated",
-        description: "I'm listening continuously now, Genesis!",
+        title: "No conversation",
+        description: "Please start a conversation first",
+        variant: "destructive"
       });
+      return;
+    }
+
+    if (isVoiceActive) {
+      // Stop voice conversation
+      stopListening();
+      speechSynthesis.cancel();
+      onVoiceToggle?.();
+      return;
+    }
+
+    // Start voice conversation
+    onVoiceToggle?.();
+    startListening();
+  };
+
+  // Send voice message and get AI response with speech synthesis
+  const sendVoiceMessage = async (text: string) => {
+    if (!currentConversationId || !text.trim()) return;
+    
+    try {
+      const response = await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: text,
+          conversationId: currentConversationId,
+          isVoiceMode: true
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.content) {
+          speakResponse(result.content);
+        }
+      }
+    } catch (error) {
+      console.error('Voice message failed:', error);
     }
   };
+
+  // Speak AI response
+  const speakResponse = (text: string) => {
+    setIsSpeaking(true);
+    const cleanText = text.replace(/[^\w\s.,!?'-]/g, '').replace(/\s+/g, ' ').trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+    
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      if (isVoiceActive) {
+        setTimeout(() => startListening(), 1000);
+      }
+    };
+    
+    speechSynthesis.speak(utterance);
+  };
+
+  // Handle voice recognition transcript
+  useEffect(() => {
+    if (transcript && isVoiceActive) {
+      sendVoiceMessage(transcript);
+    }
+  }, [transcript, isVoiceActive]);
 
   const handleSendMessage = () => {
     const message = inputValue.trim();
@@ -122,13 +185,13 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
                 "w-10 h-10 rounded-full transition-all duration-200 cosmic-button",
                 isListening && "bg-red-500/20 border-red-500/30 animate-pulse"
               )}
-              onClick={onVoiceModeToggle}
-              title={isListening ? "Exit Voice Mode" : "Enter Voice Mode"}
+              onClick={handleVoiceConversation}
+              title={isVoiceActive ? "Stop Voice Conversation" : "Start Voice Conversation"}
             >
               <Radio className="h-5 w-5" />
             </Button>
             
-            {/* Voice Button */}
+            {/* Regular Voice Button */}
             <Button
               variant="ghost"
               size="sm"
@@ -136,7 +199,13 @@ export function VoiceControls({ onSendMessage, isLoading = false, connectionStat
                 "w-10 h-10 rounded-full transition-all duration-200 cosmic-button",
                 isListening && "active"
               )}
-              onClick={handleVoiceToggle}
+              onClick={() => {
+                if (isListening) {
+                  stopListening();
+                } else {
+                  startListening();
+                }
+              }}
               disabled={!isSupported}
             >
               {isListening ? (
