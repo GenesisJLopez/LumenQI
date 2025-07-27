@@ -5,10 +5,6 @@ interface WebSocketMessage {
   content?: string;
   conversationId?: number;
   message?: string;
-  isEdit?: boolean;
-  isTyping?: boolean;
-  emotion?: string;
-  isVoiceMode?: boolean;
 }
 
 interface UseWebSocketReturn {
@@ -23,72 +19,35 @@ export function useWebSocket(): UseWebSocketReturn {
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const connectWebSocket = () => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    setConnectionStatus('connecting');
+    ws.current = new WebSocket(wsUrl);
+
+    ws.current.onopen = () => {
+      setConnectionStatus('connected');
+      console.log('WebSocket connected');
+    };
+
+    ws.current.onmessage = (event) => {
       try {
-        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const host = window.location.host;
-        const wsUrl = `${protocol}//${host}/ws`;
-        
-        // Validate URL format before creating WebSocket
-        if (!host || !wsUrl.match(/^wss?:\/\/[^\/]+\/ws$/)) {
-          console.error('Invalid WebSocket URL format:', wsUrl);
-          setConnectionStatus('disconnected');
-          return;
-        }
-        
-        setConnectionStatus('connecting');
-        ws.current = new WebSocket(wsUrl);
+        const message = JSON.parse(event.data);
+        setLastMessage(message);
       } catch (error) {
-        console.error('Failed to create WebSocket:', error);
-        setConnectionStatus('disconnected');
-        return;
+        console.error('Failed to parse WebSocket message:', error);
       }
     };
 
-    connectWebSocket();
+    ws.current.onclose = () => {
+      setConnectionStatus('disconnected');
+      console.log('WebSocket disconnected');
+    };
 
-    if (ws.current) {
-      ws.current.onopen = () => {
-        setConnectionStatus('connected');
-        console.log('WebSocket connected');
-      };
-
-      ws.current.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          setLastMessage(message);
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
-        }
-      };
-
-      ws.current.onclose = () => {
-        setConnectionStatus('disconnected');
-        console.log('WebSocket disconnected');
-      };
-
-      ws.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setConnectionStatus('disconnected');
-        
-        // Attempt reconnection after error
-        setTimeout(() => {
-          if (ws.current?.readyState === WebSocket.CLOSED) {
-            try {
-              const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-              const host = window.location.host;
-              const wsUrl = `${protocol}//${host}/ws`;
-              
-              if (host && wsUrl.match(/^wss?:\/\/[^\/]+\/ws$/)) {
-                ws.current = new WebSocket(wsUrl);
-              }
-            } catch (reconnectError) {
-              console.error('WebSocket reconnection failed:', reconnectError);
-            }
-          }
-        }, 3000);
-      };
-    }
+    ws.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setConnectionStatus('disconnected');
+    };
 
     return () => {
       if (ws.current) {
@@ -104,17 +63,9 @@ export function useWebSocket(): UseWebSocketReturn {
       console.error('WebSocket is not connected, readyState:', ws.current?.readyState);
       // Try to reconnect if not connected
       if (ws.current?.readyState === WebSocket.CLOSED) {
-        try {
-          const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-          const host = window.location.host;
-          const wsUrl = `${protocol}//${host}/ws`;
-          
-          if (host && wsUrl.match(/^wss?:\/\/[^\/]+\/ws$/)) {
-            ws.current = new WebSocket(wsUrl);
-          }
-        } catch (reconnectError) {
-          console.error('WebSocket reconnection in sendMessage failed:', reconnectError);
-        }
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        ws.current = new WebSocket(wsUrl);
       }
     }
   };

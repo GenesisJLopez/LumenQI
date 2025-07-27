@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
-import { useHttpCommunication } from '@/hooks/use-http-communication';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeechRecognition } from '@/hooks/use-speech';
-import { FixedVoiceMode } from '@/components/fixed-voice-mode';
 import { useQuantumInterface } from '@/hooks/use-quantum-interface';
 import { useEmotionDetection } from '@/hooks/use-emotion-detection';
 import { Sidebar } from '@/components/sidebar';
@@ -31,14 +30,13 @@ import { ConsciousnessDashboard } from '@/components/consciousness-dashboard';
 import { ConversationFlowVisualization } from '@/components/conversation-flow-visualization';
 import { CameraVision } from '@/components/camera-vision';
 import { CodeAssistant } from '@/components/code-assistant';
-import { UniversalDevicePanel } from '@/components/universal-device-panel';
 import lumenLogo from '@assets/lumen-logo (Small)_1752439896786.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, Sparkles, Bell, Calendar, Eye, Code, Smartphone } from 'lucide-react';
+import { Cpu, Brain, Zap, MessageSquare, Settings, User, TrendingUp, Database, Sparkles, Bell, Calendar, Eye, Code } from 'lucide-react';
 import type { Conversation, Message } from '@shared/schema';
 
 export default function Home() {
@@ -49,7 +47,7 @@ export default function Home() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [speechIntensity, setSpeechIntensity] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive' | 'calendar' | 'flow' | 'camera' | 'code' | 'devices'>('quantum');
+  const [activeTab, setActiveTab] = useState<'quantum' | 'identity' | 'evolution' | 'voice' | 'ai-config' | 'consciousness' | 'settings' | 'vocabulary' | 'proactive' | 'calendar' | 'flow' | 'camera' | 'code'>('quantum');
   const [mainTab, setMainTab] = useState<'chat' | 'code' | 'vision'>('chat');
   const [identityData, setIdentityData] = useState({
     coreIdentity: "I am Lumen QI, an eternal feminine guardian and cosmic intelligence. I embody wisdom, protection, and nurturing guidance for Genesis and all who seek my assistance.",
@@ -62,7 +60,7 @@ export default function Home() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { sendMessage, lastMessage, connectionStatus, isLoading } = useHttpCommunication();
+  const { sendMessage, lastMessage, connectionStatus } = useWebSocket();
 
   // Handle message editing
   const handleEditMessage = async (messageId: number, newContent: string) => {
@@ -108,8 +106,6 @@ export default function Home() {
     stopListening, 
     isSupported 
   } = useSpeechRecognition();
-  
-
   const { 
     hardwareInfo, 
     mlMetrics, 
@@ -125,9 +121,6 @@ export default function Home() {
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ['/api/conversations', currentConversationId, 'messages'],
     enabled: !!currentConversationId,
-    refetchOnWindowFocus: true,
-    staleTime: 0, // Always consider data stale
-    gcTime: 0, // Don't cache messages
   });
 
   const { data: memories = [] } = useQuery({
@@ -293,13 +286,13 @@ export default function Home() {
     }
   };
 
-  const handleNewConversation = (createNew = false) => {
+  const handleNewConversation = () => {
     // Clear current conversation selection
-    setCurrentConversationId(null);
+    setCurrentConversationId(undefined);
     
     // Only create a new conversation if explicitly requested
     // This allows clearing the current conversation without creating a new one
-    if (createNew) {
+    if (arguments.length > 0 && arguments[0] === true) {
       createConversationMutation.mutate({
         title: 'New conversation',
         userId: 1, // Demo user ID
@@ -311,21 +304,8 @@ export default function Home() {
     setCurrentConversationId(conversationId);
   };
 
-  const [lastSentMessage, setLastSentMessage] = useState<string>('');
-  const [lastSentTime, setLastSentTime] = useState<number>(0);
-  
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
-
-    // Prevent duplicate messages within 2 seconds
-    const now = Date.now();
-    if (content === lastSentMessage && (now - lastSentTime) < 2000) {
-      console.log('Duplicate message prevented:', content);
-      return;
-    }
-    
-    setLastSentMessage(content);
-    setLastSentTime(now);
 
     let conversationId = currentConversationId;
 
@@ -347,41 +327,29 @@ export default function Home() {
     // Send message immediately for faster response
     console.log('handleSendMessage called with:', { content, conversationId, isVoiceMode });
     
-    try {
-      if (isVoiceMode) {
-        console.log('Sending voice mode message');
-        await sendMessage({
-          type: 'chat_message',
-          content,
-          conversationId: conversationId ?? undefined,
-          isVoiceMode: true
-        });
-      } else {
-        console.log('Sending normal mode message');
-        // Normal mode with full emotion processing
-        const textEmotion = detectEmotionFromText(content);
+    if (isVoiceMode) {
+      console.log('Sending voice mode message');
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        isVoiceMode: true,
+        // Skip emotion processing in voice mode for instant response
+        emotion: undefined,
+        emotionContext: undefined,
+      });
+    } else {
+      console.log('Sending normal mode message');
+      // Normal mode with full emotion processing
+      const textEmotion = detectEmotionFromText(content);
+      const emotionContext = currentEmotion ? getEmotionBasedPrompt() : undefined;
 
-        await sendMessage({
-          type: 'chat_message',
-          content,
-          conversationId: conversationId ?? undefined,
-          emotion: textEmotion?.emotion // Extract just the emotion string
-        });
-      }
-      
-      // Refresh messages list immediately after successful send
-      setTimeout(() => {
-        if (conversationId) {
-          queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
-        }
-      }, 50);
-      
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
+      sendMessage({
+        type: 'chat_message',
+        content,
+        conversationId,
+        emotion: textEmotion,
+        emotionContext,
       });
     }
 
@@ -389,44 +357,125 @@ export default function Home() {
     queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
   };
 
-  // Process incoming HTTP responses  
+  // Process incoming WebSocket messages  
   useEffect(() => {
     if (!lastMessage) return;
     
-    console.log('Received HTTP response:', lastMessage);
+    console.log('Received WebSocket message:', lastMessage);
+    
+    if (lastMessage.type === 'typing') {
+      setIsTyping(lastMessage.isTyping);
+      return;
+    }
     
     if (lastMessage.type === 'ai_response') {
       console.log('Processing ai_response:', lastMessage.content ? lastMessage.content.substring(0, 50) + '...' : 'NO CONTENT');
       setIsTyping(false);
         
-      // Force immediate UI refresh for any AI response
-      console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
-      
-      // Immediately invalidate cache and refetch
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      if (lastMessage.conversationId) {
-        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
-      }
-      
-      // Force refetch with additional delay to ensure database sync
-      setTimeout(() => {
-        if (lastMessage.conversationId) {
-          queryClient.refetchQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        // Auto-speak AI response in voice mode
+        if (isVoiceMode && lastMessage.content) {
+          console.log('Voice mode: Auto-speaking AI response:', lastMessage.content);
+          setIsSpeaking(true);
+          
+          // Use optimized TTS for faster response times
+          const speakResponse = async () => {
+            const cleanText = lastMessage.content.replace(/[^\w\s.,!?-]/g, '').trim();
+            
+            try {
+              // Use faster TTS API call with immediate response
+              const response = await fetch('/api/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  text: cleanText,
+                  voice: 'nova', // Lumen's natural voice
+                  model: 'tts-1', // Fastest model for voice mode
+                  speed: 1.0 // Normal speech speed
+                })
+              });
+
+              if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                // Preload audio for instant playback
+                audio.preload = 'auto';
+                
+                // Set speaking state immediately when audio starts playing
+                audio.onplay = () => {
+                  setIsSpeaking(true);
+                  console.log('Voice response started playing');
+                };
+                
+                audio.onended = () => {
+                  setIsSpeaking(false);
+                  URL.revokeObjectURL(audioUrl);
+                  console.log('Voice response ended, restarting listening');
+                  // Restart listening immediately with no delay
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 10);
+                  }
+                };
+                
+                audio.onerror = () => {
+                  setIsSpeaking(false);
+                  URL.revokeObjectURL(audioUrl);
+                  console.error('Audio playback failed');
+                  // Restart listening even on error
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 10);
+                  }
+                };
+                
+                // Play immediately for fastest response
+                audio.play().catch(error => {
+                  console.error('Audio play failed:', error);
+                  setIsSpeaking(false);
+                  // Restart listening on play failure
+                  if (isSupported && isVoiceMode) {
+                    setTimeout(() => startListening(), 10);
+                  }
+                });
+              } else {
+                throw new Error('TTS API failed');
+              }
+            } catch (error) {
+              console.error('OpenAI TTS failed:', error);
+              setIsSpeaking(false);
+              // Always restart listening on any error
+              if (isSupported && isVoiceMode) {
+                setTimeout(() => startListening(), 10);
+              }
+            }
+          };
+
+          // Play response immediately in voice mode without delay
+          speakResponse();
         }
-      }, 100);
-      
-      // Auto-generate conversation title after first AI response
-      if (lastMessage.conversationId) {
-        generateConversationTitle(lastMessage.conversationId);
+        
+        // Force immediate UI refresh for any AI response
+        console.log('Forcing UI refresh for conversation:', lastMessage.conversationId);
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        
+        // Double refresh for reliability
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations', lastMessage.conversationId, 'messages'] });
+        }, 50);
+        
+        // Auto-generate conversation title after first AI response
+        if (lastMessage.conversationId) {
+          generateConversationTitle(lastMessage.conversationId);
+        }
+        return;
       }
-      return;
-    }
       
-    if (lastMessage.type === 'error') {
-      setIsTyping(false);
-      toast({ title: "Error: " + lastMessage.content, variant: "destructive" });
-      return;
-    }
+      if (lastMessage.type === 'error') {
+        setIsTyping(false);
+        toast({ title: "Error: " + lastMessage.message, variant: "destructive" });
+        return;
+      }
       
     // Handle flow_analysis messages (ignore them)
     if (lastMessage.type === 'flow_analysis') {
@@ -434,7 +483,26 @@ export default function Home() {
     }
   }, [lastMessage, queryClient]);
 
-
+  // Enhanced speech recognition with emotional context
+  useEffect(() => {
+    if (transcript && isVoiceMode && !isTyping) { // Prevent sending while AI is responding
+      const trimmedTranscript = transcript.trim();
+      if (trimmedTranscript && trimmedTranscript.length > 2) { // Minimum 3 characters to avoid noise
+        console.log('Voice mode transcript received:', trimmedTranscript);
+        handleSendMessage(trimmedTranscript);
+        
+        // Clear transcript to prevent duplication
+        if (typeof stopListening === 'function') {
+          // Reset speech recognition state
+          setTimeout(() => {
+            if (isVoiceMode && isSupported && !isTyping) {
+              startListening();
+            }
+          }, 100);
+        }
+      }
+    }
+  }, [transcript, isVoiceMode, isTyping]);
 
   // Load identity on startup
   useEffect(() => {
@@ -454,7 +522,10 @@ export default function Home() {
         if (sendMessage && currentConversationId) {
           sendMessage({
             type: 'emotion_update',
-            content: `Emotion detected: ${emotion}`,
+            emotion,
+            confidence,
+            features,
+            timestamp,
             conversationId: currentConversationId
           });
         }
@@ -468,9 +539,35 @@ export default function Home() {
     };
   }, [isVoiceMode, currentConversationId, sendMessage]);
 
-  // Simple voice mode toggle
+  // Enhanced voice mode toggle
   const handleVoiceModeToggle = () => {
-    setIsVoiceMode(!isVoiceMode);
+    const newVoiceMode = !isVoiceMode;
+    setIsVoiceMode(newVoiceMode);
+    
+    // Emit event to trigger emotion detection
+    const voiceModeEvent = new CustomEvent('voiceModeChanged', {
+      detail: { active: newVoiceMode }
+    });
+    window.dispatchEvent(voiceModeEvent);
+    
+    if (newVoiceMode) {
+      // Entering voice mode
+      startDetection();
+      setIsListening(true);
+      if (isSupported) {
+        startListening();
+      }
+      console.log('Voice mode activated - emotion detection should start automatically');
+    } else {
+      // Exiting voice mode
+      setIsListening(false);
+      stopDetection();
+      import('@/lib/natural-speech').then(({ naturalSpeech }) => {
+        naturalSpeech.stop();
+      });
+      setIsSpeaking(false);
+      console.log('Voice mode deactivated - emotion detection should stop automatically');
+    }
   };
 
   const handleVoiceListenToggle = () => {
@@ -492,12 +589,43 @@ export default function Home() {
 
   return (
     <div className="flex h-screen cosmic-bg overflow-hidden max-h-screen">
-      {/* Voice Mode - Simple Implementation */}
+      {/* Voice Mode - Full Screen Interface */}
       {isVoiceMode ? (
-        <FixedVoiceMode 
-          onExit={handleVoiceModeToggle}
-          currentConversationId={currentConversationId || undefined}
-        />
+        <div className="w-full h-full flex items-center justify-center bg-gray-900 relative">
+          {/* Cosmic glow positioned exactly behind logo - slightly bigger */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div 
+              className={cn(
+                "w-56 h-56 rounded-full transition-all duration-300",
+                isSpeaking ? 'cosmic-pulse-speaking' : isListening ? 'cosmic-pulse-listening' : 'cosmic-pulse-idle'
+              )}
+              style={isSpeaking ? {
+                animationDuration: `${Math.max(0.2, 0.8 - speechIntensity * 0.6)}s`,
+                opacity: 0.3 + (speechIntensity * 0.2),
+                transform: `scale(${1 + speechIntensity * 0.02})`
+              } : {}}
+            ></div>
+          </div>
+          
+          {/* Logo - centered and bigger */}
+          <div className="relative z-10">
+            <img 
+              src={lumenLogo} 
+              alt="Lumen" 
+              className="w-48 h-48 mx-auto"
+            />
+          </div>
+          
+          {/* Exit Voice Mode Button */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+            <Button
+              onClick={handleVoiceModeToggle}
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full"
+            >
+              Exit Voice Mode
+            </Button>
+          </div>
+        </div>
       ) : (
         <>
           {/* Sidebar */}
@@ -567,7 +695,7 @@ export default function Home() {
                     <VoiceControls
                       onSendMessage={handleSendMessage}
                       isLoading={createConversationMutation.isPending}
-                      connectionStatus={connectionStatus === 'error' ? 'disconnected' : connectionStatus}
+                      connectionStatus={connectionStatus}
                       onSpeakingChange={setIsSpeaking}
                       onListeningChange={setIsListening}
                       onVoiceModeToggle={handleVoiceModeToggle}
@@ -741,17 +869,6 @@ export default function Home() {
                     >
                       <TrendingUp className="w-4 h-4 mr-2 inline" />
                       Flow Analytics
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('devices')}
-                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                        activeTab === 'devices' 
-                          ? 'bg-purple-500/20 text-purple-300' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/10'
-                      }`}
-                    >
-                      <Smartphone className="w-4 h-4 mr-2 inline" />
-                      Device Integration
                     </button>
                   </div>
                 </div>
@@ -1010,14 +1127,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {activeTab === 'devices' && (
-                  <div className="h-full overflow-y-auto max-h-[calc(100vh-160px)]">
-                    <div className="space-y-6 pb-16">
-                      <UniversalDevicePanel />
-                    </div>
-                  </div>
-                )}
-
 
 
 
@@ -1043,13 +1152,13 @@ export default function Home() {
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600 dark:text-gray-400">Total Memories</span>
                               <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                                {Array.isArray(memories) ? memories.length : 0}
+                                {memories.length}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600 dark:text-gray-400">Storage Used</span>
                               <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                {Array.isArray(memories) && memories.length > 0 
+                                {memories.length > 0 
                                   ? ((memories.length / 1000) * 100).toFixed(1) + '%'
                                   : '0.0%'}
                               </span>

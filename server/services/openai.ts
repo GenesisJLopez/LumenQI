@@ -96,14 +96,13 @@ export class LumenAI {
 ${identity.communicationStyle || 'Communicate with warmth and intelligence.'}
 
 VOICE MODE - ULTRA FAST RESPONSES:
-- Keep responses under 25 words maximum
-- Be direct and immediate 
+- Keep responses under 50 words
+- Be direct and immediate
 - Skip lengthy explanations
 - Use natural, conversational tone
 - Respond instantly without delays
-- No emojis or complex formatting
 
-Current conversation context: ${Array.isArray(conversationContext) ? conversationContext.slice(-1).map(msg => `${msg.role}: ${msg.content}`).join('\n') : 'No previous context'}`;
+Current conversation context: ${conversationContext.slice(-2).map(msg => `${msg.role}: ${msg.content}`).join('\n')}`;
         
         // Skip complex features in voice mode for speed - just use basic system prompt
       } else {
@@ -116,23 +115,21 @@ Current conversation context: ${Array.isArray(conversationContext) ? conversatio
         }
       }
       
-      // Prepare messages for OpenAI - ensure conversationContext is an array
-      const contextMessages = Array.isArray(conversationContext) ? conversationContext.slice(isVoiceMode ? -1 : -8) : [];
+      // Prepare messages for OpenAI
       const messages = [
         { role: "system", content: systemPrompt },
-        ...contextMessages, // Safe context for OpenAI
+        ...conversationContext.slice(isVoiceMode ? -4 : -8), // Less context for voice mode
         { role: "user", content: userMessage }
       ];
 
       const response = await openai.chat.completions.create({
-        model: isVoiceMode ? "gpt-4o-mini" : "gpt-4o", // Use faster gpt-4o-mini for voice mode
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: messages as any,
-        max_tokens: isVoiceMode ? 50 : 1000, // Ultra-short responses for voice mode
+        max_tokens: isVoiceMode ? 100 : 1000, // Increased for better responses
         temperature: isVoiceMode ? 1.1 : 0.7, // Maximum creativity for voice mode
         presence_penalty: isVoiceMode ? 0.6 : 0.1, // Strong variety encouragement
         frequency_penalty: isVoiceMode ? 0.8 : 0.1, // Strong repetition avoidance
         top_p: isVoiceMode ? 0.9 : 1.0, // Diverse vocabulary selection
-        stream: isVoiceMode ? false : false, // Keep streaming disabled for now
       });
 
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't process that request.";

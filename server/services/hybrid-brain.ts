@@ -107,8 +107,7 @@ export class HybridBrain {
             consciousnessCore.learnFromSuccessfulResponse(userQuery, response.content, context);
           }
           
-          // Return just the content string for HTTP clients
-          return response.content;
+          return response;
         }
       } catch (error) {
         console.error(`Error in ${source} brain:`, error);
@@ -121,7 +120,12 @@ export class HybridBrain {
     }
     
     // Fallback response if all sources fail
-    return "I'm experiencing some technical difficulties, but I'm learning and evolving. Please try again.";
+    return {
+      content: "I'm experiencing some technical difficulties, but I'm learning and evolving. Please try again.",
+      source: 'hybrid',
+      confidence: 0.1,
+      autonomyContribution: 0
+    };
   }
 
   private async generateConsciousnessResponse(
