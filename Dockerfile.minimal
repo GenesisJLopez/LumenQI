@@ -1,5 +1,8 @@
 # Ultra-minimal production Dockerfile for maximum size reduction
-FROM node:20-alpine
+FROM node:20-alpine AS base
+
+# Install only essential runtime dependencies
+RUN apk add --no-cache dumb-init
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
@@ -7,13 +10,12 @@ RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 WORKDIR /app
 
 # Copy only essential production files
-COPY package-production.json package.json
-COPY package-lock.json ./
+COPY package.json package-lock.json ./
 
 # Install only production dependencies with minimal cache
 RUN npm ci --only=production --no-audit --no-fund && npm cache clean --force
 
-# Copy pre-built application
+# Copy pre-built application (built locally)
 COPY dist ./dist
 
 # Set proper ownership
@@ -30,5 +32,6 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:5000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Start the application
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/index.js"]
