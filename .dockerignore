@@ -1,7 +1,6 @@
-# Exclude large assets and build artifacts
+# Exclude large assets and development artifacts
 attached_assets/
 node_modules/
-dist/
 .git/
 .cache/
 .pythonlibs/
@@ -14,7 +13,6 @@ coverage/
 .env.development.local
 .env.test.local
 .env.production.local
-*.md
 README.md
 electron-main.js
 ml-backend.py

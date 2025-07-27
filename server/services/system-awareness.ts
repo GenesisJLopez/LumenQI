@@ -550,22 +550,7 @@ SELF-MODIFICATION ABILITIES:
     }
   }
 
-  private getDirectoryPurpose(dirPath: string): string {
-    const purposes: { [key: string]: string } = {
-      'client': 'Frontend React application',
-      'client/src': 'React source code',
-      'client/src/components': 'Reusable UI components',
-      'client/src/pages': 'Application pages',
-      'client/src/lib': 'Utility functions',
-      'server': 'Backend Express application',
-      'server/services': 'Business logic services',
-      'shared': 'Shared code between client and server',
-      'scripts': 'Build and deployment scripts',
-      'attached_assets': 'User uploaded files'
-    };
-    
-    return purposes[dirPath] || 'Project directory';
-  }
+
 
   async getDependencyAnalysis(): Promise<any> {
     try {
