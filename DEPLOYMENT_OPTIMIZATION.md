@@ -9,9 +9,9 @@ The deployment was failing due to a 19MB PNG file causing the Docker image to ex
 
 #### 1. **Optimized Large PNG Logo File**
 - **Before**: 1.1MB PNG file (`lumen-logo (Small)_1752439896786.png`)
-- **After**: 2KB SVG file (`lumen-logo.svg`)
-- **Savings**: ~1.1MB
-- **Action**: Created optimized SVG logo with cosmic design and updated imports
+- **After**: 166KB PNG file (`lumen-logo (Small)_1753612035103.png`)
+- **Savings**: ~934KB (85% reduction)
+- **Action**: Replaced with optimized smaller PNG logo and updated imports
 
 #### 2. **Added .dockerignore File**
 - Excludes large screenshot files (removed 10.24MB)
@@ -42,7 +42,7 @@ The deployment was failing due to a 19MB PNG file causing the Docker image to ex
 
 | Asset Type | Before | After | Savings |
 |------------|--------|-------|---------|
-| Logo File | 1.1MB PNG | 2KB SVG | ~1.1MB |
+| Logo File | 1.1MB PNG | 166KB PNG | 934KB |
 | Screenshots | 10.24MB | 0MB | 10.24MB |
 | JS Bundle | ~1.1MB+ | 570KB | ~500KB+ |
 | Total Build | N/A | 670KB | Significant |
