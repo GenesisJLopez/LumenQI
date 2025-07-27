@@ -73,10 +73,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // Try OpenAI first  
-        aiResponse = await hybridBrain.generateResponse(content, conversationId, {
+        const brainResponse = await hybridBrain.generateResponse(content, conversationId, {
           isVoiceMode: isVoiceMode || false,
           maxTokens: isVoiceMode ? 100 : 1000
         });
+        
+        // Extract clean content from brain response
+        aiResponse = brainResponse;
         aiSource = 'hybrid';
       } catch (error) {
         console.error('Hybrid brain failed, using consciousness core:', error);
@@ -124,11 +127,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Background operation error:', error);
       });
 
-      res.json({
-        content: aiResponse,
-        messageId: assistantMessage.id,
-        source: aiSource,
-        responseTime
+      // Return clean response for HTTP client - ONLY the text content
+      res.json({ 
+        content: aiResponse // Clean text only, no internal data
       });
 
     } catch (error) {

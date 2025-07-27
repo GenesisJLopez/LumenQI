@@ -33,14 +33,13 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       const envInfo = await deviceAccess.getEnvironmentInfo();
       console.log('📱 Device Environment:', envInfo);
       
-      // Initialize enhanced voice recognition
-      const voiceReady = await enhancedVoice.initialize();
-      if (voiceReady) {
-        console.log('🎤 Enhanced voice recognition ready');
-        startListening();
-      } else {
-        console.error('❌ Voice recognition failed to initialize');
-      }
+      // Start basic voice recognition
+      console.log('🎤 Starting basic voice recognition');
+      setTimeout(() => {
+        if (recognitionRef.current) {
+          startListening();
+        }
+      }, 1000);
     };
 
     initializeDeviceAccess();
@@ -54,7 +53,20 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
     };
   }, []);
 
-  // Legacy speech recognition fallback (will be replaced by enhanced version)
+  // Start listening function for voice mode
+  const startListening = () => {
+    if (!recognitionRef.current) return;
+    
+    try {
+      setIsListening(true);
+      recognitionRef.current.start();
+      console.log('🎤 Voice recognition started');
+    } catch (error) {
+      console.error('Failed to start recognition:', error);
+    }
+  };
+
+  // Enhanced speech recognition setup
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -285,20 +297,20 @@ export function SimpleVoiceMode({ onExit, currentConversationId }: SimpleVoiceMo
       console.log('🎤 Browser TTS ended');
       setIsSpeaking(false);
       setSpeechIntensity(0);
-      startListening();
+      startListeningAgain();
     };
     
     utterance.onerror = (event) => {
       console.error('Browser TTS failed:', event.error);
       setIsSpeaking(false);
       setSpeechIntensity(0);
-      startListening();
+      startListeningAgain();
     };
     
     speechSynthesis.speak(utterance);
   };
 
-  const startListening = () => {
+  const startListeningAgain = () => {
     if (recognitionRef.current && !isListening && !isSpeaking) {
       try {
         recognitionRef.current.start();
