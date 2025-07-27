@@ -86,25 +86,25 @@ export function CalendarIntegrationPanel() {
   });
 
   // Fetch calendar stats
-  const { data: stats } =<CalendarStats>({
+  const { data: stats } = useQuery<CalendarStats>({
     queryKey: ['/api/calendar/stats'],
     refetchInterval: 10000 // Refresh every 10 seconds
   });
 
   // Fetch today's events
-  const { data: todayEvents = [] } =<CalendarEvent[]>({
+  const { data: todayEvents = [] } = useQuery<CalendarEvent[]>({
     queryKey: ['/api/calendar/events/today'],
     refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   // Fetch upcoming events
-  const { data: upcomingEvents = [] } =<CalendarEvent[]>({
+  const { data: upcomingEvents = [] } = useQuery<CalendarEvent[]>({
     queryKey: ['/api/calendar/events/upcoming'],
     refetchInterval: 60000 // Refresh every minute
   });
 
   // Fetch calendar alerts
-  const { data: alerts = [] } =<CalendarAlert[]>({
+  const { data: alerts = [] } = useQuery<CalendarAlert[]>({
     queryKey: ['/api/calendar/alerts'],
     refetchInterval: 15000 // Refresh every 15 seconds
   });

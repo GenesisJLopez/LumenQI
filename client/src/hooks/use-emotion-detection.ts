@@ -103,7 +103,7 @@ export function useEmotionDetection() {
   }, [advancedDetector]);
 
   const stopDetection = useCallback(() => {
-    advancedDetector.stopDetection();.stopAnalyzing();
+    advancedDetector.stopDetection();
     setState(prev => ({ ...prev, isAnalyzing: false, currentEmotion: null }));
     console.log('Advanced emotion detection stopped');
   }, [advancedDetector]);
@@ -208,7 +208,7 @@ export function useEmotionDetection() {
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      advancedDetector.stopDetection();.stopAnalyzing();
+      advancedDetector.stopDetection();
     };
   }, [advancedDetector]);
 

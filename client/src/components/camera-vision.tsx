@@ -1,4 +1,4 @@
-import { useState useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,9 +30,9 @@ export function CameraVision({ onAnalysisUpdate }: CameraVisionProps) {
   const [error, setError] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   
-  const videoRef =<HTMLVideoElement>(null);
-  const canvasRef =<HTMLCanvasElement>(null);
-  const intervalRef =<NodeJS.Timeout | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const startCamera = async () => {

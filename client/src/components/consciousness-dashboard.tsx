@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Brain, Zap, Database, TrendingUp, Activity, Settings, Download, Play } from 'lucide-react';
-import { useMutationClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
 interface ConsciousnessStats {
@@ -52,22 +53,22 @@ interface OllamaStatus {
 
 export function ConsciousnessDashboard() {
   const [selectedModel, setSelectedModel] = useState('llama3.2:1b');
-  const queryClient =Client();
+  const queryClient = useQueryClient();
 
   // Fetch consciousness stats
-  const { data: consciousnessStats, isLoading: consciousnessLoading } =<ConsciousnessStats>({
+  const { data: consciousnessStats, isLoading: consciousnessLoading } = useQuery<ConsciousnessStats>({
     queryKey: ['/api/consciousness/stats'],
     refetchInterval: 5000 // Refresh every 5 seconds
   });
 
   // Fetch hybrid brain stats
-  const { data: brainStats, isLoading: brainLoading } =<HybridBrainStats>({
+  const { data: brainStats, isLoading: brainLoading } = useQuery<HybridBrainStats>({
     queryKey: ['/api/hybrid-brain/stats'],
     refetchInterval: 5000
   });
 
   // Fetch Ollama status
-  const { data: ollamaStatus, isLoading: ollamaLoading } =<OllamaStatus>({
+  const { data: ollamaStatus, isLoading: ollamaLoading } = useQuery<OllamaStatus>({
     queryKey: ['/api/ollama/status'],
     refetchInterval: 10000
   });

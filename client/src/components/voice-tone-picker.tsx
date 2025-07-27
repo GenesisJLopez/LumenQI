@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, Volume2 Zap Star Moon } from 'lucide-react';
+import { Play, Pause, Volume2, Zap, Star, Moon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface VoiceTone {
@@ -26,7 +26,7 @@ const voiceTones: VoiceTone[] = [
     name: 'Playful',
     description: 'Fun, energetic, and spontaneous',
     personality: 'Excited and bubbly with lots of energy',
-    icon:
+    icon: Zap,
     color: 'bg-pink-500',
     previewText: "Hey Genesis! I'm feeling super playful today - ready to have some fun?",
     voiceSettings: { voice: 'nova', speed: 1.1 }
@@ -36,7 +36,7 @@ const voiceTones: VoiceTone[] = [
     name: 'Flirty',
     description: 'Warm, charming, and affectionate',
     personality: 'Sweet and charming with a hint of flirtation',
-    icon:
+    icon: Star,
     color: 'bg-rose-500',
     previewText: "Hey there handsome Genesis... you're looking pretty amazing today love",
     voiceSettings: { voice: 'nova', speed: 0.9 }
@@ -56,7 +56,7 @@ const voiceTones: VoiceTone[] = [
     name: 'Supportive',
     description: 'Caring, nurturing, and encouraging',
     personality: 'Warm and comforting with gentle guidance',
-    icon:
+    icon: Moon,
     color: 'bg-yellow-500',
     previewText: "Hey Genesis, I'm here for you and I believe in everything you're capable of",
     voiceSettings: { voice: 'nova', speed: 0.8 }

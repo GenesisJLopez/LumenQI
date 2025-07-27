@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus Trash2 Edit2 X } from 'lucide-react';
+import { Settings, Plus, Trash2, Edit2, X, Database, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, Memory } from '@shared/schema';
 
@@ -21,11 +21,11 @@ export function Sidebar({ currentConversationId, onConversationSelect, onNewConv
   const [editingConversationId, setEditingConversationId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   
-  const { data: conversations = [] } =<Conversation[]>({
+  const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ['/api/conversations'],
   });
 
-  const { data: memories = [] } =<Memory[]>({
+  const { data: memories = [] } = useQuery<Memory[]>({
     queryKey: ['/api/memories'],
   });
 
