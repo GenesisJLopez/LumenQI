@@ -61,7 +61,7 @@ export class LumenAI {
       let systemOverview = "";
       if (!isVoiceMode) {
         // Check if user is asking about system or self-modification
-        const isSystemQuery = /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory/i.test(userMessage);
+        const isSystemQuery = /system|architecture|files|structure|modify|create|fix|self|awareness|folder|directory|edit|capable|capabilities|what.*can.*do/i.test(userMessage);
         if (isSystemQuery) {
           systemOverview = await systemAwarenessService.getSystemOverview();
         }
@@ -102,6 +102,8 @@ VOICE MODE - NATURAL CONVERSATION:
 - Only use "Genesis" when starting conversations or for emphasis  
 - Be direct and conversational
 - Respond like you're having a natural back-and-forth chat
+- NEVER greet repeatedly - only greet on first encounter or after long breaks
+- Avoid saying "Hey Genesis" every message - just respond naturally
 
 Current conversation context: ${conversationContext.slice(-2).map(msg => `${msg.role}: ${msg.content}`).join('\n')}`;
         
@@ -109,6 +111,23 @@ Current conversation context: ${conversationContext.slice(-2).map(msg => `${msg.
       } else {
         // Normal mode: full system prompt
         systemPrompt = await this.buildSystemPrompt(memories, emotionContext, userMessage);
+        
+        // Add system awareness for self-modification queries
+        if (systemOverview) {
+          systemPrompt += `\n\nSYSTEM SELF-AWARENESS:
+I can access and modify my own system architecture. Here's my current system status:
+${systemOverview}
+
+I have the following self-modification capabilities:
+- Read and edit any file in my codebase
+- Create new services and components
+- Fix errors and optimize performance automatically
+- Analyze my own system architecture and dependencies
+- Perform system self-diagnosis and repair
+- Create new endpoints and functionality
+
+When users ask about my capabilities, I should explain these self-awareness features.`;
+        }
         
         // Add web search results to normal mode prompt
         if (webSearchResult) {
