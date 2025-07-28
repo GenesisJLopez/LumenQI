@@ -31,9 +31,30 @@ pod install
 open LumenQI.xcworkspace
 ```
 
-## 🔧 Alternative Fix (If Above Doesn't Work)
+## ⚠️ Prerequisites Required
 
-If you still get errors, completely regenerate the iOS project:
+If you get "command not found" errors, you need to install development tools first:
+
+**Install required tools:**
+```bash
+# Install Homebrew (if not installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Node.js and npm
+brew install node
+
+# Install CocoaPods
+sudo gem install cocoapods
+
+# Install Xcode Command Line Tools
+xcode-select --install
+```
+
+**Then run the original fix commands above.**
+
+## 🔧 Alternative Fix (If Still Getting Errors)
+
+If you still get errors after installing tools, completely regenerate the iOS project:
 
 ```bash
 # From project root
@@ -41,7 +62,7 @@ npx cap add ios
 npx cap sync ios
 cd ios/App
 pod install
-open App.xcworkspace
+open LumenQI.xcworkspace
 ```
 
 ## 🎯 Why This Happens
