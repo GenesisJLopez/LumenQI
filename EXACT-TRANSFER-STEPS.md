@@ -10,7 +10,7 @@ The terminal command assumes you have the project on your Mac. Here are the exac
 1. Look at the left sidebar with your files
 2. Click the **3-dot menu** (⋯) at the top of the file explorer
 3. Select **"Download as zip"**
-4. Your browser will download a file called `workspace.zip`
+4. Your browser will download a file called `lumenQI.zip`
 5. The file goes to your **Downloads** folder
 
 ## Step 2: Extract the Project on Your Mac
@@ -18,21 +18,21 @@ The terminal command assumes you have the project on your Mac. Here are the exac
 **Open Terminal on your Mac and run:**
 ```bash
 cd ~/Downloads
-ls -la workspace.zip
+ls -la lumenQI.zip
 ```
 
 If you see the zip file, extract it:
 ```bash
-unzip workspace.zip
-ls -la workspace/
+unzip lumenQI.zip
+ls -la lumenQI/
 ```
 
-You should now see the `workspace` folder with all your Lumen QI files.
+You should now see the `lumenQI` folder with all your Lumen QI files.
 
 ## Step 3: Navigate to the iOS Project
 
 ```bash
-cd workspace/ios/App
+cd lumenQI/ios/App
 ls -la
 ```
 
@@ -53,7 +53,7 @@ open App.xcworkspace
 **Problem:** You haven't downloaded the project from Replit yet
 **Solution:** Complete Steps 1-2 above
 
-### Issue: "workspace.zip not found"
+### Issue: "lumenQI.zip not found"
 **Problem:** Download didn't complete or went to different location
 **Solution:** Check your browser's download location or re-download
 
@@ -67,7 +67,7 @@ open App.xcworkspace
 
 After extracting, you should have this structure:
 ```
-~/Downloads/workspace/
+~/Downloads/lumenQI/
 ├── ios/App/App.xcworkspace  ← This is what you open
 ├── client/                  ← React frontend
 ├── server/                  ← Express backend
@@ -80,8 +80,8 @@ After extracting, you should have this structure:
 Instead of terminal commands:
 1. Open **Finder**
 2. Go to **Downloads** folder
-3. Double-click `workspace.zip` to extract
-4. Navigate to `workspace → ios → App`
+3. Double-click `lumenQI.zip` to extract
+4. Navigate to `lumenQI → ios → App`
 5. Double-click `App.xcworkspace`
 
 The key is downloading the project from Replit first. The files don't exist on your Mac until you download them!
