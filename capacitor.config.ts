@@ -13,7 +13,6 @@ const config: CapacitorConfig = {
     backgroundColor: '#0a0a0a',
     allowsLinkPreview: false,
     scrollEnabled: true,
-    disableLogs: false,
     minVersion: '13.0',
     preferredContentMode: 'mobile'
   },
