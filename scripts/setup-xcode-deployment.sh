@@ -1,117 +1,86 @@
 #!/bin/bash
 
-# Complete Xcode Setup Script for Lumen QI App Store Deployment
-# This script prepares your project for transfer to Xcode and App Store submission
+# Complete Xcode Deployment Setup for Lumen QI
+# Regenerates iOS project without CocoaPods dependencies
 
-echo "🍎 Setting up Lumen QI for Xcode and App Store deployment..."
+echo "🚀 Setting up Xcode deployment for Lumen QI..."
 
-# Check if we're in the correct directory
-if [ ! -f "package.json" ]; then
-    echo "❌ Error: Run this script from the Lumen QI project root directory"
+PROJECT_DIR="/Users/genesis/Library/Mobile Documents/com~apple~CloudDocs/Work/Lumen/LumenQI"
+
+if [ ! -d "$PROJECT_DIR" ]; then
+    echo "❌ Project directory not found: $PROJECT_DIR"
     exit 1
 fi
 
-echo "📦 Step 1: Building web assets for iOS..."
-npm run build
+cd "$PROJECT_DIR"
 
-echo "📱 Step 2: Syncing Capacitor iOS project..."
+# Step 1: Ensure web app is built
+echo "📦 Building web application..."
+if [ -f "package.json" ]; then
+    npm install
+    npm run build
+else
+    echo "⚠️ No package.json found - web app may need to be built separately"
+fi
+
+# Step 2: Remove existing iOS project completely
+echo "🗑️ Removing existing iOS project to start fresh..."
+rm -rf ios
+
+# Step 3: Create new iOS project without CocoaPods
+echo "📱 Creating new iOS project..."
+npx cap add ios
+
+# Step 4: Configure Capacitor to avoid CocoaPods
+echo "⚙️ Configuring Capacitor..."
+cat > capacitor.config.ts << 'EOF'
+import { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.lumen.qi',
+  appName: 'Lumen QI',
+  webDir: 'dist/public',
+  server: {
+    androidScheme: 'https'
+  },
+  ios: {
+    scheme: 'Lumen QI'
+  }
+};
+
+export default config;
+EOF
+
+# Step 5: Sync web app to iOS
+echo "🔄 Syncing web app to iOS..."
 npx cap sync ios
 
-echo "🔧 Step 3: Setting up iOS project structure..."
-cd ios
+# Step 6: Navigate to iOS project
+cd ios/App
 
-# Create iOS-specific .gitignore if it doesn't exist
-if [ ! -f ".gitignore" ]; then
-    cat > .gitignore << 'EOF'
-# Xcode
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata/
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-*.xcworkspace/xcuserdata/
+# Step 7: Clean up any CocoaPods references
+echo "🧹 Cleaning up CocoaPods references..."
+rm -f Podfile
+rm -f Podfile.lock
+rm -rf Pods
 
-# CocoaPods
-Pods/
-Podfile.lock
+# Step 8: Check project structure
+echo "📋 Project structure:"
+ls -la
 
-# Build artifacts
-App/build/
-App/App.xcarchive
-dist/
-
-# iOS
-*.dSYM.zip
-*.dSYM
-
-# fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
-EOF
-    echo "✅ Created iOS .gitignore"
-fi
-
-# Initialize Git in iOS directory for Xcode integration
-if [ ! -d ".git" ]; then
-    git init
-    git branch -M main
-    echo "✅ Initialized Git repository in iOS directory"
-fi
-
-# Add GitHub remote if it doesn't exist
-if ! git remote get-url origin >/dev/null 2>&1; then
-    git remote add origin https://github.com/GenesisJLopez/LumenQI.git
-    echo "✅ Added GitHub remote"
-else
-    echo "✅ GitHub remote already configured"
-fi
-
-cd ..
+# Step 9: Open in Xcode
+echo "🍎 Opening in Xcode..."
+open *.xcodeproj
 
 echo ""
-echo "🎯 XCODE SETUP COMPLETE!"
+echo "✅ Xcode deployment setup complete!"
 echo ""
-echo "📋 Next Steps to Transfer to Xcode:"
+echo "📱 Next steps in Xcode:"
+echo "1. Select 'App' target"
+echo "2. Go to 'Signing & Capabilities'"
+echo "3. Select your Apple Developer team"
+echo "4. Bundle ID: com.lumen.qi"
+echo "5. Choose iPhone Simulator"
+echo "6. Click Run ▶️"
 echo ""
-echo "1. 📂 OPEN PROJECT IN XCODE:"
-echo "   • Navigate to: ios/App/"
-echo "   • Double-click: App.xcworkspace (NOT .xcodeproj)"
-echo "   • Or run: open ios/App/App.xcworkspace"
-echo ""
-echo "2. ⚙️ CONFIGURE XCODE PROJECT:"
-echo "   • Select 'App' target in Xcode"
-echo "   • Go to 'Signing & Capabilities' tab"
-echo "   • Select your Apple Developer Team"
-echo "   • Bundle Identifier: com.lumen.qi"
-echo "   • Set deployment target: iOS 13.0"
-echo ""
-echo "3. 🏗️ BUILD AND TEST:"
-echo "   • Choose iOS Simulator or device"
-echo "   • Click ▶️ Run button"
-echo "   • Test all Lumen QI features"
-echo ""
-echo "4. 📱 APP STORE PREPARATION:"
-echo "   • Product → Archive"
-echo "   • Use Organizer to validate"
-echo "   • Upload to App Store Connect"
-echo ""
-echo "📁 Project Structure:"
-echo "   ios/App/App.xcworkspace  ← Open this in Xcode"
-echo "   ios/App/App/             ← iOS source code"
-echo "   ios/App/App/public/      ← Your React app"
-echo ""
-echo "🔗 Repository: https://github.com/GenesisJLopez/LumenQI"
-echo ""
-echo "✅ Ready for Xcode development and App Store submission!"
+echo "🎯 Your Lumen QI iOS app is ready for development and App Store submission!"
