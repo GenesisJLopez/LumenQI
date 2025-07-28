@@ -28,7 +28,7 @@ pod install
 
 **Now open the correct file in Xcode:**
 ```bash
-open App.xcworkspace
+open LumenQI.xcworkspace
 ```
 
 ## 🔧 Alternative Fix (If Above Doesn't Work)
