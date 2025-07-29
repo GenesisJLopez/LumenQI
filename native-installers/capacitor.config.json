@@ -1,0 +1,27 @@
+{
+  "appId": "com.lumen.qi",
+  "appName": "Lumen QI",
+  "webDir": "dist/public",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#0a0a0a",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK"
+    }
+  },
+  "ios": {
+    "scheme": "Lumen QI"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

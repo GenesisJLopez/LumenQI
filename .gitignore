@@ -158,6 +158,8 @@ lumen-brain-storage/
 lumen-backups/
 *.json.backup
 test_audio.mp3
+lumen-consciousness.json
+consciousness.JSON
 
 # AI and ML models
 models/

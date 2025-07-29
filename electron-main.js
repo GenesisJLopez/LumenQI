@@ -11,6 +11,31 @@ const tf = require('@tensorflow/tfjs-node');
 let mainWindow;
 let backendProcess;
 
+// Start backend server for production
+function startBackendServer() {
+  if (backendProcess) return;
+  
+  const serverPath = path.join(__dirname, 'dist/index.js');
+  if (require('fs').existsSync(serverPath)) {
+    backendProcess = spawn('node', [serverPath], {
+      cwd: __dirname,
+      env: { ...process.env, NODE_ENV: 'production' },
+      stdio: 'inherit'
+    });
+    
+    backendProcess.on('error', (error) => {
+      console.error('Backend server error:', error);
+    });
+    
+    backendProcess.on('exit', (code) => {
+      console.log(`Backend server exited with code ${code}`);
+      backendProcess = null;
+    });
+    
+    console.log('Backend server started for desktop app');
+  }
+}
+
 // Lumen QI Configuration
 const LumenConfig = {
   personality: {
@@ -63,7 +88,7 @@ function createWindow() {
       contextIsolation: false,
       enableRemoteModule: true
     },
-    icon: path.join(__dirname, 'assets/lumen-logo.png'),
+    icon: path.join(__dirname, 'client/public/icon.png'),
     title: 'Lumen QI - Quantum Intelligence',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     frame: process.platform !== 'darwin',
@@ -81,12 +106,20 @@ function createWindow() {
     resizable: true
   });
 
+  // Start backend server first
+  if (!isDev) {
+    startBackendServer();
+  }
+
   // Load the app
   if (isDev) {
     mainWindow.loadURL('http://localhost:5000');
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools(); // Disable dev tools for cleaner experience
   } else {
-    mainWindow.loadFile('dist/public/index.html');
+    // Wait for server to start, then load the app
+    setTimeout(() => {
+      mainWindow.loadURL('http://localhost:5000');
+    }, 3000);
   }
 
   // Show window when ready
